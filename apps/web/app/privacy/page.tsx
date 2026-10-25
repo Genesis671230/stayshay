@@ -11,6 +11,9 @@ export default function Privacy() {
       <ul>
         <li><strong>What you send us:</strong> name, WhatsApp number, move-in date, budget, areas, and anything you write in a request or roommate profile.</li>
         <li><strong>Listing details:</strong> for owners, property details and photos you share with us.</li>
+        <li><strong>Your account:</strong> name, email and phone number. If you sign in with Google we receive your name, email address and profile picture from Google (never your Google password).</li>
+        <li><strong>Roommate profiles:</strong> the details and photo you add. If you choose to show your profile publicly, your first name, photo, age, gender, nationality, work, budget, areas, move-in date, habits and bio are visible to visitors after our team approves it. Your phone number and email are never shown.</li>
+        <li><strong>Chats with Shay:</strong> what you write to our AI assistant and any contact details you share there. Messages are processed by our AI provider (Anthropic) to generate replies, and kept so our team can follow up.</li>
         <li><strong>Basic usage:</strong> pages viewed and searches, to improve the service. Saved listings stay in your browser.</li>
       </ul>
       <h2>How we use it</h2>
@@ -19,6 +22,8 @@ export default function Privacy() {
         <li>To match roommate profiles and send you places that fit.</li>
         <li>To keep the platform safe, investigate reports and prevent fraud.</li>
       </ul>
+      <h2>Your choices</h2>
+      <p>You can edit your name and phone in your account, hide your public roommate profile, or ask us to delete your account and data at any time.</p>
       <h2>Who sees it</h2>
       <p>Your number and request go only to the lister or match you asked about. We use service providers (hosting, messaging) who process data for us under contract. We don’t sell personal data.</p>
       <h2>How long we keep it</h2>

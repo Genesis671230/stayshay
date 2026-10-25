@@ -93,7 +93,7 @@ export async function getListing(id: string): Promise<Listing | undefined> {
 
 /* ---------- leads: viewing inquiries + tenant / owner / roommate requests ---------- */
 
-export type LeadKind = "inquiry" | "tenant" | "owner" | "roommate";
+export type LeadKind = "inquiry" | "tenant" | "owner" | "roommate" | "chat";
 export type LeadStatus = "new" | "contacted" | "matched" | "closed";
 
 export interface LeadRecord {
@@ -105,6 +105,9 @@ export interface LeadRecord {
   name: string;
   phone: string;
   source: "web" | "app";
+  /** Signed-in account that sent it, when there was one. */
+  userId?: string | null;
+  email?: string | null;
   listingId?: string | null;
   listingTitle?: string | null;
   /** The validated request exactly as submitted. */
@@ -186,6 +189,7 @@ export function adminToken(): string | null {
   return pw ? createHash("sha256").update(`stayshay:${pw}`).digest("hex") : null;
 }
 
+/** Admin = the shared ADMIN_PASSWORD cookie, or a signed-in account whose email is in ADMIN_EMAILS (checked in admin-guard). */
 export function isAdmin(cookieValue: string | undefined): boolean {
   const t = adminToken();
   return !!t && cookieValue === t;

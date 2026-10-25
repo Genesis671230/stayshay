@@ -12,7 +12,19 @@ const NAV = [
   { label: "Roommates", href: "/roommates" },
 ];
 
+function useMe() {
+  const [me, setMe] = useState<{ name: string; picture: string | null } | null>(null);
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((j) => setMe(j.user ?? null))
+      .catch(() => {});
+  }, []);
+  return me;
+}
+
 export function Header() {
+  const me = useMe();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -45,6 +57,16 @@ export function Header() {
           <Link href="/list" className="hidden h-10 items-center rounded-[12px] bg-brand px-4 text-[14px] font-medium text-white hover:bg-brand-deep sm:inline-flex">
             List your place
           </Link>
+          {me ? (
+            <Link href="/account" aria-label="Your account" className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-mint text-[15px] font-bold text-brand ring-1 ring-line">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {me.picture ? <img src={me.picture} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : me.name[0]}
+            </Link>
+          ) : (
+            <Link href="/login" className="hidden h-10 items-center rounded-[12px] border border-line px-4 text-[14px] font-medium hover:border-brand md:inline-flex">
+              Sign in
+            </Link>
+          )}
           <button
             className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-line lg:hidden"
             onClick={() => setOpen((v) => !v)}
@@ -69,6 +91,9 @@ export function Header() {
             </Link>
             <Link href="/list" onClick={() => setOpen(false)} className="flex h-11 items-center justify-center rounded-[12px] bg-brand text-[14.5px] font-medium text-white">
               List your place
+            </Link>
+            <Link href={me ? "/account" : "/login"} onClick={() => setOpen(false)} className="col-span-2 flex h-11 items-center justify-center rounded-[12px] border border-line text-[14.5px] font-medium">
+              {me ? "Your account" : "Sign in / Create account"}
             </Link>
           </div>
         </div>

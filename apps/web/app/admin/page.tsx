@@ -1,14 +1,34 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AdminLogin } from "@/components/admin";
 import { AdminConsole } from "@/components/admin-console";
-import { ADMIN_COOKIE, getListingsForAdmin, isAdmin, readAdminListings, readAnnouncements, readLeads, readTenancies } from "@/lib/store";
+import { getListingsForAdmin, readAdminListings, readAnnouncements, readLeads, readTenancies } from "@/lib/store";
+import { readRoommates } from "@/lib/roommates";
+import { adminAllowed } from "@/lib/admin-guard";
+import { readUsers, toPublic } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin | Stayshay", robots: { index: false, follow: false } };
 
 export default async function AdminPage() {
-  if (!isAdmin((await cookies()).get(ADMIN_COOKIE)?.value)) return <AdminLogin />;
-  const [adminListings, allListings, leads, tenancies, announcements] = await Promise.all([readAdminListings(), getListingsForAdmin(), readLeads(), readTenancies(), readAnnouncements()]);
-  return <AdminConsole adminListings={adminListings} allListings={allListings} leads={leads} tenancies={tenancies} announcements={announcements} />;
+  if (!(await adminAllowed())) return <AdminLogin />;
+  const [adminListings, allListings, leads, tenancies, announcements, users, roommates] = await Promise.all([
+    readAdminListings(),
+    getListingsForAdmin(),
+    readLeads(),
+    readTenancies(),
+    readAnnouncements(),
+    readUsers(),
+    readRoommates(),
+  ]);
+  return (
+    <AdminConsole
+      adminListings={adminListings}
+      allListings={allListings}
+      leads={leads}
+      tenancies={tenancies}
+      announcements={announcements}
+      users={users.map((u) => ({ ...toPublic(u), createdAt: u.createdAt, lastLoginAt: u.lastLoginAt }))}
+      roommates={roommates}
+    />
+  );
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { currentUser } from "@/lib/auth";
 import { validateLead } from "@stayshay/core";
 import { addLead } from "@/lib/store";
 
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
   const check = validateLead(body);
   if (!check.ok || !check.value) return NextResponse.json({ ok: false, errors: check.errors }, { status: 422 });
 
-  await addLead(check.value.kind, check.value as unknown as Record<string, unknown> & { name: string; phone: string }, { source: body.source === "app" ? "app" : "web" });
+  await addLead(check.value.kind, check.value as unknown as Record<string, unknown> & { name: string; phone: string }, { source: body.source === "app" ? "app" : "web", ...(await accountOf()) });
 
   const record = { ...check.value, receivedAt: new Date().toISOString(), userAgent: req.headers.get("user-agent")?.slice(0, 200) ?? null };
   const hook = process.env.STAYSHAY_INQUIRY_WEBHOOK;
@@ -27,4 +28,10 @@ export async function POST(req: Request) {
     }
   }
   return NextResponse.json({ ok: true });
+}
+
+/** Link the request to the signed-in account (if any) so the team sees email + phone together. */
+async function accountOf() {
+  const u = await currentUser();
+  return u ? { userId: u.id, email: u.email } : {};
 }

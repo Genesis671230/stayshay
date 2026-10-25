@@ -13,3 +13,4 @@ packages/core/src/data/homebook.json
 apps/web/.data/
 .cache/
 apps/web/.data-test/
+apps/web/.data-test*

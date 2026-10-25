@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { currentUser } from "@/lib/auth";
 import { validateInquiry } from "@stayshay/core";
 import { addLead, getListing } from "@/lib/store";
 
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
     listingId: listing?.id ?? check.value.listingId,
     listingTitle: listing?.title ?? null,
     source: body.via === "app" ? "app" : "web",
+    ...(await accountOf()),
   });
 
   const hook = process.env.STAYSHAY_INQUIRY_WEBHOOK;
@@ -66,4 +68,10 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+/** Link the request to the signed-in account (if any) so the team sees email + phone together. */
+async function accountOf() {
+  const u = await currentUser();
+  return u ? { userId: u.id, email: u.email } : {};
 }

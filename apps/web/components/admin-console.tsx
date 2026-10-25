@@ -4,12 +4,15 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AREA_BY_SLUG, TYPE_LABEL, roommateMatch, type Listing, type ListingStatus, type RoommateLead } from "@stayshay/core";
 import type { Announcement, LeadRecord, LeadStatus, Tenancy } from "@/lib/store";
+import type { RoommateProfile } from "@/lib/roommates";
+import type { PublicUser } from "@/lib/auth";
 import { broadcastText, fmtDate, renewalReminder, replyToLead, roommateIntro, tel, wa } from "@/lib/messages";
 import { EMPTY, ListingForm, type Draft } from "./admin";
 import { MarketplaceProvider } from "./marketplace";
 import { Icon, Logo, aed } from "./ui";
 
-type Tab = "inbox" | "listings" | "tenancies" | "roommates" | "announcements";
+type Tab = "inbox" | "listings" | "tenancies" | "roommates" | "people" | "announcements";
+type AdminUser = PublicUser & { createdAt: string; lastLoginAt: string };
 
 const field = "w-full rounded-[12px] border border-line bg-white px-3.5 py-2.5 text-[14px] focus:border-brand focus:outline-none";
 const areaName = (s: string) => AREA_BY_SLUG.get(s)?.name ?? s;
@@ -18,6 +21,7 @@ const KIND: Record<LeadRecord["kind"], { label: string; tone: string }> = {
   tenant: { label: "Room request", tone: "bg-[#e7effc] text-[#24508f]" },
   owner: { label: "Owner listing", tone: "bg-[#fbefdc] text-[#8a5a14]" },
   roommate: { label: "Roommate", tone: "bg-[#f1e8f7] text-[#6b3d8a]" },
+  chat: { label: "AI chat", tone: "bg-[#e6f4f1] text-[#0f6b5c]" },
 };
 const STATUS_TONE: Record<string, string> = {
   new: "bg-fresh text-white",
@@ -61,6 +65,7 @@ function WaButton({ href, onClick, label = "WhatsApp" }: { href: string; onClick
 
 function leadSummary(l: LeadRecord): string {
   const d = l.data as Record<string, unknown>;
+  if (l.kind === "chat") return `Talked to Shay${d.language ? ` (${d.language})` : ""}${d.looking_for ? ` · ${d.looking_for}` : ""}`;
   if (l.kind === "inquiry") return `${l.listingTitle ?? l.listingId ?? "A listing"} · move-in ${d.moveIn ?? "?"}${d.message ? ` · “${d.message}”` : ""}`;
   if (l.kind === "owner") return `${TYPE_LABEL[d.type as Listing["type"]] ?? "Place"} in ${areaName(String(d.areaSlug ?? ""))} · ${aed(Number(d.rent) || 0)}/mo${d.billsIncluded ? ", bills incl." : ""} · ${d.spaces ?? 1} space(s) · for ${d.household}`;
   if (l.kind === "roommate") {
@@ -74,7 +79,15 @@ function leadSummary(l: LeadRecord): string {
 
 /* ================================================================ */
 
-export function AdminConsole(props: { adminListings: Listing[]; allListings: Listing[]; leads: LeadRecord[]; tenancies: Tenancy[]; announcements: Announcement[] }) {
+export function AdminConsole(props: {
+  adminListings: Listing[];
+  allListings: Listing[];
+  leads: LeadRecord[];
+  tenancies: Tenancy[];
+  announcements: Announcement[];
+  users: AdminUser[];
+  roommates: RoommateProfile[];
+}) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("inbox");
   const [leads, setLeads] = useState(props.leads);
@@ -82,6 +95,7 @@ export function AdminConsole(props: { adminListings: Listing[]; allListings: Lis
   const [adminIds, setAdminIds] = useState(new Set(props.adminListings.map((l) => l.id)));
   const [tenancies, setTenancies] = useState(props.tenancies);
   const [announcements, setAnnouncements] = useState(props.announcements);
+  const [profiles, setProfiles] = useState(props.roommates);
   const [editing, setEditing] = useState<Draft | null>(null);
   const [assigning, setAssigning] = useState<Listing | null>(null);
   const [focusRoommate, setFocusRoommate] = useState<string | null>(null);
@@ -110,7 +124,8 @@ export function AdminConsole(props: { adminListings: Listing[]; allListings: Lis
     ["inbox", "Inbox", newLeads],
     ["listings", "Listings"],
     ["tenancies", "Tenancies", expiring],
-    ["roommates", "Roommates"],
+    ["roommates", "Roommates", profiles.filter((p) => p.status === "pending").length],
+    ["people", "People", 0],
     ["announcements", "Announcements"],
   ];
 
@@ -225,7 +240,12 @@ export function AdminConsole(props: { adminListings: Listing[]; allListings: Lis
               }}
             />
           ) : tab === "roommates" ? (
-            <Roommates leads={leads} focus={focusRoommate} onFocus={setFocusRoommate} onPatch={patchLead} />
+            <>
+              <PublicBoard profiles={profiles} setProfiles={setProfiles} flash={flash} />
+              <Roommates leads={leads} focus={focusRoommate} onFocus={setFocusRoommate} onPatch={patchLead} />
+            </>
+          ) : tab === "people" ? (
+            <People users={props.users} leads={leads} />
           ) : (
             <Announcements list={announcements} setList={setAnnouncements} leads={leads} tenancies={tenancies} flash={flash} />
           )}
@@ -276,7 +296,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
           ["Last 24 h", today],
           ["Viewing requests", leads.filter((l) => l.kind === "inquiry").length],
           ["Owners", leads.filter((l) => l.kind === "owner").length],
-          ["Roommates", leads.filter((l) => l.kind === "roommate").length],
+          ["AI chats", leads.filter((l) => l.kind === "chat").length],
         ].map(([label, n]) => (
           <div key={label as string} className="rounded-[18px] bg-white p-4">
             <p className="text-[26px] font-extrabold leading-none tracking-[-0.03em] text-brand">{n}</p>
@@ -286,7 +306,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        {(["all", "inquiry", "tenant", "owner", "roommate"] as const).map((k) => (
+        {(["all", "inquiry", "tenant", "owner", "roommate", "chat"] as const).map((k) => (
           <button key={k} onClick={() => setKind(k)} className={`h-9 rounded-full border px-3.5 text-[13px] font-medium ${kind === k ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
             {k === "all" ? "Everything" : KIND[k].label}
           </button>
@@ -322,7 +342,9 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
               <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0">
                   <p className="text-[16px] font-bold">
-                    {l.name} <span className="font-medium text-muted">· +{l.phone}</span>
+                    {l.name} {l.phone ? <span className="font-medium text-muted">· +{l.phone}</span> : null}
+                    {l.email ? <span className="font-medium text-muted"> · {l.email}</span> : null}
+                    {l.userId ? <span className="ml-2 rounded-full bg-mint px-2 py-0.5 text-[11px] font-bold text-brand">Account</span> : null}
                   </p>
                   <p className="mt-1 text-[14px] text-ink-2">{leadSummary(l)}</p>
                   {l.kind === "inquiry" && l.listingId && (
@@ -333,10 +355,19 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
                   {l.kind === "roommate" && (l.data as Record<string, unknown>).about ? <p className="mt-1 text-[13.5px] italic text-muted">“{String((l.data as Record<string, unknown>).about)}”</p> : null}
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
-                  <WaButton href={wa(l.phone, reply)} onClick={() => l.status === "new" && onPatch(l.id, { status: "contacted" })} label="Reply" />
-                  <a href={tel(l.phone)} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
-                    Call
-                  </a>
+                  {l.phone ? (
+                    <>
+                      <WaButton href={wa(l.phone, reply)} onClick={() => l.status === "new" && onPatch(l.id, { status: "contacted" })} label="Reply" />
+                      <a href={tel(l.phone)} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                        Call
+                      </a>
+                    </>
+                  ) : null}
+                  {l.email ? (
+                    <a href={`mailto:${l.email}?subject=${encodeURIComponent("Stayshay")}&body=${encodeURIComponent(reply)}`} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                      Email
+                    </a>
+                  ) : null}
                   {l.kind === "owner" && (
                     <button onClick={() => onCreateListing(l)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
                       Create listing
@@ -875,6 +906,120 @@ function Announcements({ list, setList, leads, tenancies, flash }: { list: Annou
             {contacts.length === 0 && <p className="py-6 text-center text-[13.5px] text-muted">No contacts in this group yet.</p>}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================ Public roommate board ================================ */
+
+function PublicBoard({ profiles, setProfiles, flash }: { profiles: RoommateProfile[]; setProfiles: (p: RoommateProfile[]) => void; flash: (m: string) => void }) {
+  const [show, setShow] = useState<"pending" | "approved" | "hidden">("pending");
+  const list = profiles.filter((p) => p.status === show);
+  const set = async (p: RoommateProfile, status: RoommateProfile["status"]) => {
+    await api("/api/admin/roommates", "PATCH", { id: p.id, status });
+    setProfiles(profiles.map((x) => (x.id === p.id ? { ...x, status } : x)));
+    flash(status === "approved" ? `${p.firstName} is now on the public board` : `${p.firstName} is ${status}`);
+  };
+  return (
+    <section className="mb-10">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[24px] font-bold">Public roommate board</h1>
+          <p className="text-[14px] text-muted">Profiles people agreed to show. Check the photo and text, then approve. Phone numbers are never shown publicly.</p>
+        </div>
+        <div className="flex gap-1">
+          {(["pending", "approved", "hidden"] as const).map((s) => (
+            <button key={s} onClick={() => setShow(s)} className={`h-9 rounded-full px-3.5 text-[13px] font-medium capitalize ${show === s ? "bg-brand text-white" : "border border-line bg-white"}`}>
+              {s} ({profiles.filter((p) => p.status === s).length})
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {list.length === 0 && <p className="col-span-full rounded-[18px] bg-white p-6 text-center text-[14px] text-muted">Nothing {show}.</p>}
+        {list.map((p) => (
+          <div key={p.id} className="flex gap-3 rounded-[20px] border border-line bg-white p-3">
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-[14px] bg-mint">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {p.photo ? <img src={p.photo} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-[24px] font-bold text-brand">{p.firstName[0]}</span>}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-bold">
+                {p.firstName}
+                {p.age ? `, ${p.age}` : ""} <span className="text-[12.5px] font-medium text-muted">· {p.gender}</span>
+              </p>
+              <p className="truncate text-[12.5px] text-muted">
+                {p.mode === "has_place" ? "Has a place" : "Looking"} · {aed(p.budget)} · {p.areaSlugs.map(areaName).join(", ") || "any area"}
+              </p>
+              {p.about && <p className="mt-1 line-clamp-2 text-[12.5px] italic text-ink-2">“{p.about}”</p>}
+              <div className="mt-2 flex gap-2">
+                {p.status !== "approved" && (
+                  <button onClick={() => set(p, "approved")} className="h-8 rounded-full bg-brand px-3 text-[12.5px] font-semibold text-white">
+                    Approve
+                  </button>
+                )}
+                {p.status !== "hidden" && (
+                  <button onClick={() => set(p, "hidden")} className="h-8 rounded-full border border-line px-3 text-[12.5px]">
+                    Hide
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ================================ People (accounts) ================================ */
+
+function People({ users, leads }: { users: AdminUser[]; leads: LeadRecord[] }) {
+  const [q, setQ] = useState("");
+  const shown = users
+    .filter((u) => !q || `${u.name} ${u.email} ${u.phone ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return (
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[24px] font-bold">People</h1>
+          <p className="text-[14px] text-muted">
+            {users.length} accounts · {users.filter((u) => u.provider === "google").length} with Google · {users.filter((u) => !u.phone).length} without a phone yet
+          </p>
+        </div>
+        <input className={`${field} max-w-[280px]`} placeholder="Search name, email, phone…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
+      <div className="mt-4 overflow-hidden rounded-[20px] border border-line bg-white">
+        {shown.length === 0 && <p className="p-8 text-center text-[14px] text-muted">No accounts yet. People sign up at /login.</p>}
+        {shown.map((u) => {
+          const requests = leads.filter((l) => l.userId === u.id).length;
+          return (
+            <div key={u.id} className="flex flex-col gap-3 border-b border-line p-3.5 last:border-b-0 md:flex-row md:items-center">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-mint">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {u.picture ? <img src={u.picture} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : <span className="flex h-full items-center justify-center font-bold text-brand">{u.name[0]}</span>}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[14.5px] font-semibold">
+                    {u.name} {u.admin && <span className="ml-1 rounded-full bg-ink px-2 py-0.5 text-[10.5px] font-bold text-white">ADMIN</span>}
+                  </p>
+                  <p className="truncate text-[12.5px] text-muted">
+                    {u.email} · {u.phone ? `+${u.phone}` : "no phone yet"} · {u.provider === "google" ? "Google" : "Email"} · joined {ago(u.createdAt)} · {requests} request{requests === 1 ? "" : "s"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {u.phone && <WaButton href={wa(u.phone, `Hi ${u.name.split(" ")[0]}, this is Stayshay.`)} />}
+                <a href={`mailto:${u.email}`} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                  Email
+                </a>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
