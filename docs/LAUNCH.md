@@ -61,7 +61,7 @@ Server settings:
 ```
 ADMIN_PASSWORD=<long random password>
 STAYSHAY_DATA_DIR=/data            # the persistent volume
-PUBLIC_BASE_URL=https://stayshay.ae
+PUBLIC_BASE_URL=https://stayshay.com
 ```
 
 Then put that address in `apps/mobile/eas.json` (replace both `https://REPLACE-WITH-YOUR-PUBLIC-SITE`).

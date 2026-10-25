@@ -309,7 +309,7 @@ export function ShareSave({ listing }: { listing: Listing }) {
       >
         <Icon name="arrow-right" size={14} className="-rotate-45" /> {copied ? "Link copied" : "Share"}
       </button>
-      <a href={`mailto:hello@stayshay.ae?subject=${encodeURIComponent(`Report listing ${listing.id}`)}`} className="flex h-9 items-center gap-1.5 rounded-[12px] px-3 text-[13.5px] hover:bg-surface">
+      <a href={`mailto:hello@stayshay.com?subject=${encodeURIComponent(`Report listing ${listing.id}`)}`} className="flex h-9 items-center gap-1.5 rounded-[12px] px-3 text-[13.5px] hover:bg-surface">
         <Icon name="flag" size={14} /> Report
       </a>
     </div>

@@ -9,11 +9,11 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-PUBLIC-SITE" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://stayshay.com" }
     },
     "production": {
       "autoIncrement": true,
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-PUBLIC-SITE" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://stayshay.com" }
     }
   },
   "submit": {

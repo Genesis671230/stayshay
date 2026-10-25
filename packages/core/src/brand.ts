@@ -3,9 +3,9 @@ import type { Amenity, Lifestyle, ListingType } from "./types.ts";
 /** Single place for everything brand-level. Rename the product here. */
 export const BRAND = {
   name: "Stayshay",
-  domain: "stayshay.ae",
+  domain: "stayshay.com",
   tagline: "Monthly rooms, bed spaces and studios across the UAE.",
-  supportEmail: "hello@stayshay.ae",
+  supportEmail: "hello@stayshay.com",
   /** WhatsApp for every inquiry, roommate profile and new listing (E.164 digits). */
   whatsapp: "971569048493",
   whatsappDisplay: "+971 56 904 8493",

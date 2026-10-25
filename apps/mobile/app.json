@@ -12,7 +12,9 @@
       "bundleIdentifier": "ae.stayshay.app",
       "buildNumber": "1",
       "supportsTablet": false,
-      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "ae.stayshay.app",
@@ -30,11 +32,25 @@
       "expo-font",
       [
         "expo-splash-screen",
-        { "image": "./assets/splash-icon.png", "imageWidth": 180, "backgroundColor": "#F4F2E9", "resizeMode": "contain" }
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "backgroundColor": "#F4F2E9",
+          "resizeMode": "contain"
+        }
       ]
     ],
     "extra": {
-      "apiUrl": "http://192.168.1.137:3210"
-    }
+      "apiUrl": "https://stayshay.com",
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "efb7ce41-133e-40f0-b94e-34a894881eb1"
+      }
+    },
+    "owner": "stayshays-team"
   }
 }

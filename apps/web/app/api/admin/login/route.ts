@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   if (!token) return NextResponse.json({ ok: false, error: "ADMIN_PASSWORD is not set on the server" }, { status: 500 });
   if (!password || password !== process.env.ADMIN_PASSWORD) return NextResponse.json({ ok: false, error: "Wrong password" }, { status: 401 });
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(ADMIN_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" && !!process.env.VERCEL, path: "/", maxAge: 60 * 60 * 24 * 30 });
+  res.cookies.set(ADMIN_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: (process.env.PUBLIC_BASE_URL ?? "").startsWith("https:"), path: "/", maxAge: 60 * 60 * 24 * 30 });
   return res;
 }
 
