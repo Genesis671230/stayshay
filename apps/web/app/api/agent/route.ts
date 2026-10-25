@@ -25,7 +25,12 @@ export async function GET(req: Request) {
  */
 export async function POST(req: Request) {
   if (!agentEnabled()) return NextResponse.json({ ok: false, error: "offline" }, { status: 503 });
-  const body = (await req.json().catch(() => ({}))) as { chatId?: string; message?: string; contact?: { name?: string; phone?: string; email?: string } };
+  const body = (await req.json().catch(() => ({}))) as {
+    chatId?: string;
+    message?: string;
+    contact?: { name?: string; phone?: string; email?: string };
+    context?: { location?: { lat: number; lng: number } | null; listingId?: string | null };
+  };
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   if (limited(ip)) return NextResponse.json({ ok: false, error: "slow_down" }, { status: 429 });
 
@@ -33,6 +38,11 @@ export async function POST(req: Request) {
   const chat =
     (await getChat(body.chatId)) ??
     newChat(user?.id ?? null, user ? { name: user.name, email: user.email, ...(user.phone && { phone: user.phone }) } : {});
+  // Signed in after the chat started: pick up their details.
+  if (user && !chat.userId) {
+    chat.userId = user.id;
+    chat.contact = { name: user.name, email: user.email, ...(user.phone && { phone: user.phone }), ...chat.contact };
+  }
 
   if (body.contact) {
     const phone = body.contact.phone ? normalizePhone(body.contact.phone) : null;
@@ -51,8 +61,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const reply = await chatTurn(chat, message);
-    return NextResponse.json({ ok: true, chatId: chat.id, reply });
+    const loc = body.context?.location;
+    const location = loc && Number.isFinite(loc.lat) && Number.isFinite(loc.lng) && Math.abs(loc.lat) <= 90 && Math.abs(loc.lng) <= 180 ? { lat: loc.lat, lng: loc.lng } : null;
+    const { reply, cards } = await chatTurn(chat, message, { location, listingId: body.context?.listingId?.slice(0, 32) ?? null });
+    return NextResponse.json({ ok: true, chatId: chat.id, reply, cards });
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return NextResponse.json({ ok: false, error: "busy" }, { status: 503 });
     if (e instanceof Anthropic.APIError) console.error("[stayshay] agent API error", e.status, e.message);

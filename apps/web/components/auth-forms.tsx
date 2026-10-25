@@ -126,7 +126,7 @@ export function LoginForm({ google, next, error }: { google: boolean; next: stri
         <div className="absolute -bottom-32 -left-20 h-[28rem] w-[28rem] rounded-full bg-white/5" />
         <div className="relative max-w-[420px] px-10 text-center text-white">
           <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-full bg-white">
-            <Shay size={130} waving />
+            <Shay size={130} mood="happy" />
           </div>
           <p className="mt-8 text-[28px] font-extrabold leading-tight tracking-[-0.03em]">One account for rooms, roommates and listing your place.</p>
           <ul className="mt-6 space-y-2.5 text-left text-[15px] text-white/85">
@@ -151,7 +151,7 @@ export function AccountForm({ user, complete }: { user: { name: string; email: s
     <div className="mx-auto max-w-[620px] px-5 py-12">
       {complete && !user.phone && (
         <div className="mb-6 flex items-center gap-4 rounded-[22px] bg-mint p-5">
-          <Shay size={56} waving />
+          <Shay size={56} mood="happy" />
           <p className="text-[15px] font-medium text-brand">Almost done! Add your phone / WhatsApp so listers and our team can reach you about viewings.</p>
         </div>
       )}

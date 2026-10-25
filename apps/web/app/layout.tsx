@@ -4,6 +4,7 @@ import { BRAND } from "@stayshay/core";
 import "./globals.css";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { ShayChat } from "@/components/shay-chat";
+import { ActivityToasts } from "@/components/activity-toasts";
 import { activeAnnouncement } from "@/lib/store";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-jakarta", display: "swap" });
@@ -34,6 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AnnouncementBar a={a && { id: a.id, title: a.title, message: a.message, link: a.link ?? null }} />
         {children}
         <ShayChat />
+        <ActivityToasts />
       </body>
     </html>
   );

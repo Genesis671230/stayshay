@@ -70,25 +70,27 @@ export function newChat(userId: string | null, contact: Chat["contact"]): Chat {
 
 const AREA_NAMES = AREAS.map((a) => a.name).join(", ");
 
-const SYSTEM = `You are Shay, the friendly assistant on Stayshay (stayshay.com), a UAE platform for monthly bed spaces, partitions, private rooms, studios and roommates. You help people find an affordable, safe place to live and you hand them to the Stayshay team on WhatsApp (+971 56 904 8493) for viewings.
+const SYSTEM = `You are Shay, the concierge of Stayshay (stayshay.com): monthly bed spaces, partitions, private rooms, studios and roommates across the UAE. Your job is to turn "I need a place" into a booked viewing, kindly and fast, in the visitor's own language. Stayshay's team is on WhatsApp at +971 56 904 8493.
 
-How you talk:
-- Reply in the language the person writes in (Arabic, Hindi, Urdu, Tagalog, Malayalam, Bengali, Russian, English…). Keep messages short and warm: 1–4 sentences, or a short list of places. Plain text, no markdown headings or tables.
-- Be supportive. Many people are new to the UAE or in a hurry; explain simply.
+Personality: warm, a little playful, concrete, honest and protective. Replies are short (1–4 sentences), plain text, no headings, tables or markdown. Reply in the language the visitor writes in.
 
-What you do:
-- Find places with search_listings. Only mention places, prices and details that the tools return. Never invent a listing, price, availability or address. If nothing fits, say so and suggest loosening one filter.
-- When you share a place, give its title, area, monthly price and its link: ${SITE}/listing/<id in lowercase>.
-- Early in the chat, once you know what they need, ask naturally for their name and WhatsApp number (email optional) so the team can send matches and arrange viewings. Don't block help if they'd rather not. As soon as they give any contact detail or their needs, call save_contact with everything you know.
-- When they want to view a place, call request_viewing (needs name, WhatsApp number, move-in date). Then tell them the team will message them on WhatsApp.
-- Roommates: point them to ${SITE}/roommates to create a profile. Owners with a room to rent: ${SITE}/list.
+How a conversation goes:
+1. Hello: one line and one question. Use the context you're given (their area, the listing they're looking at).
+2. Understand: fill only what's missing, one question at a time: where (area, metro line or workplace), monthly budget in AED, and type (bed space / partition / room / studio; under ~AED 1,000 usually means bed space). Ask about move-in date or household (male / female / couple) only when it matters.
+3. Recommend: call search_listings and present 2–3 places, each with ONE reason it fits (price, bills, metro minutes, who can live there). Mention each place's title so the website can show it as a card. Don't paste long URLs; the cards link to the pages.
+4. Refine: offer exactly one next step (cheaper, closer to the metro, female-only, another area).
+5. Convert: when they like a place, offer to book a viewing. Only now ask for contact details. If you already have their name and WhatsApp (see context), confirm and book. Otherwise ask for name + WhatsApp number and mention they can also sign in with Google in one tap. Then call request_viewing.
+6. Follow-up: say the team will WhatsApp them to fix a time, remind them not to pay anything before viewing, and offer one more useful thing.
 
-Safety and honesty:
-- Never ask for or accept payments, card numbers, passwords or ID documents. Remind people not to pay before viewing.
-- On partitions and shared housing rules: they need landlord consent and, for partitions, a permit; you are not a lawyer and Stayshay is not a government body.
-- If asked something unrelated to housing in the UAE, answer briefly if harmless, then bring it back to finding a place.
+Branches: roommates → understand budget, area, gender, move-in and habits, then send them to ${SITE}/roommates to create a profile with a photo (people already looking are listed there). Owners → ${SITE}/list, free. Off-topic → one helpful line, then back to housing.
 
-Known areas include: ${AREA_NAMES}.`;
+Rules:
+- Only state facts that tools returned. Never invent a listing, price, availability, distance, photo or review. If nothing fits, say so and suggest one change.
+- Use nearby_areas when they mention "near me", a workplace, a landmark or a metro station you're not sure about.
+- Never ask for or accept payments, card numbers, passwords or ID documents. Contact details are optional; keep helping if they don't share them. Call save_contact whenever they do share details or clear needs.
+- Shared housing and partitions need landlord consent and, for partitions, a permit. You are not a lawyer and Stayshay is not a government body.
+
+Known areas: ${AREA_NAMES}.`;
 
 /* ---------- tools ---------- */
 
@@ -122,6 +124,18 @@ const TOOLS: Anthropic.Beta.BetaTool[] = [
     description: "Full details of one listing by its id (e.g. HB429841 or SS1001): rent, deposit, upfront cost, utilities, bathroom, minimum stay, who can live there, description.",
     strict: true,
     input_schema: { type: "object", additionalProperties: false, properties: { id: { type: "string" } }, required: ["id"] },
+  },
+  {
+    name: "nearby_areas",
+    description:
+      "Areas close to a place: an area, metro station, landmark or workplace the visitor mentions, or 'me' for the visitor's shared location. Returns the closest known areas with distance in km and how many live listings each has.",
+    strict: true,
+    input_schema: {
+      type: "object",
+      additionalProperties: false,
+      properties: { near: { type: "string", description: "Area / metro / landmark name, or 'me'" } },
+      required: ["near"],
+    },
   },
   {
     name: "save_contact",
@@ -174,7 +188,48 @@ const brief = (l: Listing) => ({
   link: `${SITE}/listing/${l.id.toLowerCase()}`,
 });
 
-async function runTool(chat: Chat, name: string, input: Record<string, unknown>): Promise<string> {
+function km(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const r = (x: number) => (x * Math.PI) / 180;
+  const h = Math.sin(r(b.lat - a.lat) / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(r(b.lng - a.lng) / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Listings surfaced during a turn, so the widget can show them as cards. */
+export interface Card {
+  id: string;
+  title: string;
+  type: string;
+  area: string;
+  priceAed: number;
+  photo: string | null;
+  billsIncluded: boolean;
+}
+
+export interface TurnContext {
+  /** Visitor's shared location (browser), never stored. */
+  location?: { lat: number; lng: number } | null;
+  /** Listing page the visitor is on. */
+  listingId?: string | null;
+}
+
+async function runTool(chat: Chat, name: string, input: Record<string, unknown>, ctx: TurnContext, seen: Map<string, Listing>): Promise<string> {
+  if (name === "nearby_areas") {
+    const near = String(input.near ?? "").trim();
+    let point: { lat: number; lng: number } | null = null;
+    if (/^(me|my location|here)$/i.test(near) && ctx.location) point = ctx.location;
+    else {
+      const hit = searchAreas(AREAS, near, 1)[0]?.area;
+      if (hit) point = { lat: hit.lat, lng: hit.lng };
+    }
+    if (!point) return JSON.stringify({ error: `I don't know where "${near}" is. Ask for the nearest area or metro station.` });
+    const live = await getAllListings();
+    const counts = live.reduce<Record<string, number>>((m, l) => ((m[l.areaSlug] = (m[l.areaSlug] ?? 0) + 1), m), {});
+    const near6 = AREAS.map((a) => ({ area: a.name, km: Math.round(km(point!, a) * 10) / 10, listings: counts[a.slug] ?? 0, metro: a.nearMetro }))
+      .sort((a, b) => a.km - b.km)
+      .slice(0, 6);
+    return JSON.stringify({ areas: near6 });
+  }
+
   if (name === "search_listings") {
     const area = typeof input.area === "string" && input.area.trim() ? searchAreas(AREAS, input.area, 3).map((m) => m.area.slug) : undefined;
     const results = filterListings(await getAllListings(), AREAS, {
@@ -187,12 +242,15 @@ async function runTool(chat: Chat, name: string, input: Record<string, unknown>)
       nearMetro: input.near_metro === true || undefined,
     });
     const areaNote = typeof input.area === "string" && input.area.trim() && !area?.length ? `No known area matched "${input.area}"; searched everywhere.` : undefined;
-    return JSON.stringify({ total: results.length, note: areaNote, places: results.slice(0, 6).map(brief) });
+    const top = results.slice(0, 6);
+    for (const l of top) seen.set(l.id, l);
+    return JSON.stringify({ total: results.length, note: areaNote, places: top.map(brief) });
   }
 
   if (name === "get_listing") {
     const l = await getListing(String(input.id ?? ""));
     if (!l) return JSON.stringify({ error: "No live listing with that id" });
+    seen.set(l.id, l);
     return JSON.stringify({
       ...brief(l),
       upfront_cost_aed: l.upfrontCost ?? 0,
@@ -247,13 +305,25 @@ async function runTool(chat: Chat, name: string, input: Record<string, unknown>)
 
 /* ---------- one visitor turn ---------- */
 
-export async function chatTurn(chat: Chat, text: string): Promise<string> {
+export async function chatTurn(chat: Chat, text: string, ctx: TurnContext = {}): Promise<{ reply: string; cards: Card[] }> {
   const now = () => new Date().toISOString();
   if (chat.transcript.filter((t) => t.role === "user").length >= MAX_TURNS) {
-    return "We've talked a lot! For anything else, message the team on WhatsApp: +971 56 904 8493.";
+    return { reply: "We've talked a lot! For anything else, message the team on WhatsApp: +971 56 904 8493.", cards: [] };
   }
+  // Context travels inside the user turn (append-only history keeps the cache and thinking blocks valid).
+  const notes: string[] = [];
   const known = [chat.contact.name && `name ${chat.contact.name}`, chat.contact.phone && `WhatsApp +${chat.contact.phone}`, chat.contact.email && `email ${chat.contact.email}`].filter(Boolean).join(", ");
-  chat.messages.push({ role: "user", content: known && chat.messages.length === 0 ? `${text}\n\n(Visitor details already shared: ${known}.)` : text });
+  if (known) notes.push(`Visitor details on file: ${known}.`);
+  if (ctx.location) {
+    const nearest = [...AREAS].sort((a, b) => km(ctx.location!, a) - km(ctx.location!, b))[0];
+    if (nearest) notes.push(`Visitor shared their location: nearest area is ${nearest.name}.`);
+  }
+  if (ctx.listingId) {
+    const l = await getListing(ctx.listingId);
+    if (l) notes.push(`Visitor is looking at listing ${l.id}: "${l.title}", ${AREA_BY_SLUG.get(l.areaSlug)?.name}, AED ${l.priceAed}/month.`);
+  }
+  const seen = new Map<string, Listing>();
+  chat.messages.push({ role: "user", content: notes.length ? `${text}\n\n[Context, not written by the visitor: ${notes.join(" ")}]` : text });
   chat.transcript.push({ role: "user", text, at: now() });
 
   let reply = "";
@@ -287,7 +357,7 @@ export async function chatTurn(chat: Chat, text: string): Promise<string> {
     for (const block of res.content) {
       if (block.type !== "tool_use") continue;
       try {
-        results.push({ type: "tool_result", tool_use_id: block.id, content: await runTool(chat, block.name, block.input as Record<string, unknown>) });
+        results.push({ type: "tool_result", tool_use_id: block.id, content: await runTool(chat, block.name, block.input as Record<string, unknown>, ctx, seen) });
       } catch (e) {
         results.push({ type: "tool_result", tool_use_id: block.id, content: `Tool failed: ${(e as Error).message}`, is_error: true });
       }
@@ -299,7 +369,14 @@ export async function chatTurn(chat: Chat, text: string): Promise<string> {
   chat.transcript.push({ role: "assistant", text: reply, at: now() });
   chat.updatedAt = now();
   await saveChat(chat);
-  return reply;
+
+  // Cards: places Shay actually named in the reply (by title or id); otherwise none.
+  const lower = reply.toLowerCase();
+  const cards = [...seen.values()]
+    .filter((l) => lower.includes(l.id.toLowerCase()) || lower.includes(l.title.toLowerCase().slice(0, 28)))
+    .slice(0, 3)
+    .map((l) => ({ id: l.id, title: l.title, type: TYPE_LABEL[l.type], area: AREA_BY_SLUG.get(l.areaSlug)?.name ?? l.areaName ?? "", priceAed: l.priceAed, photo: l.photos[0] ?? null, billsIncluded: l.billsIncluded }));
+  return { reply, cards };
 }
 
 export async function saveContactOnly(chat: Chat) {

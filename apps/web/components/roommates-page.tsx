@@ -7,6 +7,8 @@ import { AreaCombobox } from "./search-bar";
 import { Shay } from "./shay";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { QuickSignIn, useMe } from "./quick-signin";
+import { useEffect } from "react";
 
 const LIFESTYLE = [...Object.values(LIFESTYLE_LABEL), "Works from home", "Night shift", "Cooks daily", "Gym regular", "Vegetarian", "Prays regularly", "Student"];
 const field = "w-full rounded-[14px] border border-line bg-white px-4 py-3 text-[15px] focus:border-brand focus:outline-none";
@@ -146,7 +148,7 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
         </div>
       ) : (
         <div className="mt-6 flex flex-col items-center rounded-[28px] border border-dashed border-line-strong bg-white px-6 py-14 text-center">
-          <Shay size={96} waving />
+          <Shay size={96} mood="happy" />
           <p className="mt-4 text-[18px] font-bold">{profiles.length ? "Nobody matches those filters yet" : "Be one of the first profiles"}</p>
           <p className="mt-1 max-w-[440px] text-[14.5px] text-muted">Create your profile below. Once our team checks it, it appears here for others looking in your area.</p>
           <a href="#profile" className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-brand px-5 text-[14px] font-semibold text-white">
@@ -186,6 +188,30 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
   const [done, setDone] = useState<{ lead: RoommateLead; listed: boolean } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const preview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
+  const { google } = useMe();
+  const DRAFT = "stayshay:roommate-draft";
+
+  // Back from Google sign-in: restore what they'd typed (the photo has to be picked again).
+  useEffect(() => {
+    try {
+      const d = JSON.parse(sessionStorage.getItem(DRAFT) ?? "null");
+      if (!d) return;
+      sessionStorage.removeItem(DRAFT);
+      setMode(d.mode);
+      setF((x) => ({ ...d.f, name: x.name || d.f.name, phone: x.phone || d.f.phone, email: x.email || d.f.email }));
+      setBudget(d.budget);
+      setMoveIn(d.moveIn);
+      setTags(d.tags);
+      setAreas(d.areas);
+      setStep(3);
+      document.getElementById("profile")?.scrollIntoView();
+    } catch {}
+  }, []);
+  const saveDraft = () => {
+    try {
+      sessionStorage.setItem(DRAFT, JSON.stringify({ mode, f, budget, moveIn, tags, areas }));
+    } catch {}
+  };
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
   const card: CardData = {
@@ -244,7 +270,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
     return (
       <div className="shay-pop grid grid-cols-1 items-center gap-8 rounded-[32px] bg-white p-6 ring-1 ring-line md:grid-cols-[1fr_320px] md:p-10">
         <div>
-          <Shay size={84} waving />
+          <Shay size={84} mood="happy" />
           <h2 className="font-display mt-4 text-[30px] leading-tight">You’re in, {card.firstName}!</h2>
           <p className="mt-2 max-w-[460px] text-[15px] leading-relaxed text-ink-2">
             {done.listed ? "Our team will check your profile and put it on the board, usually within a few hours. " : ""}
@@ -453,6 +479,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
           {step === 3 && (
             <div className="space-y-5">
               <h3 className="text-[24px] font-extrabold tracking-[-0.03em]">Where can we reach you?</h3>
+              {!signedIn && <QuickSignIn next="/roommates#profile" google={google} onBeforeLeave={saveDraft} note="Fills in your name and email. You can still choose what’s public." />}
               <label className="block">
                 <span className="mb-1.5 block text-[13px] font-semibold">WhatsApp number</span>
                 <input className={field} type="tel" inputMode="tel" value={f.phone} onChange={set("phone")} placeholder="050 123 4567" autoComplete="tel" />
@@ -532,7 +559,7 @@ export function RoommatesPage({ profiles, me }: { profiles: PublicRoommate[]; me
               </div>
             </div>
             <div className="hidden h-56 w-56 items-center justify-center rounded-full bg-white md:flex">
-              <Shay size={170} waving />
+              <Shay size={170} mood="happy" />
             </div>
           </div>
         </div>

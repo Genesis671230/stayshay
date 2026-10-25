@@ -205,23 +205,55 @@ body {
 .doc li + li { margin-top: 0.35rem; }
 .doc a { color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
-/* Shay mascot */
-.shay .shay-float { animation: shay-float 3.6s ease-in-out infinite; transform-origin: 70px 70px; }
-.shay .shay-shadow { animation: shay-shadow 3.6s ease-in-out infinite; transform-origin: 70px 146px; }
-.shay .shay-eye { transform-box: fill-box; transform-origin: center; animation: shay-blink 4.6s infinite; }
-.shay .shay-arm { transform-origin: 98px 72px; animation: shay-wave 7s ease-in-out infinite; }
-.shay.shay-waving .shay-arm, .shay:hover .shay-arm { animation: shay-wave-loop 0.9s ease-in-out infinite; }
-.shay .shay-mouth { opacity: 0; }
-.shay.shay-talking .shay-smile { opacity: 0; }
-.shay.shay-talking .shay-mouth { opacity: 1; transform-box: fill-box; transform-origin: center; animation: shay-talk 0.32s ease-in-out infinite alternate; }
-.shay .shay-pupil { animation: shay-look 9s ease-in-out infinite; }
-@keyframes shay-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes shay-shadow { 0%, 100% { transform: scaleX(1); opacity: .14; } 50% { transform: scaleX(.82); opacity: .09; } }
-@keyframes shay-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
-@keyframes shay-wave { 0%, 70%, 100% { transform: rotate(0deg); } 74% { transform: rotate(-22deg); } 78% { transform: rotate(14deg); } 82% { transform: rotate(-22deg); } 86% { transform: rotate(14deg); } 90% { transform: rotate(0deg); } }
-@keyframes shay-wave-loop { 0%, 100% { transform: rotate(-22deg); } 50% { transform: rotate(16deg); } }
-@keyframes shay-talk { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
-@keyframes shay-look { 0%, 40%, 100% { transform: translate(0, 0); } 45%, 55% { transform: translate(-2.5px, 1px); } 60%, 70% { transform: translate(2.5px, 0); } }
+/* Shay: breathing blob with glowing capsule eyes */
+.shay2 { position: relative; display: inline-block; flex-shrink: 0; }
+.shay2-glow {
+  position: absolute; inset: -22%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(110 231 183 / 0.55), rgb(39 174 120 / 0.18) 60%, transparent 100%);
+  filter: blur(calc(var(--s) * 0.06)); animation: shay2-glow 3.2s ease-in-out infinite;
+}
+.shay2-body {
+  position: absolute; inset: 0; overflow: hidden;
+  background: linear-gradient(145deg, #3fd99a 0%, #27ae78 38%, #145c46 100%);
+  border-radius: 42% 58% 54% 46% / 48% 44% 56% 52%;
+  box-shadow: inset 0 calc(var(--s) * -0.06) calc(var(--s) * 0.12) rgb(9 52 39 / 0.45), inset 0 calc(var(--s) * 0.05) calc(var(--s) * 0.1) rgb(255 255 255 / 0.35), 0 calc(var(--s) * 0.08) calc(var(--s) * 0.18) rgb(20 92 70 / 0.35);
+  animation: shay2-morph 7s ease-in-out infinite, shay2-breathe 3.2s ease-in-out infinite;
+}
+.shay2-shine { position: absolute; left: 14%; top: 10%; width: 42%; height: 30%; border-radius: 50%; background: radial-gradient(closest-side, rgb(255 255 255 / 0.55), transparent); transform: rotate(-20deg); }
+.shay2-eyes { position: absolute; left: 50%; top: 52%; display: flex; gap: calc(var(--s) * 0.16); transform: translate(-50%, -50%); animation: shay2-look 8s ease-in-out infinite; }
+.shay2-eye {
+  display: block; width: calc(var(--s) * 0.12); height: calc(var(--s) * 0.27); border-radius: 999px;
+  background: linear-gradient(#ffffff, #dcfff0);
+  box-shadow: 0 0 calc(var(--s) * 0.07) rgb(220 255 240 / 0.95), 0 0 calc(var(--s) * 0.16) rgb(110 231 183 / 0.7);
+  transform-origin: center; animation: shay2-blink 4.8s infinite;
+}
+.shay2-eye:nth-child(2) { animation-delay: 0.04s; }
+.shay2-talking .shay2-eye { animation: shay2-talk 0.42s ease-in-out infinite alternate; }
+.shay2-talking .shay2-eye:nth-child(2) { animation-delay: 0.12s; }
+.shay2-thinking .shay2-eyes { animation: shay2-ponder 2.4s ease-in-out infinite; }
+.shay2-thinking .shay2-body { animation: shay2-morph 2.6s ease-in-out infinite, shay2-breathe 1.6s ease-in-out infinite; }
+/* Happy: eyes become glowing arches (^ ^) that bob gently. */
+.shay2-happy .shay2-eye, .shay2:hover .shay2-eye {
+  height: calc(var(--s) * 0.15); width: calc(var(--s) * 0.17);
+  background: transparent; box-shadow: none;
+  border: calc(var(--s) * 0.05) solid #f4fff9; border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  filter: drop-shadow(0 0 calc(var(--s) * 0.05) rgb(220 255 240 / 0.95)) drop-shadow(0 0 calc(var(--s) * 0.1) rgb(110 231 183 / 0.6));
+  animation: shay2-happy 2.2s ease-in-out infinite;
+}
+@keyframes shay2-morph {
+  0%, 100% { border-radius: 42% 58% 54% 46% / 48% 44% 56% 52%; }
+  33% { border-radius: 52% 48% 44% 56% / 56% 50% 50% 44%; }
+  66% { border-radius: 46% 54% 58% 42% / 44% 56% 46% 54%; }
+}
+@keyframes shay2-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035, 0.975); } }
+@keyframes shay2-glow { 0%, 100% { opacity: 0.65; transform: scale(0.94); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes shay2-blink { 0%, 90%, 100% { transform: scaleY(1); } 93% { transform: scaleY(0.08); } 96% { transform: scaleY(1); } }
+@keyframes shay2-look { 0%, 30%, 100% { transform: translate(-50%, -50%); } 38%, 48% { transform: translate(-62%, -50%); } 56%, 66% { transform: translate(-38%, -54%); } 74% { transform: translate(-50%, -50%); } }
+@keyframes shay2-talk { from { transform: scaleY(1) translateY(0); } to { transform: scaleY(0.62) translateY(8%); } }
+@keyframes shay2-ponder { 0%, 100% { transform: translate(-40%, -62%); } 50% { transform: translate(-58%, -60%); } }
+@keyframes shay2-happy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14%); } }
+@media (prefers-reduced-motion: reduce) { .shay2 *, .shay2 { animation: none !important; } }
 @keyframes shay-pop { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
 .shay-pop { animation: shay-pop .28s cubic-bezier(.2,.9,.3,1.2); }
 @keyframes shay-dot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }

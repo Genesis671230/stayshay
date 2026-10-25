@@ -1,2 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" role="img" aria-label="StayShay"><style>.sb-s{fill:none;stroke:#F4F2E9;stroke-width:4.4;stroke-linecap:round}</style><g class="sb-all"><ellipse class="sb-sh" cx="60" cy="119.0" rx="11" ry="2.6" fill="#202B27" opacity=".18"/><path class="sb-tip" d="M41.0 84.9Q54 100.9 60 116Q66 100.9 79.0 84.9Z" fill="#145C46"/><circle class="sb-head" cx="60" cy="54" r="38" fill="#145C46"/><g class="sb-eyes"><g class="sb-e"><path class="sb-s" d="M49.87 41.60A5.6 5.6 0 1 0 45 50A5.6 5.6 0 1 1 40.13 58.40"/></g><g class="sb-e"><path class="sb-s" d="M79.87 41.60A5.6 5.6 0 1 0 75 50A5.6 5.6 0 1 1 70.13 58.40"/></g></g>
-<path class="sb-mouth" d="M51 70Q60 77 69 70" fill="none" stroke="#DDF4E8" stroke-width="4" stroke-linecap="round"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Stayshay">
+  <defs>
+    <linearGradient id="b" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#3FD99A"/>
+      <stop offset="0.4" stop-color="#27AE78"/>
+      <stop offset="1" stop-color="#145C46"/>
+    </linearGradient>
+    <radialGradient id="s" cx="0.3" cy="0.2" r="0.45">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="g" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M58 4C92 2 116 20 116 56C116 94 94 116 60 116C25 116 4 96 4 60C4 26 24 6 58 4Z" fill="url(#b)"/>
+  <path d="M58 4C92 2 116 20 116 56C116 94 94 116 60 116C25 116 4 96 4 60C4 26 24 6 58 4Z" fill="url(#s)"/>
+  <g filter="url(#g)" fill="#F4FFF9">
+    <rect x="40" y="46" width="13" height="31" rx="6.5"/>
+    <rect x="67" y="46" width="13" height="31" rx="6.5"/>
+  </g>
+</svg>

@@ -29,7 +29,9 @@ export function AreaCombobox({ value, onChange }: { value: Area | null; onChange
   const [locating, setLocating] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setQuery(value?.name ?? ""), [value]);
+  useEffect(() => {
+    setQuery(value?.name ?? "");
+  }, [value]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {

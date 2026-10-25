@@ -255,7 +255,7 @@ export default function Explore() {
     </ScrollView>
       {/* Shay: floating assistant button */}
       <Tap onPress={() => router.push("/chat")} style={[s.shayFab, shadow]} accessibilityLabel="Chat with Shay, the Stayshay assistant">
-        <Shay size={46} waving />
+        <Shay size={46} mood="happy" />
       </Tap>
     </View>
   );

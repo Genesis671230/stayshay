@@ -75,7 +75,9 @@ function filtersToQuery(f: ListingFilters): string {
 function UrlSync({ onChange }: { onChange: (qs: string) => void }) {
   const params = useSearchParams();
   const qs = params.toString();
-  useEffect(() => onChange(qs), [qs, onChange]);
+  useEffect(() => {
+    onChange(qs);
+  }, [qs, onChange]);
   return null;
 }
 

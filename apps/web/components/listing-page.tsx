@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { QuickSignIn, useMe } from "./quick-signin";
 
 const ListingMap = dynamic(() => import("./map-view").then((m) => m.ListingMap), {
   ssr: false,
@@ -113,12 +114,36 @@ function Lightbox({ photos, start, title, onClose }: { photos: string[]; start: 
 
 const input = "w-full rounded-[12px] border border-line bg-white px-3 py-2.5 text-[15px] focus:border-brand focus:outline-none";
 
+/** Back from Google sign-in mid-booking: ?book=1&movein=…&people=… resumes at step 2. */
+function resumeParams() {
+  if (typeof window === "undefined") return null;
+  const p = new URLSearchParams(window.location.search);
+  return p.get("book") === "1" ? { moveIn: p.get("movein") ?? "", people: p.get("people") ?? "1" } : null;
+}
+
 export function ViewingFunnel({ listing }: { listing: Listing }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [f, setF] = useState({ moveIn: "", people: "1", name: "", phone: "", message: "" });
   const [errors, setErrors] = useState<InquiryErrors>({});
   const [busy, setBusy] = useState(false);
+  const [editContact, setEditContact] = useState(false);
+  const { me, google } = useMe();
   const today = new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    const r = resumeParams();
+    if (r && /^\d{4}-\d{2}-\d{2}$/.test(r.moveIn)) {
+      setF((x) => ({ ...x, moveIn: r.moveIn, people: r.people }));
+      setStep(2);
+    }
+  }, []);
+
+  // Signed in: their name and number fill in by themselves.
+  useEffect(() => {
+    if (me) setF((x) => ({ ...x, name: x.name || me.name, phone: x.phone || (me.phone ? `+${me.phone}` : "") }));
+  }, [me]);
+  const known = !!(me && me.phone && !editContact);
+  const resumeUrl = `/listing/${listing.id.toLowerCase()}?book=1&movein=${f.moveIn}&people=${f.people}`;
 
   const next = () => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f.moveIn)) return setErrors({ moveIn: "Pick a move-in date" });
@@ -208,16 +233,35 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
 
       {step === 2 && (
         <div className="mt-4 space-y-3">
-          <label className="block">
-            <span className="mb-1 block text-[12.5px] font-medium">Your name</span>
-            <input className={input} autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-            {err("name")}
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-[12.5px] font-medium">WhatsApp number</span>
-            <input className={input} type="tel" inputMode="tel" autoComplete="tel" placeholder="050 123 4567" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
-            {err("phone")}
-          </label>
+          {known ? (
+            <div className="flex items-center gap-3 rounded-[14px] bg-mint px-3.5 py-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[14px] font-bold text-brand">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {me?.picture ? <img src={me.picture} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : me?.name[0]}
+              </span>
+              <span className="min-w-0 flex-1 text-[13.5px]">
+                <span className="block font-semibold text-ink">Booking as {me?.name}</span>
+                <span className="block text-muted">+{me?.phone}</span>
+              </span>
+              <button onClick={() => setEditContact(true)} className="text-[12.5px] font-semibold text-brand underline">
+                Change
+              </button>
+            </div>
+          ) : (
+            <>
+              {!me && <QuickSignIn next={resumeUrl} google={google} />}
+              <label className="block">
+                <span className="mb-1 block text-[12.5px] font-medium">Your name</span>
+                <input className={input} autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+                {err("name")}
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[12.5px] font-medium">WhatsApp number</span>
+                <input className={input} type="tel" inputMode="tel" autoComplete="tel" placeholder="050 123 4567" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+                {err("phone")}
+              </label>
+            </>
+          )}
           <label className="block">
             <span className="mb-1 block text-[12.5px] font-medium">
               Anything to add? <span className="font-normal text-muted">(optional)</span>
@@ -257,6 +301,10 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
 /** Phone: price + button pinned to the bottom, funnel in a sheet. */
 export function MobileBookingBar({ listing }: { listing: Listing }) {
   const [open, setOpen] = useState(false);
+  // Returning from Google sign-in mid-booking on a phone: reopen the sheet.
+  useEffect(() => {
+    if (resumeParams() && window.matchMedia("(max-width: 1023px)").matches) setOpen(true);
+  }, []);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {

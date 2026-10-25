@@ -150,7 +150,9 @@ export default function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => draw(true), [listings]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    draw(true);
+  }, [listings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     markers.current.forEach((mk, id) => {

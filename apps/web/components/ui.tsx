@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { Shay } from "./shay";
 
 export const aed = (n: number) => `AED ${n.toLocaleString("en-US")}`;
 
@@ -88,12 +89,11 @@ export function Icon({ name, size = 18, ...rest }: { name: IconName; size?: numb
   );
 }
 
-/** Stayshay mark (pin with a face) + wordmark. `animated` plays the mark's intro loop; `light` is for dark backgrounds. */
-export function Logo({ className = "", light = false, animated = false, size = 30 }: { className?: string; light?: boolean; animated?: boolean; size?: number }) {
+/** Stayshay logo: Shay (the living blob mark) + wordmark. `light` is for dark backgrounds. */
+export function Logo({ className = "", light = false, size = 30 }: { className?: string; light?: boolean; animated?: boolean; size?: number }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={animated ? "/brand/stayshay-mark-animated.svg" : "/brand/stayshay-mark.svg"} alt="" width={size} height={Math.round(size * 1.03)} className="shrink-0" />
+      <Shay size={size} glow={false} />
       <span className={`text-[22px] font-extrabold leading-none tracking-[-0.04em] ${light ? "text-white" : "text-brand"}`}>stayshay</span>
     </span>
   );

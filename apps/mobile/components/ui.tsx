@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, Pressable, StyleSheet, Text, TextInput, View, type PressableProps, type StyleProp, type TextInputProps, type TextProps, type TextStyle, type ViewStyle } from "react-native";
-import Svg, { Circle, Ellipse, Path } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
+import { Shay } from "./shay";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
@@ -19,26 +20,11 @@ export const aed = (n: number) => `AED ${n.toLocaleString("en-US")}`;
 
 /* ---------- brand ---------- */
 
-/** The Stayshay pin-with-a-face mark (static drawing of apps/web/public/brand/stayshay-mark.svg). */
-export function Mark({ size = 32, light = false }: { size?: number; light?: boolean }) {
-  const body = light ? C.ivory : C.brand;
-  const face = light ? C.brand : C.ivory;
-  return (
-    <Svg width={(size * 120) / 124} height={size} viewBox="0 0 120 124">
-      <Ellipse cx={60} cy={119} rx={11} ry={2.6} fill={C.ink} opacity={0.18} />
-      <Path d="M41.0 84.9Q54 100.9 60 116Q66 100.9 79.0 84.9Z" fill={body} />
-      <Circle cx={60} cy={54} r={38} fill={body} />
-      <Path d="M49.87 41.60A5.6 5.6 0 1 0 45 50A5.6 5.6 0 1 1 40.13 58.40" fill="none" stroke={face} strokeWidth={4.4} strokeLinecap="round" />
-      <Path d="M79.87 41.60A5.6 5.6 0 1 0 75 50A5.6 5.6 0 1 1 70.13 58.40" fill="none" stroke={face} strokeWidth={4.4} strokeLinecap="round" />
-      <Path d="M51 70Q60 77 69 70" fill="none" stroke={light ? C.brand : C.mint} strokeWidth={4} strokeLinecap="round" />
-    </Svg>
-  );
-}
-
+/** Stayshay logo: Shay (the brand character) + wordmark. */
 export function Logo({ light = false, size = 26 }: { light?: boolean; size?: number }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
-      <Mark size={size} light={light} />
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <Shay size={size} glow={false} />
       <T w="extrabold" size={size * 0.82} color={light ? C.white : C.brand} style={{ letterSpacing: -1 }}>
         stayshay
       </T>

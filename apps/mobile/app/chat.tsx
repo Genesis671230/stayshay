@@ -70,7 +70,7 @@ export default function Chat() {
           <Icon name="back" size={20} color={C.white} />
         </Tap>
         <View style={s.avatar}>
-          <Shay size={34} talking={busy} />
+          <Shay size={34} mood={busy ? "talking" : "happy"} glow={false} />
         </View>
         <View style={{ flex: 1 }}>
           <T w="bold" size={17} color={C.white}>
@@ -84,7 +84,7 @@ export default function Chat() {
 
       {enabled === false ? (
         <View style={s.center}>
-          <Shay size={120} waving />
+          <Shay size={120} mood="happy" />
           <T w="bold" size={18} style={{ marginTop: 14 }}>
             Shay is taking a short break
           </T>
@@ -104,7 +104,7 @@ export default function Chat() {
             ListHeaderComponent={
               <View style={{ gap: 10 }}>
                 <View style={s.row}>
-                  <Shay size={30} />
+                  <Shay size={30} glow={false} />
                   <View style={s.bot}>
                     <Rich color={C.ink} text="Hi! I'm Shay. Tell me where you want to live, your budget and when you'll move, and I'll find places that fit. Write in any language you like." />
                   </View>
@@ -131,7 +131,7 @@ export default function Chat() {
                 </View>
               ) : (
                 <View style={s.row}>
-                  <Shay size={30} />
+                  <Shay size={30} glow={false} />
                   <View style={s.bot}>
                     <Rich color={C.ink} text={item.text} />
                   </View>
@@ -141,7 +141,7 @@ export default function Chat() {
             ListFooterComponent={
               busy ? (
                 <View style={[s.row, { marginTop: 10 }]}>
-                  <Shay size={30} talking />
+                  <Shay size={30} mood="thinking" glow={false} />
                   <View style={s.bot}>
                     <T color={C.muted}>Shay is typing…</T>
                   </View>
