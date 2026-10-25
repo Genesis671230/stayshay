@@ -2,7 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { API_URL } from "./config";
 import type { Area, Listing } from "./core";
 
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  link: string | null;
+}
+
 interface Data {
+  announcement: Announcement | null;
   listings: Listing[];
   areas: Area[];
   areaBySlug: Map<string, Area>;
@@ -27,6 +35,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -40,6 +49,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const json = (await res.json()) as { listings: Listing[]; areas: Area[] };
       setListings(json.listings ?? []);
       setAreas(json.areas ?? []);
+      fetch(`${API_URL}/api/announcement`)
+        .then((r) => r.json())
+        .then((a) => setAnnouncement(a ?? null))
+        .catch(() => {});
     } catch (e) {
       setError(e instanceof Error && e.name === "AbortError" ? "The server took too long to answer." : "We couldn’t load places. Check your connection.");
     } finally {
@@ -61,8 +74,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ listings, areas, areaBySlug: new Map(areas.map((a) => [a.slug, a])), loading, error, refresh, saved, toggleSaved }),
-    [listings, areas, loading, error, refresh, saved, toggleSaved],
+    () => ({ announcement, listings, areas, areaBySlug: new Map(areas.map((a) => [a.slug, a])), loading, error, refresh, saved, toggleSaved }),
+    [announcement, listings, areas, loading, error, refresh, saved, toggleSaved],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

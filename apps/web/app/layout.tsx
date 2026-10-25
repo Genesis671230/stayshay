@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { BRAND } from "@stayshay/core";
 import "./globals.css";
+import { AnnouncementBar } from "@/components/announcement-bar";
+import { activeAnnouncement } from "@/lib/store";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-jakarta", display: "swap" });
 
@@ -23,10 +25,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#145C46", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const a = await activeAnnouncement();
   return (
     <html lang="en" className={jakarta.variable}>
-      <body>{children}</body>
+      <body>
+        <AnnouncementBar a={a && { id: a.id, title: a.title, message: a.message, link: a.link ?? null }} />
+        {children}
+      </body>
     </html>
   );
 }

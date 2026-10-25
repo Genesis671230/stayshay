@@ -92,3 +92,17 @@ test("reads a lister's WhatsApp message", () => {
   assert.equal(p.title, "Partition available in Al Barsha 1");
   assert.ok(!p.description?.includes("050"));
 });
+
+import { roommateMatch } from "./match.ts";
+import type { RoommateLead } from "./lead.ts";
+
+test("roommate match: gender gate, then budget/area/move-in/lifestyle", () => {
+  const base: RoommateLead = { kind: "roommate", mode: "looking", name: "Aisha K", phone: "971501111111", age: 27, gender: "female", nationality: "", profession: "", budget: 1500, areaSlugs: ["al-barsha-1"], moveIn: "2026-11-10", lifestyle: ["Non-smoker", "Quiet"], about: "" };
+  const close = { ...base, name: "Maria L", mode: "has_place" as const, budget: 1600, moveIn: "2026-11-15", lifestyle: ["Quiet"] };
+  const far = { ...base, name: "Sara", budget: 4000, areaSlugs: ["dubai-marina"], moveIn: "2027-02-01", lifestyle: ["Social"] };
+  assert.equal(roommateMatch(base, { ...close, gender: "male" }).score, 0);
+  const good = roommateMatch(base, close);
+  assert.ok(good.score >= 75, `good match scored ${good.score}`);
+  assert.ok(good.reasons.includes("Same area"));
+  assert.ok(roommateMatch(base, far).score < 30);
+});

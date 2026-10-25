@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Listing, ListingStatus } from "@stayshay/core";
-import { ADMIN_COOKIE, UPLOAD_DIR, deleteAdminListing, isAdmin, nextAdminId, readAdminListings, upsertAdminListing } from "@/lib/store";
+import { UPLOAD_DIR, deleteAdminListing, nextAdminId, readAdminListings, upsertAdminListing } from "@/lib/store";
+import { denyUnlessAdmin } from "@/lib/admin-guard";
 
-async function guard() {
-  return isAdmin((await cookies()).get(ADMIN_COOKIE)?.value);
-}
+const guard = async () => !(await denyUnlessAdmin());
 
 const IMAGE_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/avif": "avif", "image/heic": "heic" };
 const MAX_PHOTO = 8 * 1024 * 1024;

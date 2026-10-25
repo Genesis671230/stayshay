@@ -11,3 +11,5 @@ apps/web/public/hb/
 packages/core/src/data/homebook.json
 .data/
 apps/web/.data/
+.cache/
+apps/web/.data-test/

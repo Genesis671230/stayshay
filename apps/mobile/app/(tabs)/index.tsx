@@ -50,7 +50,7 @@ function Rail({ title, sub, items, query }: { title: string; sub: string; items:
 }
 
 export default function Explore() {
-  const { listings, loading, error, refresh, areaBySlug } = useData();
+  const { listings, loading, error, refresh, areaBySlug, announcement } = useData();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const from = fromPriceByType(listings);
@@ -146,6 +146,21 @@ export default function Explore() {
         </View>
       ) : (
         <>
+          {announcement && (
+            <FadeIn style={{ marginHorizontal: 20, marginTop: 18 }}>
+              <Tap onPress={() => announcement.link && Linking.openURL(announcement.link)} style={s.notice}>
+                <View style={s.noticeDot} />
+                <View style={{ flex: 1 }}>
+                  <T w="bold" size={14.5} color={C.white}>
+                    {announcement.title}
+                  </T>
+                  <T size={13} color="rgba(255,255,255,0.85)" style={{ marginTop: 2, lineHeight: 19 }}>
+                    {announcement.message}
+                  </T>
+                </View>
+              </Tap>
+            </FadeIn>
+          )}
           {/* Stats */}
           <View style={s.stats}>
             {[
@@ -254,5 +269,7 @@ const s = StyleSheet.create({
   door: { borderRadius: R.xl, overflow: "hidden", padding: 22, backgroundColor: C.brand },
   doorCta: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.white, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 },
   state: { alignItems: "center", gap: 10, padding: 40 },
+  notice: { flexDirection: "row", gap: 12, backgroundColor: C.brandDeep, borderRadius: R.lg, padding: 16 },
+  noticeDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: C.fresh, marginTop: 5 },
   footer: { flexDirection: "row", justifyContent: "center", gap: 24, paddingVertical: 36 },
 });

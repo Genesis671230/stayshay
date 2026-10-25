@@ -9,5 +9,5 @@ export function openWhatsapp(text: string) {
 
 /** Fire-and-forget copy of the request to the website, so the team keeps a record even if WhatsApp isn't sent. */
 export function logLead(path: "/api/lead" | "/api/inquiry", body: unknown) {
-  fetch(`${API_URL}${path}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
+  fetch(`${API_URL}${path}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...(body as object), source: "app", via: "app" }) }).catch(() => {});
 }

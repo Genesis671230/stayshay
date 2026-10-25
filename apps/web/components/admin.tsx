@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AMENITY_LABEL, AREAS, AREA_BY_SLUG, TYPE_LABEL, parseListingMessage, type Amenity, type Listing, type ListingType } from "@stayshay/core";
 import { AreaCombobox } from "./search-bar";
 import { Icon, Logo, aed } from "./ui";
-import { MarketplaceProvider } from "./marketplace";
 
 const field = "w-full rounded-[12px] border border-line bg-white px-3.5 py-2.5 text-[14.5px] focus:border-brand focus:outline-none";
 const TYPES: ListingType[] = ["bed_space", "partition", "room", "studio", "roommate"];
@@ -37,9 +36,9 @@ export function AdminLogin() {
   );
 }
 
-type Draft = Partial<Listing> & { amenities: Amenity[] };
+export type Draft = Partial<Listing> & { amenities: Amenity[] };
 
-const EMPTY: Draft = {
+export const EMPTY: Draft = {
   type: "bed_space",
   title: "",
   areaSlug: "",
@@ -66,7 +65,7 @@ const EMPTY: Draft = {
   status: "live",
 };
 
-function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: (l: Listing) => void; onCancel: () => void }) {
+export function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: (l: Listing) => void; onCancel: () => void }) {
   const [d, setD] = useState<Draft>(initial);
   const [files, setFiles] = useState<File[]>([]);
   const [paste, setPaste] = useState("");
@@ -261,105 +260,3 @@ function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; onSaved: 
   );
 }
 
-export function AdminDashboard({ initial }: { initial: Listing[] }) {
-  const router = useRouter();
-  const [items, setItems] = useState(initial);
-  const [editing, setEditing] = useState<Draft | null>(null);
-
-  return (
-    <MarketplaceProvider>
-      <div className="min-h-screen bg-surface">
-        <header className="border-b border-line bg-white">
-          <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-4 md:px-8">
-            <div className="flex items-center gap-3">
-              <Logo />
-              <span className="rounded-full bg-mint px-2.5 py-1 text-[12px] font-bold text-brand">Admin</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <a href="/" target="_blank" className="h-9 rounded-full px-3 text-[13.5px] leading-9 text-muted hover:text-ink">
-                View site
-              </a>
-              <button
-                onClick={async () => {
-                  await fetch("/api/admin/login", { method: "DELETE" });
-                  router.refresh();
-                }}
-                className="h-9 rounded-full border border-line px-3.5 text-[13.5px]"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-[1240px] px-4 py-8 md:px-8">
-          {editing ? (
-            <>
-              <h1 className="mb-5 text-[24px] font-bold">{editing.id ? `Edit ${editing.id}` : "New listing"}</h1>
-              <ListingForm
-                initial={editing}
-                onCancel={() => setEditing(null)}
-                onSaved={(l) => {
-                  setItems((cur) => [l, ...cur.filter((x) => x.id !== l.id)]);
-                  setEditing(null);
-                }}
-              />
-            </>
-          ) : (
-            <>
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h1 className="text-[26px] font-bold">Listings</h1>
-                  <p className="text-[14px] text-muted">Listings your team created. Live ones show on the website and app straight away.</p>
-                </div>
-                <button onClick={() => setEditing({ ...EMPTY })} className="flex h-11 items-center gap-2 rounded-full bg-brand px-5 text-[14.5px] font-semibold text-white">
-                  + New listing
-                </button>
-              </div>
-              {items.length === 0 ? (
-                <div className="mt-8 rounded-[24px] border border-dashed border-line-strong bg-white px-6 py-16 text-center">
-                  <p className="text-[18px] font-bold">No listings yet</p>
-                  <p className="mx-auto mt-1 max-w-[420px] text-[14px] text-muted">When a lister sends details on WhatsApp, click New listing, paste their message and add the photos.</p>
-                </div>
-              ) : (
-                <div className="mt-6 overflow-hidden rounded-[20px] border border-line bg-white">
-                  {items.map((l) => (
-                    <div key={l.id} className="flex items-center gap-4 border-b border-line p-3 last:border-b-0">
-                      <div className="h-14 w-20 shrink-0 overflow-hidden rounded-[10px] bg-surface">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {l.photos[0] && <img src={l.photos[0]} alt="" className="h-full w-full object-cover" />}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[14.5px] font-semibold">{l.title}</p>
-                        <p className="truncate text-[12.5px] text-muted">
-                          {l.id} · {TYPE_LABEL[l.type]} · {AREA_BY_SLUG.get(l.areaSlug)?.name} · {aed(l.priceAed)}/mo{l.listerPhone ? ` · +${l.listerPhone}` : ""}
-                        </p>
-                      </div>
-                      <span className={`rounded-full px-2.5 py-1 text-[11.5px] font-bold ${(l.status ?? "live") === "live" ? "bg-mint text-brand" : "bg-surface text-muted"}`}>{l.status ?? "live"}</span>
-                      <a href={`/listing/${l.id.toLowerCase()}`} target="_blank" className="hidden text-[13px] text-brand underline sm:block">
-                        View
-                      </a>
-                      <button onClick={() => setEditing({ ...EMPTY, ...l, amenities: l.amenities ?? [] })} className="h-9 rounded-full border border-line px-3.5 text-[13px] font-medium">
-                        Edit
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!window.confirm(`Delete ${l.id}? This removes it and its photos.`)) return;
-                          const res = await fetch(`/api/admin/listings?id=${encodeURIComponent(l.id)}`, { method: "DELETE" });
-                          if (res.ok) setItems((cur) => cur.filter((x) => x.id !== l.id));
-                        }}
-                        className="h-9 rounded-full px-3 text-[13px] text-warn"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </main>
-      </div>
-    </MarketplaceProvider>
-  );
-}

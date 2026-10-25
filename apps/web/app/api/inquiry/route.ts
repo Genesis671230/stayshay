@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateInquiry } from "@stayshay/core";
-import { getListing } from "@/lib/store";
+import { addLead, getListing } from "@/lib/store";
 
 // Best-effort per-instance throttle. Replace with a shared store (Upstash/Supabase) once inquiries persist.
 const hits = new Map<string, number[]>();
@@ -42,6 +42,13 @@ export async function POST(req: Request) {
     userAgent: req.headers.get("user-agent")?.slice(0, 200) ?? null,
   };
 
+  // Every inquiry lands in the admin inbox; the webhook (if set) is an extra copy.
+  await addLead("inquiry", { ...check.value, website: undefined } as Record<string, unknown> & { name: string; phone: string }, {
+    listingId: listing?.id ?? check.value.listingId,
+    listingTitle: listing?.title ?? null,
+    source: body.via === "app" ? "app" : "web",
+  });
+
   const hook = process.env.STAYSHAY_INQUIRY_WEBHOOK;
   if (hook) {
     try {
@@ -56,8 +63,6 @@ export async function POST(req: Request) {
       console.error("[stayshay] inquiry webhook failed", err, record);
       return NextResponse.json({ ok: false, error: "delivery_failed" }, { status: 502 });
     }
-  } else {
-    console.info("[stayshay] inquiry (no webhook configured)", record);
   }
 
   return NextResponse.json({ ok: true });

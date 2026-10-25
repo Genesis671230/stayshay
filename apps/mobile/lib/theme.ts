@@ -34,6 +34,6 @@ export const shadow = {
   elevation: 4,
 };
 
-export const HERO_IMAGE = "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=80&auto=format&fit=crop";
+export const HERO_IMAGE = "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1400&q=80&auto=format&fit=crop";
 export const ROOMMATE_IMAGE = "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1200&q=80&auto=format&fit=crop";
 export const OWNER_IMAGE = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80&auto=format&fit=crop";

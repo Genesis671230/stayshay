@@ -11,7 +11,7 @@ import { Icon, aed } from "./ui";
 import { listingHref } from "./listing-card";
 
 // Full-bleed hero. Set NEXT_PUBLIC_HERO_VIDEO to an mp4 URL to play a muted loop over the photo.
-const HERO_IMAGE = "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=2400&q=80&auto=format&fit=crop";
+const HERO_IMAGE = "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=2400&q=80&auto=format&fit=crop";
 const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO;
 
 const OWNER_TYPES: ListingType[] = ["bed_space", "partition", "room", "studio"];
@@ -34,7 +34,7 @@ export function Hero() {
   return (
     <section className="px-2 pt-2 md:px-4 md:pt-3">
       <div className="relative overflow-hidden rounded-[28px] bg-brand-deep">
-        <Image src={HERO_IMAGE} alt="Dubai skyline at golden hour" fill priority sizes="100vw" className="object-cover" />
+        <Image src={HERO_IMAGE} alt="A bright, lived-in shared flat with plants and daylight" fill priority sizes="100vw" className="object-cover" />
         {HERO_VIDEO && <video className="absolute inset-0 h-full w-full object-cover" src={HERO_VIDEO} autoPlay muted loop playsInline poster={HERO_IMAGE} aria-hidden />}
         {/* Solid tint (no gradient) keeps white type readable on any photo. */}
         <div className="absolute inset-0 bg-[#0c3a2c]/62" aria-hidden />

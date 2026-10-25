@@ -10,6 +10,7 @@ export * from "./search.ts";
 export * from "./inquiry.ts";
 export * from "./lead.ts";
 export * from "./parse-message.ts";
+export * from "./match.ts";
 
 export interface PhotoSet {
   hero: string[];
