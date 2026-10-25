@@ -8,6 +8,7 @@ import { C, HERO_IMAGE, OWNER_IMAGE, R, ROOMMATE_IMAGE, shadow } from "@/lib/the
 import { WEB_URL } from "@/lib/config";
 import { fromPriceByType, type Listing, type ListingType } from "@/lib/core";
 import { Button, FadeIn, Icon, ListingCard, Logo, T, Tap, aed } from "@/components/ui";
+import { Shay } from "@/components/shay";
 
 const CATS: { type: ListingType; title: string; line: string }[] = [
   { type: "bed_space", title: "Bed space", line: "Shared room, own bed" },
@@ -77,6 +78,7 @@ export default function Explore() {
   );
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView style={{ flex: 1, backgroundColor: C.white }} refreshControl={<RefreshControl refreshing={loading && listings.length > 0} onRefresh={refresh} tintColor={C.brand} />} showsVerticalScrollIndicator={false}>
       {/* Hero */}
       <View style={[s.hero, { paddingTop: insets.top + 14 }]}>
@@ -251,6 +253,11 @@ export default function Explore() {
         </>
       )}
     </ScrollView>
+      {/* Shay: floating assistant button */}
+      <Tap onPress={() => router.push("/chat")} style={[s.shayFab, shadow]} accessibilityLabel="Chat with Shay, the Stayshay assistant">
+        <Shay size={46} waving />
+      </Tap>
+    </View>
   );
 }
 
@@ -269,6 +276,7 @@ const s = StyleSheet.create({
   door: { borderRadius: R.xl, overflow: "hidden", padding: 22, backgroundColor: C.brand },
   doorCta: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", backgroundColor: C.white, borderRadius: R.pill, paddingHorizontal: 16, paddingVertical: 10 },
   state: { alignItems: "center", gap: 10, padding: 40 },
+  shayFab: { position: "absolute", right: 18, bottom: 18, width: 66, height: 66, borderRadius: 33, backgroundColor: C.white, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.line },
   notice: { flexDirection: "row", gap: 12, backgroundColor: C.brandDeep, borderRadius: R.lg, padding: 16 },
   noticeDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: C.fresh, marginTop: 5 },
   footer: { flexDirection: "row", justifyContent: "center", gap: 24, paddingVertical: 36 },

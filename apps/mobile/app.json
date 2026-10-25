@@ -38,6 +38,13 @@
           "backgroundColor": "#F4F2E9",
           "resizeMode": "contain"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Stayshay uses your photos so you can add a profile picture to your roommate profile.",
+          "cameraPermission": "Stayshay uses the camera so you can take a profile picture for your roommate profile."
+        }
       ]
     ],
     "extra": {

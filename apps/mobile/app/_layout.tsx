@@ -26,6 +26,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.white }, animation: "slide_from_right" }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="listing/[id]" />
+          <Stack.Screen name="chat" options={{ animation: "slide_from_bottom" }} />
         </Stack>
       </DataProvider>
     </SafeAreaProvider>
