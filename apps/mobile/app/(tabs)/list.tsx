@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { API_URL } from "@/lib/config";
 import { useData } from "@/lib/data";
 import { C, OWNER_IMAGE, R } from "@/lib/theme";
-import { TYPE_LABEL, leadMessage, searchAreas, validateLead, type Area, type Gender, type ListingType, type OwnerLead } from "@/lib/core";
-import { logLead, openWhatsapp } from "@/lib/whatsapp";
-import { Button, Chip, FadeIn, Field, Icon, T, aed } from "@/components/ui";
+import { TYPE_LABEL, normalizePhone, searchAreas, type Area, type Gender, type ListingType } from "@/lib/core";
+import { openWhatsapp } from "@/lib/whatsapp";
+import { Button, Chip, FadeIn, Field, Icon, T, Tap, aed } from "@/components/ui";
 import { FormHero } from "@/components/form-hero";
 
 const TYPES: ListingType[] = ["bed_space", "partition", "room", "studio"];
@@ -28,7 +31,15 @@ export default function ListYourPlace() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [sent, setSent] = useState<OwnerLead | null>(null);
+  const [sent, setSent] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [busy, setBusy] = useState(false);
+  const pick = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsMultipleSelection: true, selectionLimit: 10 - photos.length, quality: 0.75 });
+    if (!res.canceled) setPhotos((p) => [...p, ...res.assets].slice(0, 10));
+  };
 
   const matches = areaQ.trim() && areaQ !== area?.name ? searchAreas(areas, areaQ, 4).map((m) => m.area) : [];
   const typical = useMemo(() => {
@@ -39,20 +50,53 @@ export default function ListYourPlace() {
     return { median: p[Math.floor(p.length / 2)], where: pool.length >= 3 && area ? area.name : "the UAE" };
   }, [listings, type, area]);
 
-  const submit = () => {
-    const check = validateLead({ kind: "owner", type, areaSlug: area?.slug, rent, deposit, billsIncluded: bills, spaces, household: who, name, phone });
-    setErrors(check.errors);
-    if (!check.ok || !check.value) return;
-    const lead = check.value as OwnerLead;
-    logLead("/api/lead", lead);
-    openWhatsapp(leadMessage(lead, (s) => areaBySlug.get(s)?.name ?? s));
-    setSent(lead);
+  const submit = async () => {
+    const e: Record<string, string> = {};
+    if (!area) e.areaSlug = "Pick the area";
+    if (!(Number(rent) >= 200)) e.rent = "Enter the monthly rent";
+    if (!photos.length) e.photos = "Add at least one photo";
+    if (title.trim().length < 6) e.title = "Add a short title";
+    if (name.trim().length < 2) e.name = "Enter your name";
+    if (!normalizePhone(phone)) e.phone = "Enter a valid WhatsApp number";
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    setBusy(true);
+    const body = new FormData();
+    body.append(
+      "listing",
+      JSON.stringify({
+        type,
+        areaSlug: area!.slug,
+        priceAed: Number(rent),
+        deposit: Number(deposit) || 0,
+        billsIncluded: bills,
+        bedsInRoom: type === "bed_space" ? Math.max(2, spaces) : 1,
+        bedsAvailable: spaces,
+        gender: who === "male" || who === "female" ? who : "any",
+        occupancy: who === "couple" ? "couple" : undefined,
+        title,
+        description,
+        listerName: name,
+        listerPhone: phone,
+        source: "app",
+      }),
+    );
+    // React Native's FormData takes { uri, name, type } file descriptors.
+    photos.forEach((p, i) => body.append("photos", { uri: p.uri, name: p.fileName ?? `photo-${i + 1}.jpg`, type: p.mimeType ?? "image/jpeg" } as unknown as Blob));
+    const res = await fetch(`${API_URL}/api/listings/submit`, { method: "POST", body }).catch(() => null);
+    const j = await res?.json().catch(() => ({}));
+    setBusy(false);
+    if (!res?.ok) {
+      setErrors({ form: j?.error ?? Object.values(j?.errors ?? {}).join(", ") ?? "Something went wrong. Try again." });
+      return;
+    }
+    setSent(j.id);
   };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView style={{ flex: 1, backgroundColor: C.white }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 40 }}>
-        <FormHero image={OWNER_IMAGE} icon="key" badge="Free for owners" title="List your place in two minutes." text="Tell us the basics, then send photos on WhatsApp. Our team builds and checks the listing for you." />
+        <FormHero image={OWNER_IMAGE} icon="key" badge="Free for owners" title="List your place in two minutes." text="Add the details and photos. Our team reviews it, then it goes live on the website and app." />
 
         {sent ? (
           <FadeIn style={{ padding: 24, gap: 14 }}>
@@ -60,13 +104,22 @@ export default function ListYourPlace() {
               <Icon name="check" size={28} color={C.brand} />
             </View>
             <T w="extrabold" size={24} style={{ textAlign: "center" }}>
-              Now send your photos
+              Submitted for review
             </T>
             <T color={C.muted} style={{ textAlign: "center", lineHeight: 21 }}>
-              In the WhatsApp chat, send 4 to 8 bright photos of the room, bathroom and kitchen. Your {TYPE_LABEL[sent.type].toLowerCase()} goes live once we’ve checked it.
+              Ref {sent}. Our team checks every listing before it goes public, usually within a few hours. We’ll WhatsApp you when it’s live.
             </T>
-            <Button title="Open WhatsApp" icon="whatsapp" variant="whatsapp" onPress={() => openWhatsapp(leadMessage(sent, (x) => areaBySlug.get(x)?.name ?? x))} />
-            <Button title="List another place" variant="outline" onPress={() => setSent(null)} />
+            <Button title="Message the team" icon="whatsapp" variant="whatsapp" onPress={() => openWhatsapp(`Hi Stayshay, I just submitted listing ${sent}.`)} />
+            <Button
+              title="List another place"
+              variant="outline"
+              onPress={() => {
+                setSent(null);
+                setPhotos([]);
+                setTitle("");
+                setDescription("");
+              }}
+            />
           </FadeIn>
         ) : (
           <View style={{ padding: 20, gap: 18 }}>
@@ -138,10 +191,38 @@ export default function ListYourPlace() {
               </View>
             </View>
 
+            <View style={{ gap: 8 }}>
+              <T w="semibold" size={13}>
+                Photos ({photos.length}/10)
+              </T>
+              <View style={s.wrap}>
+                {photos.map((p, i) => (
+                  <Tap key={p.uri} onPress={() => setPhotos(photos.filter((_, j) => j !== i))} style={s.thumb}>
+                    <Image source={{ uri: p.uri }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                  </Tap>
+                ))}
+                {photos.length < 10 && (
+                  <Tap onPress={pick} style={[s.thumb, s.addThumb]}>
+                    <Icon name="plus" size={22} color={C.brand} />
+                  </Tap>
+                )}
+              </View>
+              <T size={12} color={photos.length ? C.muted : errors.photos ? C.warn : C.muted}>
+                {errors.photos ?? "Room, bathroom, kitchen. Tap a photo to remove it."}
+              </T>
+            </View>
+            <Field label="Title" value={title} onChangeText={setTitle} placeholder="e.g. Partition near Mall of the Emirates metro" error={errors.title} maxLength={100} />
+            <Field label="Description" hint="(optional)" value={description} onChangeText={setDescription} multiline maxLength={3000} style={{ height: 100, paddingTop: 12, textAlignVertical: "top" }} placeholder="What’s included, house rules, transport…" />
+
             <Field label="Your name" value={name} onChangeText={setName} error={errors.name} />
             <Field label="WhatsApp number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="050 123 4567" error={errors.phone} />
 
-            <Button title="Send details on WhatsApp" icon="whatsapp" variant="whatsapp" onPress={submit} />
+            {errors.form ? (
+              <T size={13} color={C.warn}>
+                {errors.form}
+              </T>
+            ) : null}
+            <Button title={busy ? "Submitting…" : "Submit for review"} onPress={submit} disabled={busy} />
             <T size={12} color={C.muted} style={{ textAlign: "center" }}>
               Partitions and bed spaces need landlord consent and the applicable permit.
             </T>
@@ -154,6 +235,8 @@ export default function ListYourPlace() {
 
 const s = StyleSheet.create({
   wrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  thumb: { width: 76, height: 76, borderRadius: 14, overflow: "hidden", backgroundColor: C.ivory },
+  addThumb: { borderWidth: 2, borderStyle: "dashed", borderColor: C.lineStrong, alignItems: "center", justifyContent: "center" },
   tip: { flexDirection: "row", gap: 8, alignItems: "center", backgroundColor: C.mint, borderRadius: R.md, padding: 12 },
   doneIcon: { alignSelf: "center", width: 64, height: 64, borderRadius: 32, backgroundColor: C.mint, alignItems: "center", justifyContent: "center" },
 });

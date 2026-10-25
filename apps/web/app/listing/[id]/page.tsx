@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AREA_BY_SLUG, TYPE_LABEL, TYPE_LABEL_PLURAL, isVerifiedCompliant, similarListings } from "@stayshay/core";
-import { getAllListings, getListing } from "@/lib/store";
+import { getAllListings, getListing, getListingsForAdmin } from "@/lib/store";
+import { adminAllowed } from "@/lib/admin-guard";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
 import { Badge, Icon, aed } from "@/components/ui";
@@ -33,8 +34,12 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
-  const l = await getListing((await params).id);
+  const id = (await params).id;
+  // Admins can preview listings that aren't public yet (pending review, hidden, rented).
+  const live = await getListing(id);
+  const l = live ?? ((await adminAllowed()) ? (await getListingsForAdmin()).find((x) => x.id.toLowerCase() === id.toLowerCase()) : undefined);
   if (!l) notFound();
+  const preview = !live;
   const all = await getAllListings();
 
   const area = AREA_BY_SLUG.get(l.areaSlug);
@@ -63,6 +68,16 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
     <MarketplaceProvider listings={all}>
       <Header />
       <main className="mx-auto max-w-[1240px] px-4 pb-28 pt-4 md:px-8 lg:pb-20">
+        {preview && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[16px] bg-[#fbefdc] px-4 py-3 text-[14px] text-[#8a5a14]">
+            <span>
+              <b>Admin preview</b> · this listing is <b>{(l.status ?? "hidden").replace("_", " ")}</b> and not visible to renters.
+            </span>
+            <a href="/admin" className="font-semibold underline">
+              Approve in admin
+            </a>
+          </div>
+        )}
         <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-ink">Home</Link>
           <Icon name="chevron-right" size={12} />

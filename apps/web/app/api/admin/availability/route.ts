@@ -3,7 +3,7 @@ import type { ListingStatus } from "@stayshay/core";
 import { denyUnlessAdmin } from "@/lib/admin-guard";
 import { setOverride } from "@/lib/store";
 
-const STATUSES: ListingStatus[] = ["live", "reserved", "rented", "draft", "expired"];
+const STATUSES: ListingStatus[] = ["live", "reserved", "rented", "draft", "expired", "pending_review"];
 
 /** Mark any listing live / reserved / rented, or set how many beds are left. */
 export async function POST(req: Request) {

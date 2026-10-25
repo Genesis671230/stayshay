@@ -33,6 +33,7 @@ const STATUS_TONE: Record<string, string> = {
   rented: "bg-ink text-white",
   draft: "bg-surface text-muted",
   expired: "bg-surface text-muted",
+  pending_review: "bg-[#fbefdc] text-[#8a5a14]",
 };
 
 function ago(iso: string) {
@@ -122,7 +123,7 @@ export function AdminConsole(props: {
 
   const TABS: [Tab, string, number?][] = [
     ["inbox", "Inbox", newLeads],
-    ["listings", "Listings"],
+    ["listings", "Listings", all.filter((l) => l.status === "pending_review").length],
     ["tenancies", "Tenancies", expiring],
     ["roommates", "Roommates", profiles.filter((p) => p.status === "pending").length],
     ["people", "People", 0],
@@ -368,11 +369,16 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
                       Email
                     </a>
                   ) : null}
-                  {l.kind === "owner" && (
-                    <button onClick={() => onCreateListing(l)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
-                      Create listing
-                    </button>
-                  )}
+                  {l.kind === "owner" &&
+                    (l.listingId ? (
+                      <a href={`/listing/${l.listingId.toLowerCase()}`} target="_blank" className="inline-flex h-9 items-center rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
+                        {listings.find((x) => x.id === l.listingId)?.status === "pending_review" ? "Review in Listings" : "Open listing"}
+                      </a>
+                    ) : (
+                      <button onClick={() => onCreateListing(l)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
+                        Create listing
+                      </button>
+                    ))}
                   {l.kind === "roommate" && (
                     <button onClick={() => onMatch(l.id)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
                       Find matches
@@ -408,7 +414,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
 
 function Listings({ listings, adminIds, tenancies, onNew, onEdit, onDelete, onStatus, onAssign }: { listings: Listing[]; adminIds: Set<string>; tenancies: Tenancy[]; onNew: () => void; onEdit: (l: Listing) => void; onDelete: (l: Listing) => void; onStatus: (l: Listing, s: ListingStatus) => void; onAssign: (l: Listing) => void }) {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<"all" | ListingStatus>("all");
+  const [status, setStatus] = useState<"all" | ListingStatus>(listings.some((l) => l.status === "pending_review") ? "pending_review" : "all");
   const [shown, setShown] = useState(40);
   const filtered = listings.filter(
     (l) => (status === "all" || (l.status ?? "live") === status) && (!q || `${l.id} ${l.title} ${areaName(l.areaSlug)} ${TYPE_LABEL[l.type]}`.toLowerCase().includes(q.toLowerCase())),
@@ -429,9 +435,9 @@ function Listings({ listings, adminIds, tenancies, onNew, onEdit, onDelete, onSt
         </button>
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2">
-        {(["all", "live", "reserved", "rented", "draft"] as const).map((s) => (
+        {(["pending_review", "all", "live", "reserved", "rented", "draft"] as const).map((s) => (
           <button key={s} onClick={() => setStatus(s)} className={`h-9 rounded-full border px-3.5 text-[13px] font-medium capitalize ${status === s ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
-            {s}
+            {s === "pending_review" ? `Pending review (${counts("pending_review")})` : s}
           </button>
         ))}
         <input className={`${field} ml-auto max-w-[280px]`} placeholder="Search ref, title, area…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -460,15 +466,28 @@ function Listings({ listings, adminIds, tenancies, onNew, onEdit, onDelete, onSt
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Pill tone={STATUS_TONE[st] ?? "bg-surface text-muted"}>{st}</Pill>
-                <button onClick={() => onAssign(l)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
-                  Assign tenant
-                </button>
+                <Pill tone={STATUS_TONE[st] ?? "bg-surface text-muted"}>{st === "pending_review" ? "pending review" : st}</Pill>
+                {st === "pending_review" ? (
+                  <>
+                    <button onClick={() => onStatus(l, "live")} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
+                      Approve & publish
+                    </button>
+                    <button onClick={() => window.confirm(`Reject ${l.id}? It stays hidden; you can still edit and publish it later.`) && onStatus(l, "draft")} className="h-9 rounded-full border border-line px-3.5 text-[13px] font-medium">
+                      Reject
+                    </button>
+                    {l.listerPhone && <WaButton href={wa(l.listerPhone, `Hi ${l.listerName}, this is Stayshay about your listing "${l.title}" (${l.id}).`)} label="Ask lister" />}
+                  </>
+                ) : (
+                  <button onClick={() => onAssign(l)} className="h-9 rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
+                    Assign tenant
+                  </button>
+                )}
                 <select value={st} onChange={(e) => onStatus(l, e.target.value as ListingStatus)} className="h-9 rounded-full border border-line bg-white px-3 text-[13px]" aria-label="Availability">
                   <option value="live">Available</option>
                   <option value="reserved">Reserved</option>
                   <option value="rented">Rented</option>
                   <option value="draft">Hidden</option>
+                  <option value="pending_review">Pending review</option>
                 </select>
                 {adminIds.has(l.id) && (
                   <>
