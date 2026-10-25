@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Stayshay",
+    "slug": "stayshay",
+    "scheme": "stayshay",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F2E9",
+    "ios": {
+      "bundleIdentifier": "ae.stayshay.app",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    },
+    "android": {
+      "package": "ae.stayshay.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/adaptive-icon-mono.png",
+        "backgroundColor": "#F4F2E9"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-image",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        { "image": "./assets/splash-icon.png", "imageWidth": 180, "backgroundColor": "#F4F2E9", "resizeMode": "contain" }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.1.137:3210"
+    }
+  }
+}

@@ -315,6 +315,7 @@ async function main() {
   const file = join(ROOT, "packages/core/src/data/homebook.json");
   await writeFile(file, JSON.stringify(out));
   console.log(`listings: ${listings.length} · areas: ${areaCount.size} · photos ok ${photosOk}, failed ${photosFail} → ${file}`);
+  if (WITH_IMAGES) execFileSync(process.execPath, [join(ROOT, "scripts/normalize-photos.mjs")], { stdio: "inherit" });
 }
 
 main().catch((e) => {

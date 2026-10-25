@@ -10,6 +10,8 @@
     "build": "npm run build -w @stayshay/web",
     "start": "npm run start -w @stayshay/web",
     "typecheck": "npm run typecheck -w @stayshay/core && npm run typecheck -w @stayshay/web",
-    "test": "npm run test -w @stayshay/core"
+    "test": "npm run test -w @stayshay/core",
+    "mobile": "npm run start -w @stayshay/mobile",
+    "mobile:icons": "npm run icons -w @stayshay/mobile"
   }
 }

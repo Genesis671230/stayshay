@@ -6,7 +6,8 @@ compliance badge on every listing. Separate brand and codebase from RAMZA / Omni
 ## Layout
 
 ```
-apps/web        Next.js 16 landing + marketplace (Tailwind 4, Leaflet)
+apps/web        Next.js 16 website + admin + /api/listings feed (Tailwind 4, Leaflet)
+apps/mobile     Expo SDK 58 iOS + Android app (see docs/LAUNCH.md)
 packages/core   Platform-neutral domain: brand, types, areas, search, inquiry validation, WhatsApp text.
                 The Expo mobile app (apps/mobile, next) imports this unchanged.
 docs/           landing-brief.md (UX benchmark, copy, filters, SEO, phase-2 roadmap)
