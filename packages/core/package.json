@@ -1,0 +1,15 @@
+{
+  "name": "@stayshay/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform-neutral Stayshay domain: brand, types, areas, search, inquiry. Shared by web and the future mobile app.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/*.test.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

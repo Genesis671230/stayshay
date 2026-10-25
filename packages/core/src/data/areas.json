@@ -1,0 +1,610 @@
+[
+  {
+    "slug": "al-barsha-1",
+    "name": "Al Barsha 1",
+    "nameAr": "البرشاء 1",
+    "emirate": "Dubai",
+    "lat": 25.1135,
+    "lng": 55.2005,
+    "nearMetro": "Mall of the Emirates",
+    "aliases": [
+      "Barsha 1",
+      "Al Barsha",
+      "Barsha",
+      "Barsha One",
+      "Al Barsha First"
+    ]
+  },
+  {
+    "slug": "al-barsha-heights",
+    "name": "Barsha Heights (TECOM)",
+    "nameAr": "برشاء هايتس",
+    "emirate": "Dubai",
+    "lat": 25.0965,
+    "lng": 55.177,
+    "nearMetro": "Dubai Internet City",
+    "aliases": [
+      "Tecom",
+      "TECOM",
+      "Barsha Heights",
+      "Al Thanyah 1"
+    ]
+  },
+  {
+    "slug": "al-karama",
+    "name": "Al Karama",
+    "nameAr": "الكرامة",
+    "emirate": "Dubai",
+    "lat": 25.2445,
+    "lng": 55.3035,
+    "nearMetro": "ADCB",
+    "aliases": [
+      "Karama",
+      "Al Karamah",
+      "Karama Dubai"
+    ]
+  },
+  {
+    "slug": "bur-dubai",
+    "name": "Bur Dubai",
+    "nameAr": "بر دبي",
+    "emirate": "Dubai",
+    "lat": 25.2585,
+    "lng": 55.2975,
+    "nearMetro": "Al Fahidi",
+    "aliases": [
+      "Bur Dubai",
+      "BurDubai",
+      "Meena Bazaar",
+      "Al Souk Al Kabir"
+    ]
+  },
+  {
+    "slug": "al-mankhool",
+    "name": "Al Mankhool",
+    "nameAr": "المنخول",
+    "emirate": "Dubai",
+    "lat": 25.251,
+    "lng": 55.293,
+    "nearMetro": "ADCB",
+    "aliases": [
+      "Mankhool",
+      "Al Mankhul",
+      "Bur Dubai Mankhool"
+    ]
+  },
+  {
+    "slug": "deira",
+    "name": "Deira",
+    "nameAr": "ديرة",
+    "emirate": "Dubai",
+    "lat": 25.27,
+    "lng": 55.3175,
+    "nearMetro": "Union",
+    "aliases": [
+      "Deira Dubai",
+      "Dera",
+      "Deirah"
+    ]
+  },
+  {
+    "slug": "naif",
+    "name": "Naif",
+    "nameAr": "نايف",
+    "emirate": "Dubai",
+    "lat": 25.272,
+    "lng": 55.3065,
+    "nearMetro": "Baniyas Square",
+    "aliases": [
+      "Naif Road",
+      "Nayef",
+      "Al Naif",
+      "Murshid Bazaar"
+    ]
+  },
+  {
+    "slug": "al-rigga",
+    "name": "Al Rigga",
+    "nameAr": "الرقة",
+    "emirate": "Dubai",
+    "lat": 25.265,
+    "lng": 55.3235,
+    "nearMetro": "Al Rigga",
+    "aliases": [
+      "Rigga",
+      "Al Riqqa",
+      "Riqqa",
+      "Rigga Road"
+    ]
+  },
+  {
+    "slug": "muraqqabat",
+    "name": "Al Muraqqabat",
+    "nameAr": "المرقبات",
+    "emirate": "Dubai",
+    "lat": 25.2675,
+    "lng": 55.33,
+    "nearMetro": "Salah Al Din",
+    "aliases": [
+      "Muraqqabat",
+      "Muraqabat",
+      "Al Muraqabat",
+      "Salahuddin"
+    ]
+  },
+  {
+    "slug": "al-nahda-dubai",
+    "name": "Al Nahda (Dubai)",
+    "nameAr": "النهدة - دبي",
+    "emirate": "Dubai",
+    "lat": 25.289,
+    "lng": 55.37,
+    "nearMetro": "Stadium",
+    "aliases": [
+      "Al Nahda",
+      "Nahda",
+      "Al Nahda 1",
+      "Al Nahda 2",
+      "Nahda Dubai"
+    ]
+  },
+  {
+    "slug": "al-qusais",
+    "name": "Al Qusais",
+    "nameAr": "القصيص",
+    "emirate": "Dubai",
+    "lat": 25.277,
+    "lng": 55.385,
+    "nearMetro": "Al Qusais",
+    "aliases": [
+      "Qusais",
+      "Al Qusais 1",
+      "Qusais Industrial",
+      "Al Qusais 2"
+    ]
+  },
+  {
+    "slug": "al-garhoud",
+    "name": "Al Garhoud",
+    "nameAr": "القرهود",
+    "emirate": "Dubai",
+    "lat": 25.2445,
+    "lng": 55.348,
+    "nearMetro": "GGICO",
+    "aliases": [
+      "Garhoud",
+      "Al Garhoud",
+      "Garhood",
+      "Al Qarhoud"
+    ]
+  },
+  {
+    "slug": "oud-metha",
+    "name": "Oud Metha",
+    "nameAr": "عود ميثاء",
+    "emirate": "Dubai",
+    "lat": 25.2345,
+    "lng": 55.315,
+    "nearMetro": "Oud Metha",
+    "aliases": [
+      "Oud Mehta",
+      "Oudh Metha",
+      "Oud Metha Dubai"
+    ]
+  },
+  {
+    "slug": "al-jaddaf",
+    "name": "Al Jaddaf",
+    "nameAr": "الجداف",
+    "emirate": "Dubai",
+    "lat": 25.218,
+    "lng": 55.3355,
+    "nearMetro": "Al Jadaf",
+    "aliases": [
+      "Jaddaf",
+      "Al Jadaf",
+      "Jadaf",
+      "Culture Village"
+    ]
+  },
+  {
+    "slug": "al-satwa",
+    "name": "Al Satwa",
+    "nameAr": "السطوة",
+    "emirate": "Dubai",
+    "lat": 25.2245,
+    "lng": 55.2775,
+    "nearMetro": "Al Jafiliya",
+    "aliases": [
+      "Satwa",
+      "Al Satwa",
+      "Satwah",
+      "Satwa Road"
+    ]
+  },
+  {
+    "slug": "downtown-dubai",
+    "name": "Downtown Dubai",
+    "nameAr": "وسط مدينة دبي",
+    "emirate": "Dubai",
+    "lat": 25.1972,
+    "lng": 55.2744,
+    "nearMetro": "Burj Khalifa/Dubai Mall",
+    "aliases": [
+      "Downtown",
+      "DT Dubai",
+      "Burj Khalifa Area",
+      "Downtown Burj Khalifa"
+    ]
+  },
+  {
+    "slug": "business-bay",
+    "name": "Business Bay",
+    "nameAr": "الخليج التجاري",
+    "emirate": "Dubai",
+    "lat": 25.1865,
+    "lng": 55.265,
+    "nearMetro": "Business Bay",
+    "aliases": [
+      "BB",
+      "Business Bay Dubai",
+      "Bussiness Bay",
+      "Biz Bay"
+    ]
+  },
+  {
+    "slug": "dubai-marina",
+    "name": "Dubai Marina",
+    "nameAr": "دبي مارينا",
+    "emirate": "Dubai",
+    "lat": 25.0805,
+    "lng": 55.1405,
+    "nearMetro": "DMCC",
+    "aliases": [
+      "Marina",
+      "Dubai Marina",
+      "D Marina",
+      "JBR Marina"
+    ]
+  },
+  {
+    "slug": "jlt",
+    "name": "Jumeirah Lake Towers",
+    "nameAr": "أبراج بحيرات جميرا",
+    "emirate": "Dubai",
+    "lat": 25.0695,
+    "lng": 55.1415,
+    "nearMetro": "DMCC",
+    "aliases": [
+      "JLT",
+      "Jumeirah Lakes Towers",
+      "JLT Dubai",
+      "Lake Towers"
+    ]
+  },
+  {
+    "slug": "jvc",
+    "name": "Jumeirah Village Circle",
+    "nameAr": "قرية جميرا الدائرية",
+    "emirate": "Dubai",
+    "lat": 25.059,
+    "lng": 55.209,
+    "nearMetro": null,
+    "aliases": [
+      "JVC",
+      "Jumeirah Village",
+      "JV Circle",
+      "Al Barsha South 4"
+    ]
+  },
+  {
+    "slug": "dubai-sports-city",
+    "name": "Dubai Sports City",
+    "nameAr": "مدينة دبي الرياضية",
+    "emirate": "Dubai",
+    "lat": 25.0395,
+    "lng": 55.2205,
+    "nearMetro": null,
+    "aliases": [
+      "DSC",
+      "Sports City",
+      "Sport City",
+      "Dubai Sport City"
+    ]
+  },
+  {
+    "slug": "motor-city",
+    "name": "Motor City",
+    "nameAr": "موتور سيتي",
+    "emirate": "Dubai",
+    "lat": 25.0475,
+    "lng": 55.239,
+    "nearMetro": null,
+    "aliases": [
+      "Motorcity",
+      "Motor City Dubai",
+      "Uptown Motor City"
+    ]
+  },
+  {
+    "slug": "al-quoz",
+    "name": "Al Quoz",
+    "nameAr": "القوز",
+    "emirate": "Dubai",
+    "lat": 25.145,
+    "lng": 55.238,
+    "nearMetro": null,
+    "aliases": [
+      "Quoz",
+      "Al Quoz 1",
+      "Al Quoz 3",
+      "Al Quoz Industrial",
+      "Alquoz"
+    ]
+  },
+  {
+    "slug": "discovery-gardens",
+    "name": "Discovery Gardens",
+    "nameAr": "ديسكفري جاردنز",
+    "emirate": "Dubai",
+    "lat": 25.039,
+    "lng": 55.143,
+    "nearMetro": "Discovery Gardens",
+    "aliases": [
+      "DG",
+      "Discovery Garden",
+      "Discovery Gardens Dubai"
+    ]
+  },
+  {
+    "slug": "al-furjan",
+    "name": "Al Furjan",
+    "nameAr": "الفرجان",
+    "emirate": "Dubai",
+    "lat": 25.0285,
+    "lng": 55.15,
+    "nearMetro": "Al Furjan",
+    "aliases": [
+      "Furjan",
+      "Al Furjan Dubai"
+    ]
+  },
+  {
+    "slug": "international-city",
+    "name": "International City",
+    "nameAr": "المدينة العالمية",
+    "emirate": "Dubai",
+    "lat": 25.165,
+    "lng": 55.4085,
+    "nearMetro": null,
+    "aliases": [
+      "IC",
+      "Intl City",
+      "International City Dubai",
+      "China Cluster",
+      "England Cluster"
+    ]
+  },
+  {
+    "slug": "dso",
+    "name": "Dubai Silicon Oasis",
+    "nameAr": "واحة دبي للسيليكون",
+    "emirate": "Dubai",
+    "lat": 25.121,
+    "lng": 55.38,
+    "nearMetro": null,
+    "aliases": [
+      "DSO",
+      "Silicon Oasis",
+      "Dubai Silicon",
+      "Silicon Oasis Dubai"
+    ]
+  },
+  {
+    "slug": "mirdif",
+    "name": "Mirdif",
+    "nameAr": "مردف",
+    "emirate": "Dubai",
+    "lat": 25.2215,
+    "lng": 55.421,
+    "nearMetro": null,
+    "aliases": [
+      "Mirdiff",
+      "Mirdif Dubai",
+      "Mirdif Uptown",
+      "Mirdif City Centre"
+    ]
+  },
+  {
+    "slug": "al-warqa",
+    "name": "Al Warqa",
+    "nameAr": "الورقاء",
+    "emirate": "Dubai",
+    "lat": 25.195,
+    "lng": 55.413,
+    "nearMetro": null,
+    "aliases": [
+      "Warqa",
+      "Al Warqaa",
+      "Al Warqa 1",
+      "Warqaa"
+    ]
+  },
+  {
+    "slug": "al-nahda-sharjah",
+    "name": "Al Nahda (Sharjah)",
+    "nameAr": "النهدة - الشارقة",
+    "emirate": "Sharjah",
+    "lat": 25.301,
+    "lng": 55.375,
+    "nearMetro": null,
+    "aliases": [
+      "Nahda Sharjah",
+      "Al Nahda Sharjah",
+      "Sharjah Nahda"
+    ]
+  },
+  {
+    "slug": "al-taawun",
+    "name": "Al Taawun",
+    "nameAr": "التعاون",
+    "emirate": "Sharjah",
+    "lat": 25.3125,
+    "lng": 55.3745,
+    "nearMetro": null,
+    "aliases": [
+      "Taawun",
+      "Al Taawan",
+      "Taawan",
+      "Al Tawun"
+    ]
+  },
+  {
+    "slug": "al-khan",
+    "name": "Al Khan",
+    "nameAr": "الخان",
+    "emirate": "Sharjah",
+    "lat": 25.3225,
+    "lng": 55.3705,
+    "nearMetro": null,
+    "aliases": [
+      "Khan",
+      "Al Khan Sharjah",
+      "Al Khan Lagoon"
+    ]
+  },
+  {
+    "slug": "al-majaz",
+    "name": "Al Majaz",
+    "nameAr": "المجاز",
+    "emirate": "Sharjah",
+    "lat": 25.3265,
+    "lng": 55.3855,
+    "nearMetro": null,
+    "aliases": [
+      "Majaz",
+      "Al Majaz 1",
+      "Al Majaz 2",
+      "Majaz Sharjah"
+    ]
+  },
+  {
+    "slug": "al-qasimia",
+    "name": "Al Qasimia",
+    "nameAr": "القاسمية",
+    "emirate": "Sharjah",
+    "lat": 25.343,
+    "lng": 55.396,
+    "nearMetro": null,
+    "aliases": [
+      "Qasimia",
+      "Al Qasimiya",
+      "Qassimia",
+      "Al Qassimia"
+    ]
+  },
+  {
+    "slug": "muwaileh",
+    "name": "Muwaileh",
+    "nameAr": "مويلح",
+    "emirate": "Sharjah",
+    "lat": 25.301,
+    "lng": 55.454,
+    "nearMetro": null,
+    "aliases": [
+      "Muwailih",
+      "Muweilah",
+      "Muwaileh Commercial",
+      "Al Muwaileh"
+    ]
+  },
+  {
+    "slug": "al-reem-island",
+    "name": "Al Reem Island",
+    "nameAr": "جزيرة الريم",
+    "emirate": "Abu Dhabi",
+    "lat": 24.4985,
+    "lng": 54.406,
+    "nearMetro": null,
+    "aliases": [
+      "Reem",
+      "Reem Island",
+      "Al Reem",
+      "Shams Abu Dhabi"
+    ]
+  },
+  {
+    "slug": "al-khalidiya",
+    "name": "Al Khalidiya",
+    "nameAr": "الخالدية",
+    "emirate": "Abu Dhabi",
+    "lat": 24.469,
+    "lng": 54.348,
+    "nearMetro": null,
+    "aliases": [
+      "Khalidiya",
+      "Khalidiyah",
+      "Al Khalidiyah",
+      "Khaldiya"
+    ]
+  },
+  {
+    "slug": "mussafah",
+    "name": "Mussafah (Shabiya)",
+    "nameAr": "مصفح - الشعبية",
+    "emirate": "Abu Dhabi",
+    "lat": 24.346,
+    "lng": 54.508,
+    "nearMetro": null,
+    "aliases": [
+      "Musaffah",
+      "Mussafah",
+      "Shabiya",
+      "Mussafah Shabia",
+      "ME-10"
+    ]
+  },
+  {
+    "slug": "khalifa-city",
+    "name": "Khalifa City",
+    "nameAr": "مدينة خليفة",
+    "emirate": "Abu Dhabi",
+    "lat": 24.4195,
+    "lng": 54.5785,
+    "nearMetro": null,
+    "aliases": [
+      "Khalifa City A",
+      "KCA",
+      "Khalifa A"
+    ]
+  },
+  {
+    "slug": "al-nuaimiya",
+    "name": "Al Nuaimiya",
+    "nameAr": "النعيمية",
+    "emirate": "Ajman",
+    "lat": 25.3905,
+    "lng": 55.46,
+    "nearMetro": null,
+    "aliases": [
+      "Nuaimiya",
+      "Al Nuaimia",
+      "Nuaimia",
+      "Al Nuaimiyah"
+    ]
+  },
+  {
+    "slug": "al-rashidiya-ajman",
+    "name": "Al Rashidiya (Ajman)",
+    "nameAr": "الراشدية - عجمان",
+    "emirate": "Ajman",
+    "lat": 25.4045,
+    "lng": 55.441,
+    "nearMetro": null,
+    "aliases": [
+      "Rashidiya Ajman",
+      "Al Rashidiya",
+      "Rashidiya"
+    ]
+  }
+]

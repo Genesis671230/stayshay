@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+.vercel
+*.tsbuildinfo
+.DS_Store
+apps/web/public/hb/
+.import.log
+packages/core/src/data/homebook.json

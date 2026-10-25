@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" role="img" aria-label="StayShay"><style>.sb-s{fill:none;stroke:#F4F2E9;stroke-width:4.4;stroke-linecap:round;stroke-dasharray:50;animation:sb-draw 5s ease-out infinite}
+.sb-head{transform-box:view-box;transform-origin:60px 54px}.sb-head{animation:sb-pop 5s cubic-bezier(.3,1.6,.5,1) infinite}
+.sb-eyes{animation:sb-look 5s ease-in-out infinite}.sb-e{transform-box:fill-box;transform-origin:center;animation:sb-blink 5s infinite}
+.sb-mouth{transform-box:fill-box;transform-origin:center;animation:sb-smile 5s infinite}
+.sb-all{animation:sb-fade 5s infinite}
+@keyframes sb-pop{0%{transform:scale(0)}10%,100%{transform:scale(1)}}
+@keyframes sb-draw{0%,9%{stroke-dashoffset:50}24%,100%{stroke-dashoffset:0}}
+@keyframes sb-look{0%,27%,100%{transform:none}31%,37%{transform:translateX(-6px)}41%,46%{transform:translateX(6px)}50%{transform:none}}
+@keyframes sb-blink{0%,51%,54%,57%,60%,100%{transform:scaleY(1)}52.5%,58.5%{transform:scaleY(.1)}}
+@keyframes sb-smile{0%,64%{transform:scaleX(.6)}72%,100%{transform:scaleX(1.25)}}
+@keyframes sb-fade{0%,93%{opacity:1}100%{opacity:0}}.sb-tip{transform-box:view-box;transform-origin:60px 84px}.sb-tip{animation:sb-tip 5s cubic-bezier(.3,1.5,.5,1) infinite}@keyframes sb-tip{0%,60%{transform:scaleY(0)}70%,100%{transform:scaleY(1)}}.sb-sh{transform-box:fill-box;transform-origin:center;animation:sb-sh 5s infinite}@keyframes sb-sh{0%,60%{transform:scale(0)}72%,100%{transform:scale(1)}}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style><g class="sb-all"><ellipse class="sb-sh" cx="60" cy="119.0" rx="11" ry="2.6" fill="#202B27" opacity=".18"/><path class="sb-tip" d="M41.0 84.9Q54 100.9 60 116Q66 100.9 79.0 84.9Z" fill="#145C46"/><circle class="sb-head" cx="60" cy="54" r="38" fill="#145C46"/><g class="sb-eyes"><g class="sb-e"><path class="sb-s" d="M49.87 41.60A5.6 5.6 0 1 0 45 50A5.6 5.6 0 1 1 40.13 58.40"/></g><g class="sb-e"><path class="sb-s" d="M79.87 41.60A5.6 5.6 0 1 0 75 50A5.6 5.6 0 1 1 70.13 58.40"/></g></g>
+<path class="sb-mouth" d="M51 70Q60 77 69 70" fill="none" stroke="#DDF4E8" stroke-width="4" stroke-linecap="round"/></g></svg>
