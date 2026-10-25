@@ -109,4 +109,6 @@ export interface Listing {
   descriptionLines?: string[];
   views?: number | null;
   postedAt?: string;
+  /** Admin-only: the lister's WhatsApp. Stripped before anything reaches renters. */
+  listerPhone?: string;
 }

@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AREAS, AREA_BY_SLUG, LISTINGS, PHOTOS, coverFor, fromPriceByType, median, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, PHOTOS, coverFor, fromPriceByType, median, type Listing, type ListingType } from "@stayshay/core";
 import { Icon, aed } from "./ui";
 import { ListingCard } from "./listing-card";
+import { useMarketplace } from "./marketplace";
 
 const CATS: { type: ListingType; title: string; line: string }[] = [
   { type: "bed_space", title: "Bed space", line: "Shared room, your own bed." },
@@ -13,12 +14,13 @@ const CATS: { type: ListingType; title: string; line: string }[] = [
   { type: "studio", title: "Studio & flats", line: "A place that’s all yours." },
 ];
 
-const from = fromPriceByType(LISTINGS);
-const count = (t: ListingType) => LISTINGS.filter((l) => l.type === t).length;
 
 const BENTO = ["md:col-span-2 md:row-span-2 col-span-2", "md:col-span-2 col-span-2", "col-span-1", "col-span-1"];
 
 export function Categories() {
+  const { all: LISTINGS } = useMarketplace();
+  const from = fromPriceByType(LISTINGS);
+  const count = (t: ListingType) => LISTINGS.filter((l) => l.type === t).length;
   return (
     <section className="mx-auto max-w-[1240px] px-4 pt-16 md:px-8 md:pt-24">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -35,7 +37,7 @@ export function Categories() {
             href={`/search?type=${c.type}`}
             className={`group relative min-h-[180px] overflow-hidden rounded-[24px] bg-surface ${i === 0 ? "min-h-[260px]" : ""} ${BENTO[i]}`}
           >
-            <Image src={coverFor(c.type, i) ?? ""} alt="" fill sizes={i === 0 ? "(min-width:768px) 50vw, 100vw" : "(min-width:768px) 25vw, 50vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+            <Image src={coverFor(LISTINGS, c.type, i) ?? ""} alt="" fill sizes={i === 0 ? "(min-width:768px) 50vw, 100vw" : "(min-width:768px) 25vw, 50vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
             <span className="absolute inset-x-2 bottom-2 flex items-end justify-between gap-3 rounded-[18px] bg-white/95 p-3.5 backdrop-blur md:inset-x-3 md:bottom-3 md:p-4">
               <span className="min-w-0">
                 <span className={`block font-bold tracking-[-0.02em] text-ink ${i === 0 ? "text-[20px] md:text-[24px]" : "text-[15px] md:text-[17px]"}`}>{c.title}</span>
@@ -82,6 +84,7 @@ function Rail({ title, sub, href, items }: { title: string; sub: string; href: s
 const newest = (a: Listing, b: Listing) => (b.postedAt ?? "").localeCompare(a.postedAt ?? "");
 
 export function Rails() {
+  const { all: LISTINGS } = useMarketplace();
   const rich = LISTINGS.filter((l) => l.photos.length >= 3);
   const bed = rich.filter((l) => l.type === "bed_space").sort(newest);
   const partitions = rich.filter((l) => l.type === "partition" && l.nearMetroMinutes != null && l.nearMetroMinutes <= 10).sort(newest);
@@ -99,6 +102,7 @@ export function Rails() {
 }
 
 export function Areas() {
+  const { all: LISTINGS } = useMarketplace();
   const counts = LISTINGS.reduce<Record<string, number>>((acc, l) => ((acc[l.areaSlug] = (acc[l.areaSlug] ?? 0) + 1), acc), {});
   const top = Object.entries(counts)
     .sort((a, b) => b[1] - a[1])

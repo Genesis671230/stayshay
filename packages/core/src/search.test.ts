@@ -73,3 +73,22 @@ test("inquiry validation and WhatsApp link", () => {
   assert.deepEqual(Object.keys(bad.errors).sort(), ["moveIn", "name", "phone"]);
   assert.match(whatsappLink("+971 50 000 0000", "a b"), /^https:\/\/wa\.me\/971500000000\?text=a%20b$/);
 });
+
+import { parseListingMessage } from "./parse-message.ts";
+
+test("reads a lister's WhatsApp message", () => {
+  const p = parseListingMessage(
+    "🏠 Partition available in Al Barsha 1\nAED 1,400 all bills included\nDeposit 500\nLadies only, near Mall of the Emirates metro\nCall 050 123 4567",
+    areas,
+  );
+  assert.equal(p.type, "partition");
+  assert.equal(p.areaSlug, "al-barsha-1");
+  assert.equal(p.priceAed, 1400);
+  assert.equal(p.deposit, 500);
+  assert.equal(p.billsIncluded, true);
+  assert.equal(p.gender, "female");
+  assert.equal(p.metro, "Mall of the Emirates");
+  assert.equal(p.listerPhone, "971501234567");
+  assert.equal(p.title, "Partition available in Al Barsha 1");
+  assert.ok(!p.description?.includes("050"));
+});

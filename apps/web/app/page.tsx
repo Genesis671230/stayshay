@@ -3,10 +3,14 @@ import { Hero } from "@/components/hero";
 import { Areas, Categories, Rails } from "@/components/categories";
 import { Faq, FinalCta, Footer, HowItWorks, ListerCta, Trust } from "@/components/sections";
 import { MarketplaceProvider } from "@/components/marketplace";
+import { getAllListings } from "@/lib/store";
 
-export default function Home() {
+// Admin listings appear as soon as they are saved.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
   return (
-    <MarketplaceProvider>
+    <MarketplaceProvider listings={await getAllListings()}>
       <Header />
       <main>
         <Hero />

@@ -1,12 +1,15 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AREAS, LISTINGS, filterListings, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core";
 
 const TYPES: ListingType[] = ["room", "bed_space", "partition", "studio", "roommate"];
 const SORTS: SortKey[] = ["recommended", "price_asc", "price_desc", "newest"];
 
 interface MarketplaceState {
+  /** Every visible listing (admin-created + imported), loaded on the server. */
+  all: Listing[];
   filters: ListingFilters;
   setFilters: (patch: Partial<ListingFilters>) => void;
   resetFilters: () => void;
@@ -26,9 +29,9 @@ export function useMarketplace(): MarketplaceState {
 }
 
 /** URL ⇄ filters, so every search is a shareable link (and the future app can deep-link the same params). */
-function readUrl(): ListingFilters {
-  if (typeof window === "undefined") return {};
-  const p = new URLSearchParams(window.location.search);
+function readUrl(search?: string): ListingFilters {
+  if (typeof window === "undefined" && search == null) return {};
+  const p = new URLSearchParams(search ?? window.location.search);
   const num = (k: string) => (p.get(k) && Number.isFinite(Number(p.get(k))) ? Number(p.get(k)) : undefined);
   const known = new Set(AREAS.map((a) => a.slug));
   const f: ListingFilters = {
@@ -48,7 +51,7 @@ function readUrl(): ListingFilters {
   return Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && !(Array.isArray(v) && !v.length)));
 }
 
-function writeUrl(f: ListingFilters) {
+function filtersToQuery(f: ListingFilters): string {
   const p = new URLSearchParams();
   if (f.areaSlugs?.length) p.set("area", f.areaSlugs.join(","));
   if (f.types?.length) p.set("type", f.types.join(","));
@@ -62,20 +65,30 @@ function writeUrl(f: ListingFilters) {
   if (f.verifiedOnly) p.set("verified", "1");
   if (f.moveInBy) p.set("movein", f.moveInBy);
   if (f.sort && f.sort !== "recommended") p.set("sort", f.sort);
-  const qs = p.toString();
-  window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`);
+  return p.toString();
+}
+
+/**
+ * Follows the URL: nav links like /search?type=room while already on /search are client navigations,
+ * so filters must re-read whenever the query changes (not just on first load).
+ */
+function UrlSync({ onChange }: { onChange: (qs: string) => void }) {
+  const params = useSearchParams();
+  const qs = params.toString();
+  useEffect(() => onChange(qs), [qs, onChange]);
+  return null;
 }
 
 const SAVED_KEY = "stayshay:saved";
 
-export function MarketplaceProvider({ children }: { children: React.ReactNode }) {
+export function MarketplaceProvider({ children, listings = LISTINGS }: { children: React.ReactNode; listings?: Listing[] }) {
   const [filters, setFiltersState] = useState<ListingFilters>({});
+  const lastWritten = useRef<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setFiltersState(readUrl());
     try {
       setSaved(new Set(JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]")));
     } catch {
@@ -84,8 +97,19 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
     setHydrated(true);
   }, []);
 
+  // URL → filters (first load and every navigation), skipping the URLs we wrote ourselves.
+  const onUrl = useCallback((qs: string) => {
+    if (qs.replace(/(^|&)view=[^&]*/, "") === lastWritten.current) return;
+    setFiltersState(readUrl(qs));
+  }, []);
+
+  // Filters → URL, so every search stays shareable.
   useEffect(() => {
-    if (hydrated) writeUrl(filters);
+    if (!hydrated) return;
+    const qs = filtersToQuery(filters);
+    lastWritten.current = qs;
+    const current = window.location.search.replace(/^\?/, "");
+    if (current !== qs) window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`);
   }, [filters, hydrated]);
 
   const setFilters = useCallback((patch: Partial<ListingFilters>) => {
@@ -115,14 +139,21 @@ export function MarketplaceProvider({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  const results = useMemo(() => filterListings(LISTINGS, AREAS, filters), [filters]);
+  const results = useMemo(() => filterListings(listings, AREAS, filters), [listings, filters]);
 
   const value = useMemo(
-    () => ({ filters, setFilters, resetFilters, results, hoverId, setHoverId, saved, toggleSaved }),
-    [filters, setFilters, resetFilters, results, hoverId, saved, toggleSaved],
+    () => ({ all: listings, filters, setFilters, resetFilters, results, hoverId, setHoverId, saved, toggleSaved }),
+    [listings, filters, setFilters, resetFilters, results, hoverId, saved, toggleSaved],
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      <Suspense fallback={null}>
+        <UrlSync onChange={onUrl} />
+      </Suspense>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 /** On the home page the explorer is inline; elsewhere a search goes to /search with the same params. */

@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AREA_BY_SLUG, LISTINGS, TYPE_LABEL, type ListingType } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, type ListingType } from "@stayshay/core";
+import { useMarketplace } from "./marketplace";
 import { SearchBar } from "./search-bar";
 import { Icon, aed } from "./ui";
 import { listingHref } from "./listing-card";
@@ -13,19 +14,19 @@ import { listingHref } from "./listing-card";
 const HERO_IMAGE = "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=2400&q=80&auto=format&fit=crop";
 const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO;
 
-const POPULAR = [...new Set(LISTINGS.map((l) => l.areaSlug))]
-  .map((s) => ({ s, n: LISTINGS.filter((l) => l.areaSlug === s).length }))
-  .sort((a, b) => b.n - a.n)
-  .slice(0, 5)
-  .map((x) => x.s);
-
-const featured = LISTINGS.find((l) => l.type === "studio" && l.photos.length >= 4) ?? LISTINGS.find((l) => l.photos.length >= 3) ?? LISTINGS[0];
 const OWNER_TYPES: ListingType[] = ["bed_space", "partition", "room", "studio"];
 
 export function Hero() {
   const router = useRouter();
   const [mode, setMode] = useState<"rent" | "list">("rent");
   const [ownerType, setOwnerType] = useState<ListingType>("bed_space");
+  const { all: LISTINGS } = useMarketplace();
+  const POPULAR = [...new Set(LISTINGS.map((l) => l.areaSlug))]
+    .map((s) => ({ s, n: LISTINGS.filter((l) => l.areaSlug === s).length }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 5)
+    .map((x) => x.s);
+  const featured = LISTINGS.find((l) => l.type === "studio" && l.photos.length >= 4) ?? LISTINGS.find((l) => l.photos.length >= 3) ?? LISTINGS[0];
   const areas = new Set(LISTINGS.map((l) => l.areaSlug)).size;
   const noDeposit = LISTINGS.filter((l) => !l.deposit).length;
   const from = LISTINGS.length ? Math.min(...LISTINGS.map((l) => l.priceAed)) : 0;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { LISTINGS, validateInquiry } from "@stayshay/core";
+import { validateInquiry } from "@stayshay/core";
+import { getListing } from "@/lib/store";
 
 // Best-effort per-instance throttle. Replace with a shared store (Upstash/Supabase) once inquiries persist.
 const hits = new Map<string, number[]>();
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   if (limited(`${ip}:${check.value.phone}`)) return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
 
-  const listing = check.value.listingId ? LISTINGS.find((l) => l.id === check.value!.listingId) : null;
+  const listing = check.value.listingId ? await getListing(check.value.listingId) : null;
   const record = {
     ...check.value,
     website: undefined,

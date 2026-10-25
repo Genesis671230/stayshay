@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BRAND, coverFor } from "@stayshay/core";
+import { BRAND, PHOTOS } from "@stayshay/core";
 import { Icon, Logo } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
 
@@ -103,7 +103,7 @@ export function ListerCta() {
     <section id="list" className="mx-auto max-w-[1240px] px-4 py-16 md:px-8 md:py-24">
       <div className="grid grid-cols-1 overflow-hidden rounded-[22px] border border-line lg:grid-cols-2">
         <div className="relative min-h-[280px] bg-surface">
-          <Image src={coverFor("room", 5) ?? ""} alt="Furnished room ready for tenants" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" />
+          <Image src={PHOTOS.hero[1] ?? PHOTOS.hero[0]} alt="Furnished room ready for tenants" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="p-6 md:p-10">
           <p className="eyebrow">For owners and landlords</p>
@@ -141,8 +141,8 @@ export function FinalCta() {
     <section id="request" className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-4 px-4 py-16 md:grid-cols-2 md:px-8 md:py-20">
         {[
-          ["Looking for a place?", "Answer five quick questions. We’ll show what fits now and WhatsApp you new matches.", "/find", "Find me a room", coverFor("bed_space", 2)],
-          ["Have a room to rent?", "List for free in two minutes and get renters who already know your price and rules.", "/list", "List your place", coverFor("partition", 2)],
+          ["Looking for a place?", "Answer five quick questions. We’ll show what fits now and WhatsApp you new matches.", "/find", "Find me a room", PHOTOS.hero[2] ?? PHOTOS.hero[0]],
+          ["Have a room to rent?", "List for free in two minutes and get renters who already know your price and rules.", "/list", "List your place", PHOTOS.hero[0]],
         ].map(([t, d, href, cta, img]) => (
           <Link key={href} href={href!} className="group grid grid-cols-[minmax(0,1fr)_120px] overflow-hidden rounded-[22px] border border-line bg-white sm:grid-cols-[minmax(0,1fr)_180px]">
             <span className="p-6 md:p-8">
@@ -217,22 +217,26 @@ export function Footer() {
             href={stayshayWhatsapp("Hi Stayshay, I have a question.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 inline-flex h-10 items-center gap-2 rounded-[12px] border border-line px-4 text-[14px] font-medium text-whatsapp"
+            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-whatsapp/10 px-4 text-[14px] font-semibold text-whatsapp"
           >
             <Icon name="whatsapp" size={16} /> Talk to us
           </a>
         </div>
-        {[
-          ["Renters", ["Rooms", "Bed spaces", "Partitions", "Studios"]],
-          ["Listers", ["List for free", "Verification", "Lister guidelines"]],
-          ["Company", ["About", "Privacy", "Terms", BRAND.supportEmail]],
-        ].map(([title, links]) => (
-          <div key={title as string}>
-            <p className="text-[13px] font-semibold">{title}</p>
+        {(
+          [
+            ["Renters", [["Bed spaces", "/search?type=bed_space"], ["Partitions", "/search?type=partition"], ["Rooms", "/search?type=room"], ["Studios", "/search?type=studio"], ["Find me a room", "/find"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Map", "/search?view=map"]]],
+            ["Company", [["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
+          ] as [string, [string, string][]][]
+        ).map(([title, links]) => (
+          <div key={title}>
+            <p className="text-[13px] font-bold text-ink">{title}</p>
             <ul className="mt-3 space-y-2">
-              {(links as string[]).map((l) => (
-                <li key={l} className="text-[14px] text-muted">
-                  {l.includes("@") ? <a href={`mailto:${l}`} className="hover:text-ink">{l}</a> : l}
+              {links.map(([label, href]) => (
+                <li key={label}>
+                  <Link href={href} className="text-[14px] text-muted hover:text-brand">
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -244,7 +248,7 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {BRAND.name}. A listings marketplace. We are not a government body and do not issue permits. Badges reflect documents listers provide and the checks we run on them.
           </p>
-          <p className="shrink-0">Photos: Unsplash</p>
+          <p className="shrink-0">Made in the UAE</p>
         </div>
       </div>
     </footer>

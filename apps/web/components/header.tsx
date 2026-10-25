@@ -9,7 +9,7 @@ const NAV = [
   { label: "Partitions", href: "/search?type=partition" },
   { label: "Rooms", href: "/search?type=room" },
   { label: "Studios", href: "/search?type=studio" },
-  { label: "Map", href: "/search?view=map" },
+  { label: "Roommates", href: "/roommates" },
 ];
 
 export function Header() {

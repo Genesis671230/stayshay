@@ -2,19 +2,13 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AREAS, AREA_BY_SLUG, LISTINGS, TYPE_LABEL, searchAreas, type Area, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, TYPE_LABEL, searchAreas, type Area, type ListingType } from "@stayshay/core";
 import { Icon } from "./ui";
 import { searchHref, useMarketplace } from "./marketplace";
 
 const TYPE_OPTIONS: ListingType[] = ["bed_space", "partition", "room", "studio"];
 const BUDGETS = [1000, 1500, 2500, 3500, 5000, 7500];
 
-const countByArea = LISTINGS.reduce<Record<string, number>>((acc, l) => {
-  acc[l.areaSlug] = (acc[l.areaSlug] ?? 0) + 1;
-  return acc;
-}, {});
-
-const POPULAR = [...AREAS].sort((a, b) => (countByArea[b.slug] ?? 0) - (countByArea[a.slug] ?? 0)).slice(0, 6);
 
 function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const R = 6371;
@@ -26,6 +20,9 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
 
 export function AreaCombobox({ value, onChange }: { value: Area | null; onChange: (a: Area | null) => void }) {
   const id = useId();
+  const { all } = useMarketplace();
+  const countByArea = useMemo(() => all.reduce<Record<string, number>>((acc, l) => ((acc[l.areaSlug] = (acc[l.areaSlug] ?? 0) + 1), acc), {}), [all]);
+  const POPULAR = useMemo(() => [...AREAS].sort((a, b) => (countByArea[b.slug] ?? 0) - (countByArea[a.slug] ?? 0)).slice(0, 6), [countByArea]);
   const [query, setQuery] = useState(value?.name ?? "");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -43,7 +40,7 @@ export function AreaCombobox({ value, onChange }: { value: Area | null; onChange
   }, []);
 
   const typed = query.trim() !== "" && query !== value?.name;
-  const options = useMemo(() => (typed ? searchAreas(AREAS, query).map((m) => m.area) : POPULAR), [query, typed]);
+  const options = useMemo(() => (typed ? searchAreas(AREAS, query).map((m) => m.area) : POPULAR), [query, typed, POPULAR]);
 
   const pick = (a: Area) => {
     onChange(a);

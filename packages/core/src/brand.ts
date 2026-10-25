@@ -6,6 +6,9 @@ export const BRAND = {
   domain: "stayshay.ae",
   tagline: "Monthly rooms, bed spaces and studios across the UAE.",
   supportEmail: "hello@stayshay.ae",
+  /** WhatsApp for every inquiry, roommate profile and new listing (E.164 digits). */
+  whatsapp: "971569048493",
+  whatsappDisplay: "+971 56 904 8493",
   /**
    * Shown while the catalogue is seeded with sample listings.
    * Flip to false once real lister data is live.

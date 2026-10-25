@@ -195,3 +195,12 @@ body {
   border-radius: 14px !important;
   overflow: hidden;
 }
+
+/* Reading pages */
+.doc h2 { margin: 2.2rem 0 0.6rem; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.doc h2:first-child { margin-top: 0; }
+.doc p, .doc li { font-size: 15.5px; line-height: 1.75; color: var(--ink-2); }
+.doc p + p { margin-top: 0.8rem; }
+.doc ul { margin: 0.6rem 0 0 1.1rem; list-style: disc; }
+.doc li + li { margin-top: 0.35rem; }
+.doc a { color: var(--brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

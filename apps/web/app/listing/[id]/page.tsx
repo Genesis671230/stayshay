@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AREA_BY_SLUG, LISTINGS, LISTING_BY_ID, TYPE_LABEL, TYPE_LABEL_PLURAL, isVerifiedCompliant, similarListings } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, TYPE_LABEL_PLURAL, isVerifiedCompliant, similarListings } from "@stayshay/core";
+import { getAllListings, getListing } from "@/lib/store";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
 import { Badge, Icon, aed } from "@/components/ui";
@@ -9,12 +10,10 @@ import { LocationMap, MobileBookingBar, PhotoGrid, ShareSave, ViewingFunnel } fr
 import { ListingCard } from "@/components/listing-card";
 import { MarketplaceProvider } from "@/components/marketplace";
 
-export function generateStaticParams() {
-  return LISTINGS.map((l) => ({ id: l.id.toLowerCase() }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const l = LISTING_BY_ID.get((await params).id.toLowerCase());
+  const l = await getListing((await params).id);
   if (!l) return {};
   const area = AREA_BY_SLUG.get(l.areaSlug)?.name ?? l.areaName ?? "UAE";
   return {
@@ -34,13 +33,14 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
-  const l = LISTING_BY_ID.get((await params).id.toLowerCase());
+  const l = await getListing((await params).id);
   if (!l) notFound();
+  const all = await getAllListings();
 
   const area = AREA_BY_SLUG.get(l.areaSlug);
   const areaName = area?.name ?? l.areaName ?? "UAE";
   const typeLabel = l.typeName ?? TYPE_LABEL[l.type];
-  const similar = similarListings(l, 4);
+  const similar = similarListings(all, l, 4);
 
   const facts: [string, React.ReactNode][] = [
     ["Monthly rent", <span key="r" className="font-figure">{l.priceMaxAed ? `${aed(l.priceAed)} – ${aed(l.priceMaxAed)}` : aed(l.priceAed)}</span>],
@@ -60,7 +60,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const verified = isVerifiedCompliant(l) || l.verifiedLister;
 
   return (
-    <MarketplaceProvider>
+    <MarketplaceProvider listings={all}>
       <Header />
       <main className="mx-auto max-w-[1240px] px-4 pb-28 pt-4 md:px-8 lg:pb-20">
         <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted" aria-label="Breadcrumb">

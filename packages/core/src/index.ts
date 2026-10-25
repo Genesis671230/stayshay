@@ -9,6 +9,7 @@ export * from "./brand.ts";
 export * from "./search.ts";
 export * from "./inquiry.ts";
 export * from "./lead.ts";
+export * from "./parse-message.ts";
 
 export interface PhotoSet {
   hero: string[];
@@ -38,8 +39,8 @@ export function listingPoint(l: Listing): [number, number] | null {
 }
 
 /** Same area first, then same type, closest price. */
-export function similarListings(l: Listing, n = 4): Listing[] {
-  return LISTINGS.filter((x) => x.id !== l.id)
+export function similarListings(listings: Listing[], l: Listing, n = 4): Listing[] {
+  return listings.filter((x) => x.id !== l.id)
     .map((x) => ({ x, s: (x.areaSlug === l.areaSlug ? 0 : 2) + (x.type === l.type ? 0 : 1) + Math.abs(x.priceAed - l.priceAed) / 2000 }))
     .sort((a, b) => a.s - b.s)
     .slice(0, n)
@@ -47,8 +48,8 @@ export function similarListings(l: Listing, n = 4): Listing[] {
 }
 
 /** A real listing photo for a type (verified listings with several photos first), for category and funnel art. */
-export function coverFor(type: Listing["type"], offset = 0): string | undefined {
-  const pool = LISTINGS.filter((l) => l.type === type && l.photos.length >= 3).sort((a, b) => Number(b.verifiedLister) - Number(a.verifiedLister) || b.photos.length - a.photos.length);
+export function coverFor(listings: Listing[], type: Listing["type"], offset = 0): string | undefined {
+  const pool = listings.filter((l) => l.type === type && l.photos.length >= 3).sort((a, b) => Number(b.verifiedLister) - Number(a.verifiedLister) || b.photos.length - a.photos.length);
   return pool[offset % Math.max(pool.length, 1)]?.photos[0] ?? PHOTOS.categories[type];
 }
 

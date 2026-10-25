@@ -9,3 +9,5 @@ out
 apps/web/public/hb/
 .import.log
 packages/core/src/data/homebook.json
+.data/
+apps/web/.data/
