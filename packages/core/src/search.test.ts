@@ -106,3 +106,27 @@ test("roommate match: gender gate, then budget/area/move-in/lifestyle", () => {
   assert.ok(good.reasons.includes("Same area"));
   assert.ok(roommateMatch(base, far).score < 30);
 });
+
+test("rankDeals puts the below-market, bills-included place first", async () => {
+  const { rankDeals } = await import("./deals.ts");
+  const mk = (id: string, priceAed: number, billsIncluded: boolean) => ({ ...base, id, priceAed, billsIncluded, deposit: 500, nearMetroMinutes: 20, verifiedLister: false });
+  const deals = rankDeals([mk("a", 1000, false), mk("b", 800, true), mk("c", 1200, false)]);
+  assert.equal(deals[0].listing.id, "b");
+  assert.equal(deals[0].typicalAed, 1000);
+  assert.ok(deals[0].reasons.includes("Bills included"));
+});
+
+test("parseSearchText reads type, area, budget and household from free text", async () => {
+  const { parseSearchText } = await import("./search.ts");
+  const f = parseSearchText(areas, "cheap female bed space in Barsha under 1,500 AED with bills");
+  assert.deepEqual(f.types, ["bed_space"]);
+  assert.deepEqual(f.areaSlugs, ["al-barsha-1"]);
+  assert.equal(f.maxPrice, 1500);
+  assert.equal(f.gender, "female");
+  assert.equal(f.billsIncluded, true);
+  assert.equal(f.sort, "price_asc");
+  assert.equal(parseSearchText(areas, "studio JLT 4.5k").maxPrice, 4500);
+  assert.deepEqual(parseSearchText(areas, "studio JLT budget 4.5k").maxPrice, 4500);
+  assert.deepEqual(parseSearchText(areas, "partition in nahda sharjah").areaSlugs, ["al-nahda-sharjah"]);
+  assert.equal(parseSearchText(areas, "room in sharjah").emirate, "Sharjah");
+});

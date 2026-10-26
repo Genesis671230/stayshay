@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { Areas, Categories, Rails } from "@/components/categories";
@@ -7,6 +8,8 @@ import { getAllListings } from "@/lib/store";
 
 // Admin listings appear as soon as they are saved.
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   return (

@@ -337,7 +337,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
                 <Pill tone={KIND[l.kind].tone}>{KIND[l.kind].label}</Pill>
                 <Pill tone={STATUS_TONE[l.status]}>{l.status}</Pill>
                 <span className="text-[12.5px] text-muted">
-                  {ago(l.createdAt)} · {l.source === "app" ? "App" : "Website"}
+                  {ago(l.createdAt)} · {l.source === "app" ? "App" : l.source === "ai" ? "ChatGPT / Claude" : "Website"}
                 </span>
               </div>
               <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">

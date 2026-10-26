@@ -10,6 +10,8 @@ import { Badge, Icon, aed } from "@/components/ui";
 import { LocationMap, MobileBookingBar, PhotoGrid, ShareSave, ViewingFunnel } from "@/components/listing-page";
 import { ListingCard } from "@/components/listing-card";
 import { MarketplaceProvider } from "@/components/marketplace";
+import { JsonLd } from "@/components/json-ld";
+import { breadcrumbLd, listingLd, rentPath } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +20,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!l) return {};
   const area = AREA_BY_SLUG.get(l.areaSlug)?.name ?? l.areaName ?? "UAE";
   return {
-    title: `${l.title} · ${aed(l.priceAed)}/month · ${area} | Stayshay`,
-    description: l.description.slice(0, 160),
-    openGraph: { images: l.photos[0] ? [l.photos[0]] : [] },
+    title: `${l.title} · ${aed(l.priceAed)}/month · ${area}`,
+    description: `${TYPE_LABEL[l.type]} in ${area} for ${aed(l.priceAed)}/month${l.billsIncluded ? ", bills included" : ""}${l.deposit ? "" : ", no deposit"}. ${l.description}`.slice(0, 160),
+    alternates: { canonical: `/listing/${l.id.toLowerCase()}` },
+    openGraph: { title: `${l.title} · ${aed(l.priceAed)}/month`, url: `/listing/${l.id.toLowerCase()}`, images: l.photos[0] ? [l.photos[0]] : [] },
   };
 }
 
@@ -66,6 +69,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
 
   return (
     <MarketplaceProvider listings={all}>
+      {!preview && <JsonLd data={[listingLd(l), breadcrumbLd([["Home", "/"], [TYPE_LABEL_PLURAL[l.type], rentPath(l.type)], [areaName, rentPath(l.type, l.areaSlug)], [l.title, `/listing/${l.id.toLowerCase()}`]])]} />}
       <Header />
       <main className="mx-auto max-w-[1240px] px-4 pb-28 pt-4 md:px-8 lg:pb-20">
         {preview && (
@@ -81,9 +85,9 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-ink">Home</Link>
           <Icon name="chevron-right" size={12} />
-          <Link href={`/search?type=${l.type}`} className="hover:text-ink">{TYPE_LABEL_PLURAL[l.type]}</Link>
+          <Link href={rentPath(l.type)} className="hover:text-ink">{TYPE_LABEL_PLURAL[l.type]}</Link>
           <Icon name="chevron-right" size={12} />
-          <Link href={`/search?type=${l.type}&area=${l.areaSlug}`} className="hover:text-ink">{areaName}</Link>
+          <Link href={rentPath(l.type, l.areaSlug)} className="hover:text-ink">{areaName}</Link>
         </nav>
 
         <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -204,7 +208,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <section className="mt-6 border-t border-line pt-12">
             <div className="flex items-end justify-between gap-4">
               <h2 className="font-display text-[28px]">More near {areaName}</h2>
-              <Link href={`/search?area=${l.areaSlug}`} className="text-[14px] font-medium underline underline-offset-4">See all</Link>
+              <Link href={`/areas/${l.areaSlug}`} className="text-[14px] font-medium underline underline-offset-4">See all</Link>
             </div>
             <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
               {similar.map((s) => (

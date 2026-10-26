@@ -104,7 +104,7 @@ export interface LeadRecord {
   updatedAt: string;
   name: string;
   phone: string;
-  source: "web" | "app";
+  source: "web" | "app" | "ai";
   /** Signed-in account that sent it, when there was one. */
   userId?: string | null;
   email?: string | null;

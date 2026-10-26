@@ -224,9 +224,9 @@ export function Footer() {
         </div>
         {(
           [
-            ["Renters", [["Bed spaces", "/search?type=bed_space"], ["Partitions", "/search?type=partition"], ["Rooms", "/search?type=room"], ["Studios", "/search?type=studio"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Map", "/search?view=map"]]],
-            ["Company", [["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
+            ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
         ).map(([title, links]) => (
           <div key={title}>
@@ -243,6 +243,7 @@ export function Footer() {
           </div>
         ))}
       </div>
+      <PopularSearches />
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-4 py-6 text-[12px] leading-relaxed text-muted md:flex-row md:justify-between md:px-8">
           <p>
@@ -252,5 +253,44 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+/** Crawlable links to the busiest landing pages: the internal-linking backbone for search engines. */
+const POPULAR: [string, string][] = [
+  ["Bed space in Bur Dubai", "/rent/bed-space/bur-dubai"],
+  ["Bed space in Deira", "/rent/bed-space/deira"],
+  ["Bed space in Al Barsha", "/rent/bed-space/al-barsha-1"],
+  ["Bed space in Karama", "/rent/bed-space/al-karama"],
+  ["Partition in Karama", "/rent/partitions/al-karama"],
+  ["Partition in Al Barsha", "/rent/partitions/al-barsha-1"],
+  ["Partition in Deira", "/rent/partitions/deira"],
+  ["Partition in Discovery Gardens", "/rent/partitions/discovery-gardens"],
+  ["Room in Al Mankhool", "/rent/rooms/al-mankhool"],
+  ["Room in Al Nahda, Sharjah", "/rent/rooms/al-nahda-sharjah"],
+  ["Room in JVC", "/rent/rooms/jumeirah-village-circle"],
+  ["Studio in International City", "/rent/studios/international-city"],
+  ["Studio in Business Bay", "/rent/studios/business-bay"],
+  ["Cheapest areas in Dubai", "/blog/cheapest-areas-to-rent-dubai"],
+  ["Cheap bed space Dubai", "/blog/cheap-bed-space-dubai"],
+  ["Dubizzle vs Bayut vs Stayshay", "/blog/dubizzle-vs-bayut-vs-stayshay-rooms"],
+];
+
+function PopularSearches() {
+  return (
+    <div className="border-t border-line">
+      <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-8">
+        <p className="text-[13px] font-bold text-ink">Popular searches</p>
+        <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+          {POPULAR.map(([label, href]) => (
+            <li key={href}>
+              <Link href={href} className="text-[13px] text-muted hover:text-brand">
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }

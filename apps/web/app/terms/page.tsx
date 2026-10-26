@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BRAND } from "@stayshay/core";
 import { DocPage } from "@/components/doc-page";
 
-export const metadata: Metadata = { title: "Terms of use | Stayshay" };
+export const metadata: Metadata = { title: "Terms of use", alternates: { canonical: "/terms" } };
 
 export default function Terms() {
   return (

@@ -7,7 +7,7 @@ import { adminAllowed } from "@/lib/admin-guard";
 import { readUsers, toPublic } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Admin | Stayshay", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 
 export default async function AdminPage() {
   if (!(await adminAllowed())) return <AdminLogin />;

@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { track } from "./analytics";
 import { QuickSignIn, useMe } from "./quick-signin";
 
 const ListingMap = dynamic(() => import("./map-view").then((m) => m.ListingMap), {
@@ -158,6 +159,7 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
     if (!check.ok || !check.value) return;
     const tab = window.open("about:blank", "_blank");
     setBusy(true);
+    track("generate_lead", { method: "viewing_request", listing_id: listing.id, value: listing.priceAed, currency: "AED" });
     await fetch("/api/inquiry", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...check.value, via: "whatsapp" }) }).catch(() => null);
     setBusy(false);
     setStep(3);

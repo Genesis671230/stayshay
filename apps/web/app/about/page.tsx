@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BRAND } from "@stayshay/core";
 import { DocPage } from "@/components/doc-page";
 
-export const metadata: Metadata = { title: "About | Stayshay" };
+export const metadata: Metadata = { title: "About", alternates: { canonical: "/about" } };
 
 export default function About() {
   return (

@@ -9,6 +9,7 @@ import { ListingCard } from "@/components/listing-card";
 import { searchHref, useMarketplace } from "@/components/marketplace";
 import { Icon, aed } from "@/components/ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { track } from "@/components/analytics";
 
 const TYPES: { type: ListingType; hint: string }[] = [
   { type: "bed_space", hint: "Shared room, your own bed" },
@@ -63,6 +64,7 @@ export function FindFunnel() {
     setErrors(check.errors);
     if (!check.ok || !check.value) return;
     setBusy(true);
+    track("generate_lead", { method: "find_me_a_room" });
     await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(check.value) }).catch(() => null);
     setBusy(false);
     setStep(6);

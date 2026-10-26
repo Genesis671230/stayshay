@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { Icon, Logo } from "./ui";
 
 const NAV = [
-  { label: "Bed spaces", href: "/search?type=bed_space" },
-  { label: "Partitions", href: "/search?type=partition" },
-  { label: "Rooms", href: "/search?type=room" },
-  { label: "Studios", href: "/search?type=studio" },
+  { label: "Bed spaces", href: "/rent/bed-space" },
+  { label: "Partitions", href: "/rent/partitions" },
+  { label: "Rooms", href: "/rent/rooms" },
+  { label: "Studios", href: "/rent/studios" },
   { label: "Roommates", href: "/roommates" },
+  { label: "Deals", href: "/deals" },
+  { label: "Guides", href: "/blog" },
 ];
 
 function useMe() {

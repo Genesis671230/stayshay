@@ -27,12 +27,13 @@ Live: **https://stayshay.com** (EC2 `qumak-ec2`, pm2 `stayshay`, port 3210). App
 - **Running the business from /admin** → `references/admin-ops.md`
 - **Mobile app build + store release** → `references/app-release.md`
 - **Known traps** (read before debugging) → `references/gotchas.md`
+- **SEO, blog, GA4, MCP server for ChatGPT/Claude, backlinks** → `references/seo-ai.md` + repo `docs/SEO-PLAYBOOK.md`
 - **Spinning up a copy for a new brand/market** → `references/spin-up.md`
 
 ## Non-negotiables
 
 1. **Nothing user-submitted goes public without admin approval.** Owner listings arrive as `pending_review`; roommate profiles as `pending`. Approve in `/admin`.
-2. **Never commit test data or secrets.** The repo is public. `packages/core/src/data/homebook.json`, `apps/web/public/hb/`, `.env*`, `.data/` are gitignored. homebook.ae data is permission-for-private-testing only.
+2. **Never commit test data or secrets.** The repo is public. `packages/core/src/data/homebook.json`, `apps/web/public/hb/`, `.env*`, `.data/` are gitignored. homebook.ae data: founder confirmed on 2026-10-26 that Stayshay has permission to show it publicly (indexed, sitemap, MCP/ChatGPT/Claude). Still never commit it.
 3. **Never touch other apps on the server** (ramza-app :3000, tmmt-backend :5002, qumak). Only the `stayshay` pm2 process, `~/workspace/stayshay*` and `/etc/nginx/sites-*/stayshay`.
 4. **Real data only** in notifications/social proof. No fake "someone just booked".
 5. **Ask for contact/login only at commitment** (booking a viewing, submitting a listing, publishing a profile) — never up front.

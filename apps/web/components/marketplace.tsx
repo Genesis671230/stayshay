@@ -2,7 +2,7 @@
 
 import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AREAS, LISTINGS, filterListings, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core";
+import { AREAS, LISTINGS, filterListings, parseSearchText, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core";
 
 const TYPES: ListingType[] = ["room", "bed_space", "partition", "studio", "roommate"];
 const SORTS: SortKey[] = ["recommended", "price_asc", "price_desc", "newest"];
@@ -34,6 +34,8 @@ function readUrl(search?: string): ListingFilters {
   const p = new URLSearchParams(search ?? window.location.search);
   const num = (k: string) => (p.get(k) && Number.isFinite(Number(p.get(k))) ? Number(p.get(k)) : undefined);
   const known = new Set(AREAS.map((a) => a.slug));
+  // ?q= free text (Google sitelinks search box, AI assistants, shared links) fills whatever the explicit params don't.
+  const q = p.get("q")?.trim() ? parseSearchText(AREAS, p.get("q")!) : {};
   const f: ListingFilters = {
     areaSlugs: p.get("area")?.split(",").filter((s) => known.has(s)),
     types: p.get("type")?.split(",").filter((t): t is ListingType => TYPES.includes(t as ListingType)),
@@ -48,6 +50,7 @@ function readUrl(search?: string): ListingFilters {
     moveInBy: /^\d{4}-\d{2}-\d{2}$/.test(p.get("movein") ?? "") ? p.get("movein")! : undefined,
     sort: SORTS.find((s) => s === p.get("sort")),
   };
+  for (const k of Object.keys(q) as (keyof ListingFilters)[]) if (f[k] === undefined) (f as Record<string, unknown>)[k] = q[k];
   return Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && !(Array.isArray(v) && !v.length)));
 }
 

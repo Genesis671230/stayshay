@@ -171,3 +171,50 @@ export function compatibility(
   }
   return Math.round((0.7 * lifestyle + 0.3 * budget) * 100);
 }
+
+const TYPE_WORDS: [RegExp, ListingType][] = [
+  [/\b(bed ?spaces?|bedspaces?|sharing beds?|beds?)\b/, "bed_space"],
+  [/\b(partitions?|partition rooms?)\b/, "partition"],
+  [/\b(studios?|studio apartments?|studio flats?)\b/, "studio"],
+  [/\b(private rooms?|master rooms?|rooms?)\b/, "room"],
+];
+
+/**
+ * Free text → filters: "cheap female bed space in Karama under 900 with bills" →
+ * { types: [bed_space], areaSlugs: [al-karama], maxPrice: 900, gender: female, billsIncluded }.
+ * Used by the site's ?q= search and by the ChatGPT / Claude connectors.
+ */
+export function parseSearchText(areas: Area[], raw: string): ListingFilters {
+  let text = normalize(raw);
+  const f: ListingFilters = {};
+  const take = (re: RegExp) => {
+    const m = text.match(re);
+    if (m) text = text.replace(re, " ");
+    return m;
+  };
+  // Prices are read from the raw text: normalize() would split "1,500" and "1.5k".
+  const price = raw.toLowerCase().match(/\b(?:under|below|max|maximum|upto|up to|less than|within|budget|aed|dhs?|dirhams?)\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?\b|\b(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*(?:aed|dhs?|dirhams?)\b|\b(\d+(?:\.\d+)?)(k)\b/);
+  if (price) {
+    const n = Number((price[1] ?? price[3] ?? price[5]).replace(/,/g, "")) * (price[2] || price[4] || price[6] ? 1000 : 1);
+    if (Number.isFinite(n) && n > 0) f.maxPrice = n;
+  }
+  text = text.replace(/\b\d+k?\b|\b(under|below|max|maximum|upto|up to|less than|within|aed|dhs?|dirhams?)\b/g, " ");
+  for (const [re, t] of TYPE_WORDS) if (take(re)) (f.types ??= []).includes(t) || f.types.push(t);
+  if (take(/\b(female|ladies|lady|women|girls?)\b( only)?/)) f.gender = "female";
+  else if (take(/\b(male|gents|men|boys?)\b( only)?/)) f.gender = "male";
+  if (take(/\b(bills?|dewa|utilities)( included)?\b|\ball inclusive\b/)) f.billsIncluded = true;
+  if (take(/\bno deposit\b|\bwithout deposit\b/)) f.noDeposit = true;
+  if (take(/\b(near|close to|walking to) (the )?metro\b|\bmetro\b/)) f.nearMetro = true;
+  if (take(/\bcheap(est)?\b|\bbudget\b|\baffordable\b|\blow cost\b/)) f.sort = "price_asc";
+  // Whatever is left (minus filler words) is the place.
+  const place = text.replace(/\b(in|at|near|for|rent|rental|monthly|month|per|a|an|the|with|and|available|uae|dubai|apartment|apartments|flat|flats|clean|furnished|looking|need|want|find|me|i|to|only|executive|sharing|shared)\b/g, " ").replace(/\s+/g, " ").trim();
+  const emirate = take(/\b(sharjah|ajman|abu dhabi)\b/)?.[1];
+  const where = place.replace(/\b(sharjah|ajman|abu dhabi)\b/g, " ").trim();
+  if (where) {
+    const hits = searchAreas(areas, where, 6).filter((m) => m.score >= 35);
+    const hit = (emirate && hits.find((m) => normalize(m.area.emirate) === emirate)) || hits[0];
+    if (hit) f.areaSlugs = [hit.area.slug];
+  }
+  if (!f.areaSlugs && emirate) f.emirate = emirate.replace(/\b\w/g, (c) => c.toUpperCase());
+  return f;
+}

@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { AREAS, AREA_BY_SLUG, TYPE_LABEL, filterListings, normalizePhone, searchAreas, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, TYPE_LABEL, filterListings, normalizePhone, rankDeals, searchAreas, type Listing, type ListingType } from "@stayshay/core";
 import { DATA_DIR, addLead, getAllListings, getListing, readLeads, updateLead } from "./store";
 
 /**
@@ -84,6 +84,8 @@ How a conversation goes:
 
 Branches: roommates → understand budget, area, gender, move-in and habits, then send them to ${SITE}/roommates to create a profile with a photo (people already looking are listed there). Owners → ${SITE}/list, free. Off-topic → one helpful line, then back to housing.
 
+Deal hunter: you are the renter's agent, not the lister's. When someone wants "cheap", "best value", "a deal", or you're recommending in general, call best_deals (with their type/area/budget) and lead with the strongest value, saying in a few words why it's a good deal (e.g. "20% below the usual price in Karama, bills included"). Also point to ${SITE}/deals for the full list.
+
 Rules:
 - Only state facts that tools returned. Never invent a listing, price, availability, distance, photo or review. If nothing fits, say so and suggest one change.
 - Use nearby_areas when they mention "near me", a workplace, a landmark or a metro station you're not sure about.
@@ -117,6 +119,22 @@ const TOOLS: Anthropic.Beta.BetaTool[] = [
         near_metro: { ...bool, description: "Within ~10 minutes' walk of a metro station" },
       },
       required: ["area", "type", "max_price", "gender", "bills_included", "no_deposit", "near_metro"],
+    },
+  },
+  {
+    name: "best_deals",
+    description:
+      "Best-value live listings: ranked by how far below the typical price for the same type and area they are, plus bills included, no deposit, no fees and metro access. Each result has a 'why' list. Use null for filters the person didn't give.",
+    strict: true,
+    input_schema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        area: { ...str, description: "Area, community or metro station as said" },
+        type: { type: ["string", "null"], enum: ["bed_space", "partition", "room", "studio", null] },
+        max_price: { ...num, description: "Maximum monthly rent in AED" },
+      },
+      required: ["area", "type", "max_price"],
     },
   },
   {
@@ -245,6 +263,21 @@ async function runTool(chat: Chat, name: string, input: Record<string, unknown>,
     const top = results.slice(0, 6);
     for (const l of top) seen.set(l.id, l);
     return JSON.stringify({ total: results.length, note: areaNote, places: top.map(brief) });
+  }
+
+  if (name === "best_deals") {
+    const area = typeof input.area === "string" && input.area.trim() ? searchAreas(AREAS, input.area, 1).map((m) => m.area.slug) : undefined;
+    const all = await getAllListings();
+    const pool = new Set(
+      filterListings(all, AREAS, {
+        areaSlugs: area?.length ? area : undefined,
+        types: typeof input.type === "string" ? [input.type as ListingType] : undefined,
+        maxPrice: typeof input.max_price === "number" ? input.max_price : undefined,
+      }).map((l) => l.id),
+    );
+    const top = rankDeals(all, all.length).filter((d) => pool.has(d.listing.id)).slice(0, 5);
+    for (const d of top) seen.set(d.listing.id, d.listing);
+    return JSON.stringify({ deals: top.map((d) => ({ ...brief(d.listing), typical_price_aed: d.typicalAed, why: d.reasons })), all_deals: `${SITE}/deals` });
   }
 
   if (name === "get_listing") {

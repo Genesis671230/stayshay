@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BRAND } from "@stayshay/core";
 import { DocPage } from "@/components/doc-page";
 
-export const metadata: Metadata = { title: "Privacy policy | Stayshay" };
+export const metadata: Metadata = { title: "Privacy policy", alternates: { canonical: "/privacy" } };
 
 export default function Privacy() {
   return (

@@ -7,7 +7,7 @@ import { AccountForm } from "@/components/auth-forms";
 import { currentUser, toPublic } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Your account | Stayshay" };
+export const metadata: Metadata = { title: "Your account", robots: { index: false, follow: false } };
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ complete?: string }> }) {
   const u = await currentUser();
