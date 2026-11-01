@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AREA_BY_SLUG, TYPE_LABEL, TYPE_LABEL_PLURAL, isVerifiedCompliant, similarListings } from "@stayshay/core";
-import { getAllListings, getListing, getListingsForAdmin } from "@/lib/store";
+import { getAllListings, getListing, getListingsForAdmin, slim } from "@/lib/store";
 import { adminAllowed } from "@/lib/admin-guard";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title: `${l.title} · ${aed(l.priceAed)}/month · ${area}`,
     description: `${TYPE_LABEL[l.type]} in ${area} for ${aed(l.priceAed)}/month${l.billsIncluded ? ", bills included" : ""}${l.deposit ? "" : ", no deposit"}. ${l.description}`.slice(0, 160),
     alternates: { canonical: `/listing/${l.id.toLowerCase()}` },
-    openGraph: { title: `${l.title} · ${aed(l.priceAed)}/month`, url: `/listing/${l.id.toLowerCase()}`, images: l.photos[0] ? [l.photos[0]] : [] },
+    openGraph: { title: `${l.title} · ${aed(l.priceAed)}/month`, url: `/listing/${l.id.toLowerCase()}`, images: l.photos[0] ? [{ url: l.photos[0].startsWith("/") ? `/_next/image?url=${encodeURIComponent(l.photos[0])}&w=1200&q=70` : l.photos[0], alt: l.title }] : [] },
   };
 }
 
@@ -68,7 +68,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const verified = isVerifiedCompliant(l) || l.verifiedLister;
 
   return (
-    <MarketplaceProvider listings={all}>
+    <MarketplaceProvider listings={slim(all)}>
       {!preview && <JsonLd data={[listingLd(l), breadcrumbLd([["Home", "/"], [TYPE_LABEL_PLURAL[l.type], rentPath(l.type)], [areaName, rentPath(l.type, l.areaSlug)], [l.title, `/listing/${l.id.toLowerCase()}`]])]} />}
       <Header />
       <main className="mx-auto max-w-[1240px] px-4 pb-28 pt-4 md:px-8 lg:pb-20">

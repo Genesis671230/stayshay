@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
-import { LISTINGS, type Listing, type ListingStatus } from "@stayshay/core";
+import { LISTINGS, normalizeRefCode, stripPhones, type Listing, type ListingStatus } from "@stayshay/core";
 
 /**
  * File-backed store for one server (pm2 on EC2): admin listings, leads, tenancies, availability
@@ -11,7 +11,7 @@ import { LISTINGS, type Listing, type ListingStatus } from "@stayshay/core";
 export const DATA_DIR = process.env.STAYSHAY_DATA_DIR || join(process.cwd(), ".data");
 export const UPLOAD_DIR = join(DATA_DIR, "uploads");
 
-async function readJson<T>(name: string, fallback: T): Promise<T> {
+export async function readJson<T>(name: string, fallback: T): Promise<T> {
   try {
     return JSON.parse(await readFile(join(DATA_DIR, name), "utf8")) as T;
   } catch {
@@ -21,7 +21,7 @@ async function readJson<T>(name: string, fallback: T): Promise<T> {
 
 // Writes are serialised per file so two quick requests can't interleave read-modify-write.
 const queues = new Map<string, Promise<unknown>>();
-async function updateJson<T>(name: string, fallback: T, fn: (cur: T) => T | Promise<T>): Promise<T> {
+export async function updateJson<T>(name: string, fallback: T, fn: (cur: T) => T | Promise<T>): Promise<T> {
   const prev = queues.get(name) ?? Promise.resolve();
   const run = prev.then(async () => {
     const next = await fn(await readJson(name, fallback));
@@ -84,11 +84,45 @@ export async function getListingsForAdmin(): Promise<Listing[]> {
 
 /** What renters can see: live only, lister phone stripped. */
 export async function getAllListings(): Promise<Listing[]> {
-  return (await getListingsForAdmin()).filter((l) => (l.status ?? "live") === "live").map(({ listerPhone: _private, ...l }) => l);
+  return (await getListingsForAdmin()).filter((l) => (l.status ?? "live") === "live").map(({ listerPhone: _private, ...l }) => publicCopy(l));
+}
+
+/** Contact always goes through Stayshay: phone numbers typed into the text never reach the public. */
+function publicCopy(l: Listing): Listing {
+  return {
+    ...l,
+    title: stripPhones(l.title),
+    description: stripPhones(l.description ?? ""),
+    descriptionLines: l.descriptionLines?.map(stripPhones).filter(Boolean),
+  };
+}
+
+/**
+ * What browsing pages send to the browser: enough for cards, filters and the map, without the long text
+ * (the listing page loads its own full copy). Keeps the HTML light on phones.
+ */
+export function slim(listings: Listing[]): Listing[] {
+  return listings.map(({ descriptionLines: _d, features: _f, preferredNationality: _n, preferredTenant: _t, description, photos, ...l }) => ({
+    ...l,
+    description: description.slice(0, 140),
+    photos: photos.slice(0, 4),
+  }));
 }
 
 export async function getListing(id: string): Promise<Listing | undefined> {
   return (await getAllListings()).find((l) => l.id.toLowerCase() === id.toLowerCase());
+}
+
+export const REF_COOKIE = "ss_ref";
+
+/** The referral code saved in the visitor's cookie, when called inside a request. */
+export async function refCodeFromRequest(): Promise<string | null> {
+  try {
+    const { cookies } = await import("next/headers");
+    return normalizeRefCode((await cookies()).get(REF_COOKIE)?.value);
+  } catch {
+    return null;
+  }
 }
 
 /* ---------- leads: viewing inquiries + tenant / owner / roommate requests ---------- */
@@ -110,6 +144,8 @@ export interface LeadRecord {
   email?: string | null;
   listingId?: string | null;
   listingTitle?: string | null;
+  /** Referral code the person arrived with (stayshay.com/?ref=CODE), if any. */
+  refCode?: string | null;
   /** The validated request exactly as submitted. */
   data: Record<string, unknown>;
   note?: string;
@@ -119,7 +155,8 @@ export const readLeads = () => readJson<LeadRecord[]>("leads.json", []);
 
 export async function addLead(kind: LeadKind, data: Record<string, unknown> & { name: string; phone: string }, extra: Partial<LeadRecord> = {}) {
   const now = new Date().toISOString();
-  const rec: LeadRecord = { id: randomUUID().slice(0, 8), kind, status: "new", createdAt: now, updatedAt: now, name: data.name, phone: data.phone, source: "web", data, ...extra };
+  const refCode = extra.refCode ?? (await refCodeFromRequest());
+  const rec: LeadRecord = { id: randomUUID().slice(0, 8), kind, status: "new", createdAt: now, updatedAt: now, name: data.name, phone: data.phone, source: "web", data, ...extra, refCode };
   await updateJson<LeadRecord[]>("leads.json", [], (all) => [rec, ...all].slice(0, 5000));
   return rec;
 }

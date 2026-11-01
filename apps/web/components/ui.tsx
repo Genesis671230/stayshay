@@ -1,5 +1,4 @@
 import type { SVGProps } from "react";
-import { Shay } from "./shay";
 
 export const aed = (n: number) => `AED ${n.toLocaleString("en-US")}`;
 
@@ -89,12 +88,24 @@ export function Icon({ name, size = 18, ...rest }: { name: IconName; size?: numb
   );
 }
 
-/** Stayshay logo: Shay (the living blob mark) + wordmark. `light` is for dark backgrounds. */
+/** The Stayshay mark: forest squircle with the ivory S-mark. `light` flips it for dark backgrounds. */
+export function Mark({ size = 30, light = false }: { size?: number; light?: boolean }) {
+  const bg = light ? "#F6F3EC" : "#1B3F2E";
+  const fg = light ? "#1B3F2E" : "#F6F3EC";
+  return (
+    <svg width={size} height={size} viewBox="415 248.5 1100 1100" aria-hidden className="shrink-0">
+      <rect x="415" y="248.5" width="1100" height="1100" rx="250" fill={bg} />
+      <path d="M614 407H744V858L1144 407H1316L744 1057H1000L903 1190H614Z" fill={fg} />
+      <path d="M1135 700L1275 870C1300 902 1316 945 1316 1000C1316 1105 1235 1190 1130 1190H975L1072 1057H1125C1160 1057 1187 1030 1187 995C1187 975 1180 960 1167 945L1050 797Z" fill={fg} />
+    </svg>
+  );
+}
+
 export function Logo({ className = "", light = false, size = 30 }: { className?: string; light?: boolean; animated?: boolean; size?: number }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      <Shay size={size} glow={false} />
-      <span className={`text-[22px] font-extrabold leading-none tracking-[-0.04em] ${light ? "text-white" : "text-brand"}`}>stayshay</span>
+      <Mark size={size} light={light} />
+      <span className={`text-[22px] font-semibold leading-none tracking-[-0.03em] ${light ? "text-[#F6F3EC]" : "text-[#1B3F2E]"}`}>stayshay</span>
     </span>
   );
 }

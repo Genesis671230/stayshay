@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AREAS, AREA_BY_SLUG, PHOTOS, coverFor, fromPriceByType, median, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, PHOTOS, coverFor, fromPriceByType, median, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import { Icon, aed } from "./ui";
 import { ListingCard } from "./listing-card";
 import { useMarketplace } from "./marketplace";

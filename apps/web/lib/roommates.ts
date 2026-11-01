@@ -1,3 +1,4 @@
+import { stripPhones } from "@stayshay/core";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -57,7 +58,8 @@ function update<T>(fn: (all: RoommateProfile[]) => { all: RoommateProfile[]; res
 export async function publicRoommates(): Promise<PublicRoommate[]> {
   return (await readRoommates())
     .filter((r) => r.status === "approved")
-    .map(({ leadId: _l, userId: _u, status: _s, ...pub }) => pub);
+    // Contact goes through Stayshay: numbers typed into the text are removed from the public card.
+    .map(({ leadId: _l, userId: _u, status: _s, ...pub }) => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) }));
 }
 
 /** Square-crops and shrinks an uploaded photo (strips EXIF/location data too). Returns its public URL. */

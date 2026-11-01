@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
@@ -17,6 +18,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     <MarketplaceProvider>
       <Header />
       <AccountForm user={toPublic(u)} complete={complete === "1"} />
+      <div className="mx-auto max-w-[560px] px-4 pb-16">
+        <Link href="/account/referrals" className="glow-panel block rounded-[22px] p-5 text-white">
+          <span className="block text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Refer & earn</span>
+          <span className="mt-1 block text-[18px] font-bold">Your link, the people you brought in, and your rewards</span>
+        </Link>
+      </div>
       <Footer />
     </MarketplaceProvider>
   );

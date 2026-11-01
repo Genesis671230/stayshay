@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { AREA_BY_SLUG, TYPE_LABEL, isVerifiedCompliant, whatsappMessage, type Listing } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, isVerifiedCompliant, whatsappMessage, type Listing } from "@stayshay/core/src/client.ts";
 import { Badge, Icon, aed, availability } from "./ui";
 import { useMarketplace } from "./marketplace";
 import { stayshayWhatsapp } from "@/lib/contact";

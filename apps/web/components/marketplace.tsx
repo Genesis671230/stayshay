@@ -2,7 +2,7 @@
 
 import { Suspense, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AREAS, LISTINGS, filterListings, parseSearchText, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core";
+import { AREAS, filterListings, parseSearchText, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core/src/client.ts";
 
 const TYPES: ListingType[] = ["room", "bed_space", "partition", "studio", "roommate"];
 const SORTS: SortKey[] = ["recommended", "price_asc", "price_desc", "newest"];
@@ -86,7 +86,7 @@ function UrlSync({ onChange }: { onChange: (qs: string) => void }) {
 
 const SAVED_KEY = "stayshay:saved";
 
-export function MarketplaceProvider({ children, listings = LISTINGS }: { children: React.ReactNode; listings?: Listing[] }) {
+export function MarketplaceProvider({ children, listings = [] }: { children: React.ReactNode; listings?: Listing[] }) {
   const [filters, setFiltersState] = useState<ListingFilters>({});
   const lastWritten = useRef<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);

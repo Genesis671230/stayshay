@@ -10,6 +10,6 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#145C46",
-    icons: [{ src: "/brand/stayshay-mark.svg", sizes: "any", type: "image/svg+xml" }],
+    icons: [{ src: "/brand/stayshay-icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

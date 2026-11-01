@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ListFunnel } from "@/components/list-funnel";
 import { MarketplaceProvider } from "@/components/marketplace";
-import { getAllListings } from "@/lib/store";
+import { getAllListings, slim } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "List your room, bed space or studio 
 
 export default async function Page() {
   return (
-    <MarketplaceProvider listings={await getAllListings()}>
+    <MarketplaceProvider listings={slim(await getAllListings())}>
       <ListFunnel />
     </MarketplaceProvider>
   );

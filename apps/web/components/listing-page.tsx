@@ -4,7 +4,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core";
+import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core/src/client.ts";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
 import { track } from "./analytics";

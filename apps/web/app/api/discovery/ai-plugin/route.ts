@@ -13,7 +13,7 @@ export function GET() {
         "Search live Stayshay rentals in the UAE (bed spaces, partitions, private rooms, studios). Prices are monthly in AED. Use searchListings with plain-words q or filters, bestDeals for below-market picks, getListing for details. Always share the listing url.",
       auth: { type: "none" },
       api: { type: "openapi", url: `${SITE}/openapi.json` },
-      logo_url: `${SITE}/brand/stayshay-mark.svg`,
+      logo_url: `${SITE}/brand/stayshay-icon.svg`,
       contact_email: BRAND.supportEmail,
       legal_info_url: `${SITE}/terms`,
     },

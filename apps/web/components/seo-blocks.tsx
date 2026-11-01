@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AREAS, AREA_BY_SLUG, TYPE_LABEL_PLURAL, filterListings, rankDeals, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, TYPE_LABEL_PLURAL, filterListings, rankDeals, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import type { Block } from "@/lib/blog";
 import { liveAreas, priceStats, rentPath } from "@/lib/seo";
 import { ListingCard } from "./listing-card";
@@ -91,6 +91,7 @@ const CTAS = {
   roommates: { title: "Find a roommate", body: "Browse people already looking, or add your own profile.", href: "/roommates", label: "Open the roommate board" },
   deals: { title: "See today's best deals", body: "Shay ranks every live listing against the going rate for its area.", href: "/deals", label: "Best deals" },
   ai: { title: "Ask Shay, here or in ChatGPT and Claude", body: "Search live Stayshay listings in plain words, wherever you chat.", href: "/ai", label: "How it works" },
+  refer: { title: "Know someone who's moving?", body: "Share your Stayshay link and earn a reward when they move in. Brokers get a partner profile.", href: "/refer", label: "Refer & earn" },
 } as const;
 
 export function Cta({ kind }: { kind: keyof typeof CTAS }) {
@@ -102,7 +103,7 @@ export function Cta({ kind }: { kind: keyof typeof CTAS }) {
         <p className="mt-1 text-[14.5px] text-ink-2">{c.body}</p>
       </div>
       <Link href={c.href} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-[12px] bg-brand px-5 text-[14.5px] font-semibold text-white hover:bg-brand-deep">
-        {c.label} <Icon name="chevron-right" size={16} />
+        {c.label}
       </Link>
     </div>
   );

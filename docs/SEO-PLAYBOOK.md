@@ -9,7 +9,7 @@ Goal: rank #1 in the UAE for shared/monthly housing searches ("bed space Dubai",
 | Indexing on, GA4 (`G-12X8446CFV`, override with `NEXT_PUBLIC_GA_ID`) + lead events (`generate_lead`: whatsapp / viewing_request / find_me_a_room / call / email) | `app/layout.tsx`, `components/analytics.tsx` | Measure what converts. Mark `generate_lead` as a key event in GA4. |
 | Programmatic landing pages: `/rent/{bed-space,partitions,rooms,studios}`, `/rent/<type>/<area>`, `/areas/<area>`, `/areas` | `app/rent`, `app/areas`, `components/seo-landing.tsx` | One page per search intent × area, live prices in the title ("from AED 400"), FAQ answered from live data. Empty combos are `noindex,follow`. |
 | `/deals`: Shay's ranked below-market listings | `app/deals`, `packages/core/src/deals.ts` | "cheap ___ Dubai" intent; fresh every visit. |
-| 14 guides (`/blog`) with live price tables, live listing cards, FAQ schema, RSS | `lib/blog.ts`, `app/blog` | Topical authority + long-tail. Covers come from our own listing photos. |
+| 25 guides (`/blog`), incl. competitor-alternative pages (Dubizzle, Bayut/Property Finder, Homebook, Facebook/WhatsApp groups), cheap apartments, partitions with no deposit, bed space near metro, shared-housing rules, Sharjah rooms, broker referrals with live price tables, live listing cards, FAQ schema, RSS | `lib/blog.ts`, `app/blog` | Topical authority + long-tail. Covers come from our own listing photos. |
 | JSON-LD: Organization, WebSite+SearchAction (`/search?q=`), RealEstateListing+Offer per listing, BreadcrumbList, ItemList, FAQPage, Article | `lib/seo.ts` | Rich results, sitelinks search box, AI extraction. |
 | `sitemap.xml` (every page, listing + images), `robots.txt` (AI bots explicitly allowed), canonicals on every page, OG image, manifest | `app/sitemap.ts`, `app/robots.ts` | Crawl coverage. |
 | Footer "Popular searches" + header links to landing pages; listing breadcrumbs → landing pages | `components/sections.tsx`, `header.tsx` | Internal link equity to money pages. |
@@ -66,3 +66,13 @@ Dubizzle (volume classifieds), Bayut / Property Finder (agent-led yearly whole-u
 ## Agents installed (`.claude/agents/`, from msitarzewski/agency-agents, MIT)
 
 seo-specialist, ai-citation-strategist, agentic-search-optimizer, aeo-foundations, content-creator, growth-hacker, reddit-community-builder, social-media-strategist, instagram-curator, tiktok-strategist, pr-communications-manager, app-store-optimizer, ppc-strategist, paid-social-strategist, sales-offer-lead-gen-strategist, real-estate-buyer-seller, customer-service. In Claude Code: "use the seo-specialist agent to …".
+
+## Added 2026-11-01
+
+- **Speed**: browser bundles no longer include the listing catalogue (`@stayshay/core/src/client.ts` + `data/areas-merged.json` written by `scripts/ensure-data.mjs`); browsing pages send slim listings (`slim()` in `lib/store.ts`).
+- **Phone numbers stripped** from listing titles/descriptions and roommate cards before anything public, MCP or AI sees them (`stripPhones`). All contact routes to the Stayshay WhatsApp.
+- **WhatsApp message** now starts with the listing URL (WhatsApp shows the photo preview), then ref, type, price, location and a Google Maps pin. OG image per listing is a resized photo.
+- **Refer & earn + partner brokers**: `/refer`, `/partners`, `/partners/<code>` (RealEstateAgent schema), all in the sitemap. Partner profiles are linkable assets: ask every approved broker to link their profile from Instagram/WhatsApp Business/Linktree. That's the easiest source of real local backlinks.
+
+## Images
+Use our own listing photos (they're served from stayshay.com and appear in the image sitemap). Don't copy photos from Dubizzle, Bayut or other portals: they belong to those sites or their listers, copying them is a copyright and trust risk, and Google treats duplicate images as low value.

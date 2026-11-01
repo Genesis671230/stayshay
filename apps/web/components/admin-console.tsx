@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AREA_BY_SLUG, TYPE_LABEL, roommateMatch, type Listing, type ListingStatus, type RoommateLead } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, roommateMatch, type Listing, type ListingStatus, type RoommateLead } from "@stayshay/core/src/client.ts";
 import type { Announcement, LeadRecord, LeadStatus, Tenancy } from "@/lib/store";
 import type { RoommateProfile } from "@/lib/roommates";
 import type { PublicUser } from "@/lib/auth";
@@ -168,6 +168,9 @@ export function AdminConsole(props: {
                 {n ? <span className="rounded-full bg-fresh px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{n}</span> : null}
               </button>
             ))}
+            <a href="/admin/referrals" className="-mb-px flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] text-muted hover:text-ink">
+              Referrals & partners
+            </a>
           </nav>
         </header>
 

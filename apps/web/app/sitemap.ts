@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
 import { POSTS } from "@/lib/blog";
 import { getAllListings } from "@/lib/store";
+import { publicPartners } from "@/lib/referrals";
 import { RENT_TYPES, SITE, absolute, liveAreas, listingUrl, rentPath } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const all = await getAllListings();
+  const [all, partners] = await Promise.all([getAllListings(), publicPartners()]);
   const now = new Date();
   const page = (path: string, priority: number, changeFrequency: "daily" | "weekly" | "monthly" = "daily") => ({ url: `${SITE}${path}`, lastModified: now, changeFrequency, priority });
   const areas = liveAreas(all);
@@ -21,6 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/blog", 0.8, "weekly"),
     page("/ai", 0.6, "monthly"),
     page("/about", 0.4, "monthly"),
+    page("/refer", 0.7, "weekly"),
+    page("/partners", 0.6, "weekly"),
+    ...partners.map((p) => page(`/partners/${p.code.toLowerCase()}`, 0.5, "weekly")),
     ...RENT_TYPES.map((t) => page(rentPath(t), 0.9)),
     ...areas.map(({ area }) => page(`/areas/${area.slug}`, 0.8)),
     ...areas.flatMap(({ area, types }) => RENT_TYPES.filter((t) => types[t]).map((t) => page(rentPath(t, area.slug), 0.8))),

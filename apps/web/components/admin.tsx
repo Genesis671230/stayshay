@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AMENITY_LABEL, AREAS, AREA_BY_SLUG, TYPE_LABEL, parseListingMessage, type Amenity, type Listing, type ListingType } from "@stayshay/core";
+import { AMENITY_LABEL, AREAS, AREA_BY_SLUG, TYPE_LABEL, parseListingMessage, type Amenity, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import { AreaCombobox } from "./search-bar";
 import { Icon, Logo, aed } from "./ui";
 

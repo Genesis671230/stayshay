@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap, Marker } from "leaflet";
-import { AREA_BY_SLUG, listingPoint, type Listing } from "@stayshay/core";
+import { AREA_BY_SLUG, listingPoint, type Listing } from "@stayshay/core/src/client.ts";
 
 const DETAIL_ZOOM = 13;
 // OSM's public tiles suit private testing; set NEXT_PUBLIC_MAP_TILES to a keyed provider (MapTiler, Stadia) before real traffic.

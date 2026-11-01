@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BRAND, PHOTOS } from "@stayshay/core";
+import { BRAND, PHOTOS } from "@stayshay/core/src/client.ts";
 import { Icon, Logo } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
 
@@ -9,19 +9,19 @@ const H2 = "font-display mt-2 text-[34px] leading-[1.08] md:text-[44px]";
 const TENANT_STEPS = [
   ["Search or ask", "Filter by area, metro, budget and move-in date, or answer five questions and we’ll match you."],
   ["Check the details", "Rent, deposit, upfront cost, bills, bathroom and who can live there, on every listing."],
-  ["Book a viewing", "One tap sends the lister your name, date and budget on WhatsApp."],
+  ["Book a viewing", "One tap sends your request to the Stayshay team on WhatsApp. We confirm with the owner and set the time."],
   ["View, then pay", "Never transfer money before you’ve seen the place and met the lister."],
 ];
 const OWNER_STEPS = [
   ["Tell us about it", "Type, area, rent and who it suits. About two minutes."],
-  ["Send photos", "Share 4 to 8 photos on WhatsApp. We write and check the listing."],
+  ["Send photos", "Add 4 to 8 photos. We write and check the listing."],
   ["Get verified", "Phone and ID checked; consent and permit details earn the compliance badge."],
   ["Take inquiries", "Renters reach you pre-qualified. Mark it rented in one tap."],
 ];
 
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-[1240px] px-4 py-16 md:px-8 md:py-24">
+    <section className="mx-auto max-w-[1240px] px-4 py-12 md:px-8 md:py-24">
       <p className="eyebrow">How it works</p>
       <h2 className={H2}>Simple on both sides</h2>
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -33,7 +33,7 @@ export function HowItWorks() {
             <div className="flex items-center justify-between gap-4">
               <h3 className="font-display text-[26px]">{title as string}</h3>
               <Link href={href as string} className="flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] bg-brand px-4 text-[14px] font-medium text-white">
-                {cta as string} <Icon name="arrow-right" size={15} />
+                {cta as string}
               </Link>
             </div>
             <ol className="mt-6 space-y-5">
@@ -67,11 +67,11 @@ export function Trust() {
   ];
   return (
     <section className="bg-brand text-white">
-      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 px-4 py-16 md:px-8 md:py-24 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 px-4 py-12 md:px-8 md:py-24 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div>
           <p className="eyebrow">Trust &amp; safety</p>
           <h2 className={`${H2} text-white`}>Safety you can see on every listing</h2>
-          <p className="mt-4 max-w-[440px] text-[15.5px] leading-relaxed text-white/75">
+          <p className="m-short mt-4 max-w-[440px] text-[15.5px] leading-relaxed text-white/75">
             Dubai’s shared-housing rules now require permits for partitions and landlord consent for sharing. We show you what’s been declared and checked before you pick up the phone.
           </p>
           <p className="mt-6 max-w-[440px] border-l-2 border-brass pl-4 text-[13px] leading-relaxed text-white/60">
@@ -81,9 +81,9 @@ export function Trust() {
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[16px] bg-white/12 sm:grid-cols-2">
           {items.map((it) => (
             <div key={it.title} className="bg-brand p-6">
-              <Icon name={it.icon} size={22} className="text-brass" />
+              <span className="block h-2 w-2 rounded-full bg-[#6ee7b7] shadow-[0_0_14px_#6ee7b7]" />
               <h3 className="mt-4 text-[16px] font-semibold">{it.title}</h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-white/70">{it.body}</p>
+              <p className="m-short mt-1.5 text-[14px] leading-relaxed text-white/70">{it.body}</p>
             </div>
           ))}
         </div>
@@ -100,7 +100,7 @@ export function ListerCta() {
     ["Mark rented in one tap", "The calls stop once your room is let."],
   ];
   return (
-    <section id="list" className="mx-auto max-w-[1240px] px-4 py-16 md:px-8 md:py-24">
+    <section id="list" className="mx-auto max-w-[1240px] px-4 py-12 md:px-8 md:py-24">
       <div className="grid grid-cols-1 overflow-hidden rounded-[22px] border border-line lg:grid-cols-2">
         <div className="relative min-h-[280px] bg-surface">
           <Image src={PHOTOS.hero[1] ?? PHOTOS.hero[0]} alt="Furnished room ready for tenants" fill sizes="(min-width:1024px) 50vw, 100vw" className="object-cover" />
@@ -108,11 +108,11 @@ export function ListerCta() {
         <div className="p-6 md:p-10">
           <p className="eyebrow">For owners and landlords</p>
           <h2 className={H2}>Fill your room without the back-and-forth</h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-ink-2">List for free in under five minutes. Get WhatsApp inquiries that already include name, move-in date and budget.</p>
+          <p className="m-short mt-4 text-[15.5px] leading-relaxed text-ink-2">List for free in under five minutes. Get WhatsApp inquiries that already include name, move-in date and budget.</p>
           <ul className="mt-6 space-y-3.5">
             {benefits.map(([t, d]) => (
               <li key={t} className="flex gap-3">
-                <Icon name="check" size={18} className="mt-0.5 shrink-0 text-verified" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-fresh shadow-[0_0_10px_#27ae78]" />
                 <span className="text-[14.5px]">
                   <span className="font-medium">{t}.</span> <span className="text-muted">{d}</span>
                 </span>
@@ -121,7 +121,7 @@ export function ListerCta() {
           </ul>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/list" className="flex h-12 items-center justify-center gap-2 rounded-[12px] bg-brand px-6 text-[15px] font-medium text-white">
-              List for free <Icon name="arrow-right" size={16} />
+              List for free
             </Link>
             <a href="#faq" className="flex h-12 items-center justify-center rounded-[12px] border border-line-strong px-6 text-[15px] font-medium">
               How verification works
@@ -147,9 +147,9 @@ export function FinalCta() {
           <Link key={href} href={href!} className="group grid grid-cols-[minmax(0,1fr)_120px] overflow-hidden rounded-[22px] border border-line bg-white sm:grid-cols-[minmax(0,1fr)_180px]">
             <span className="p-6 md:p-8">
               <span className="font-display block text-[26px] leading-tight md:text-[30px]">{t}</span>
-              <span className="mt-2 block text-[14.5px] leading-relaxed text-muted">{d}</span>
+              <span className="m-short mt-2 block text-[14.5px] leading-relaxed text-muted">{d}</span>
               <span className="mt-5 inline-flex h-11 items-center gap-2 rounded-[12px] bg-brand px-5 text-[14.5px] font-medium text-white">
-                {cta} <Icon name="arrow-right" size={15} />
+                {cta}
               </span>
             </span>
             <span className="relative bg-surface">
@@ -168,9 +168,10 @@ const FAQ: [string, string][] = [
     "Only with the right approvals. Under Dubai’s shared-housing rules, partitioned rooms and bed spaces need a permit, and only owners or licensed operators may rent them out. A tenant needs the landlord’s written consent to sublet. On Stayshay, listings that declare consent and a permit get a Verified compliant badge once we’ve checked the documents. Stayshay is not a government body and doesn’t issue or confirm permits. For a definitive answer, check with Dubai Municipality.",
   ],
   ["Is Stayshay free?", "Yes, for renters. Listing is free for landlords too. Optional boosts will come later."],
+  ["Can I earn by referring people?", "Yes. Share your link from Refer & earn. When someone you referred moves in, or an owner you referred gets a tenant, Stayshay pays you a reward. Brokers and agents also get a partner profile."],
   ["Does Stayshay charge commission?", "No. Some listers do, and their listings say so. Use the No commission filter to hide them."],
   ["What does “Verified lister” mean?", "We’ve confirmed the lister’s phone number and identity. It doesn’t mean we’ve inspected the property, so always view before you pay."],
-  ["How do I contact a lister?", "Tap WhatsApp on any listing. Your name, move-in date and budget are filled in for you, and we keep a record of the request."],
+  ["How do I contact a lister?", "Tap WhatsApp on any listing. Your message comes to the Stayshay team with the listing number, its photo link and location. We confirm with the owner and set up the viewing, so your number is never passed around."],
   ["Should I pay a deposit to hold a room?", "Not before you’ve viewed it in person. If someone pressures you to pay first, report the listing."],
   ["Can Stayshay find a place for me?", "Yes. Answer five questions in Find me a room and we’ll show what fits now, then WhatsApp you new matches and help book viewings."],
   ["Which cities do you cover?", "Dubai first, then Sharjah, Abu Dhabi and Ajman. Rules differ by emirate, and badges follow Dubai rules unless the listing says otherwise."],
@@ -178,7 +179,7 @@ const FAQ: [string, string][] = [
 
 export function Faq() {
   return (
-    <section id="faq" className="mx-auto max-w-[880px] px-4 py-16 md:px-8 md:py-24">
+    <section id="faq" className="mx-auto max-w-[880px] px-4 py-12 md:px-8 md:py-24">
       <p className="eyebrow text-center">Questions</p>
       <h2 className={`${H2} text-center`}>Good to know before you move</h2>
       <div className="mt-10 divide-y divide-line border-y border-line">
@@ -186,7 +187,7 @@ export function Faq() {
           <details key={q} className="group py-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-[16px] font-medium">
               {q}
-              <Icon name="chevron-down" size={18} className="shrink-0 transition-transform group-open:rotate-180" />
+              <span aria-hidden className="shrink-0 text-[22px] font-light leading-none text-muted transition-transform group-open:rotate-45">+</span>
             </summary>
             <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{a}</p>
           </details>
@@ -219,13 +220,13 @@ export function Footer() {
             rel="noopener noreferrer"
             className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-whatsapp/10 px-4 text-[14px] font-semibold text-whatsapp"
           >
-            <Icon name="whatsapp" size={16} /> Talk to us
+            Talk to us on WhatsApp
           </a>
         </div>
         {(
           [
             ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
         ).map(([title, links]) => (

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AREAS, BRAND, TYPE_LABEL, filterListings, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, BRAND, TYPE_LABEL, filterListings, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import { Shay, type ShayMood } from "./shay";
 import { Icon, aed } from "./ui";
 
@@ -107,7 +107,7 @@ function guideAsk(g: Guide): Msg {
   if (g.step === "type")
     return {
       role: "assistant",
-      text: "Hi! I’m Shay ✨ Let’s find your place in three taps. What are you looking for?",
+      text: "Hi! I’m Shay Let’s find your place in three taps. What are you looking for?",
       chips: [
         { label: "Bed space", value: "bed_space" },
         { label: "Partition", value: "partition" },
@@ -121,7 +121,7 @@ function guideAsk(g: Guide): Msg {
   return {
     role: "assistant",
     text: "And where would you like to live?",
-    chips: [{ label: "📍 Near me", value: "near-me" }, ...popular.map((s) => ({ label: AREAS.find((a) => a.slug === s)!.name, value: s })), { label: "Anywhere", value: "any" }],
+    chips: [{ label: "Near me", value: "near-me" }, ...popular.map((s) => ({ label: AREAS.find((a) => a.slug === s)!.name, value: s })), { label: "Anywhere", value: "any" }],
   };
 }
 
@@ -316,7 +316,7 @@ export function ShayChat() {
               }}
               className="shay-pop mb-4 max-w-[230px] rounded-[20px] rounded-br-[6px] bg-white px-4 py-3 text-left text-[13.5px] leading-snug text-ink shadow-[0_12px_34px_rgb(0_0_0/0.16)]"
             >
-              <span className="font-bold">Hi, I’m Shay ✨</span> Tell me your budget and I’ll find your place in seconds.
+              <span className="font-bold">Hi, I’m Shay</span> Tell me your budget and I’ll find your place in seconds.
               <span
                 role="button"
                 tabIndex={0}
@@ -379,7 +379,7 @@ export function ShayChat() {
               <div className="flex items-end gap-2">
                 <Shay size={28} glow={false} />
                 <div className="max-w-[86%] rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-2.5 text-[14px] leading-relaxed text-ink shadow-sm">
-                  Hi! I’m Shay ✨ Tell me where you’d like to live and your monthly budget. I’ll find places that fit, in any language.
+                  Hi! I’m Shay Tell me where you’d like to live and your monthly budget. I’ll find places that fit, in any language.
                 </div>
               </div>
             )}
@@ -435,7 +435,7 @@ export function ShayChat() {
                   }}
                   className="rounded-full border border-brand/30 bg-mint px-3 py-1.5 text-[12.5px] font-semibold text-brand"
                 >
-                  📍 Places near me
+                  Places near me
                 </button>
               </div>
             )}

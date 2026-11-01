@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AREA_BY_SLUG, TYPE_LABEL, type ListingType } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, type ListingType } from "@stayshay/core/src/client.ts";
 import { SearchBar } from "./search-bar";
-import { Icon, aed } from "./ui";
+import { aed } from "./ui";
 import { useMarketplace } from "./marketplace";
 import { Shay } from "./shay";
 import { openShay } from "./shay-chat";
@@ -29,7 +29,7 @@ export function Hero() {
     .slice(0, 5)
     .map((x) => x.s);
 
-  const pillars: { icon: Parameters<typeof Icon>[0]["name"]; title: string; text: string }[] = [
+  const pillars: { icon: string; title: string; text: string }[] = [
     { icon: "key", title: "Luxury, furnished", text: "Hand-picked rooms and studios with real photos, ready to move in." },
     { icon: "wallet", title: "Affordable, honest", text: `From ${aed(from)} a month. Rent, deposit and bills shown up front${billsIn ? `, ${billsIn} with bills included` : ""}.` },
     { icon: "shield", title: "Smart, AI-matched", text: "Shay finds places and roommates for you, in any language, in seconds." },
@@ -49,13 +49,13 @@ export function Hero() {
               <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12.5px] font-semibold text-white backdrop-blur">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6ee7b7] shadow-[0_0_10px_#6ee7b7]" /> Luxury spaces · Affordable rent · Smart living
               </span>
-              <h1 className="font-display mt-6 text-[44px] leading-[0.98] text-white sm:text-[62px] lg:text-[80px]">
+              <h1 className="font-display mt-6 text-[40px] leading-[0.98] text-white sm:text-[62px] lg:text-[80px]">
                 Live like it’s luxury.
                 <br />
                 <span className="bg-[linear-gradient(90deg,#8fe3bd,#d9fbe9)] bg-clip-text text-transparent">Pay like it’s shared.</span>
               </h1>
-              <p className="mt-5 max-w-[560px] text-[16.5px] leading-relaxed text-white/85 md:text-[18px]">
-                Furnished rooms, partitions and studios across the UAE from <span className="font-semibold text-white">{aed(from)}</span> a month, often with bills, Wi-Fi and cleaning included. No commission, no surprises.
+              <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/85 md:mt-5 md:text-[18px]">
+                Furnished rooms, partitions and studios from <span className="font-semibold text-white">{aed(from)}</span> a month<span className="hidden sm:inline">, often with bills, Wi-Fi and cleaning included</span>. No commission, no surprises.
               </p>
             </div>
 
@@ -72,7 +72,7 @@ export function Hero() {
               </div>
               <p className="mt-4 rounded-[18px] rounded-tl-[6px] bg-white px-4 py-3 text-[14.5px] leading-snug text-ink">Tell me your budget and where you work. I’ll find your place in seconds, in any language.</p>
               <span className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-[#6ee7b7] px-4 text-[14px] font-bold text-brand-deep">
-                Ask Shay <Icon name="arrow-right" size={15} />
+                Ask Shay
               </span>
             </button>
           </div>
@@ -122,7 +122,7 @@ export function Hero() {
                   ))}
                 </div>
                 <button type="submit" className="flex h-12 items-center justify-center gap-2 rounded-[14px] bg-fresh px-6 text-[15px] font-semibold text-white hover:brightness-95">
-                  List for free <Icon name="arrow-right" size={16} />
+                  List for free
                 </button>
               </form>
             )}
@@ -143,15 +143,13 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-2 md:mt-12 md:grid-cols-3 md:gap-3">
             {pillars.map((p) => (
-              <div key={p.title} className="flex items-start gap-3 rounded-[22px] border border-white/12 bg-white/8 p-4 text-white backdrop-blur-md">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-[#6ee7b7]/20 text-[#8fe3bd]">
-                  <Icon name={p.icon} size={19} />
-                </span>
+              <div key={p.title} className="flex items-start gap-3 rounded-[18px] border border-white/12 bg-white/8 px-4 py-3 text-white backdrop-blur-md md:rounded-[22px] md:p-4">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#6ee7b7] shadow-[0_0_14px_#6ee7b7]" />
                 <span>
-                  <span className="block text-[15.5px] font-bold">{p.title}</span>
-                  <span className="mt-0.5 block text-[13.5px] leading-snug text-white/75">{p.text}</span>
+                  <span className="block text-[14.5px] font-bold md:text-[15.5px]">{p.title}</span>
+                  <span className="mt-0.5 hidden text-[13.5px] leading-snug text-white/75 sm:block">{p.text}</span>
                 </span>
               </div>
             ))}

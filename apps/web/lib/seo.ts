@@ -66,7 +66,7 @@ export function organizationLd() {
     "@id": `${SITE}/#org`,
     name: BRAND.name,
     url: SITE,
-    logo: `${SITE}/brand/stayshay-mark.svg`,
+    logo: `${SITE}/brand/stayshay-icon.svg`,
     email: BRAND.supportEmail,
     description: "UAE marketplace for affordable monthly bed spaces, partitions, private rooms, studios and roommates.",
     areaServed: ["Dubai", "Sharjah", "Abu Dhabi", "Ajman", "United Arab Emirates"],

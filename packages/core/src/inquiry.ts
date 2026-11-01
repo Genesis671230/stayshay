@@ -63,10 +63,22 @@ export function validateInquiry(input: Partial<Record<keyof Inquiry, unknown>>):
   };
 }
 
-/** Prefilled WhatsApp text: the lister sees the ref, who is asking and when they want to move. */
-export function whatsappMessage(listing: Listing | null, inq: Partial<Inquiry>): string {
-  const lines = ["Hi, I found this on Stayshay."];
-  if (listing) lines.push(`Ref ${listing.id}: ${TYPE_LABEL[listing.type]} - ${listing.title} (AED ${listing.priceAed.toLocaleString("en-US")}/month)`);
+const titleCase = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+/**
+ * Prefilled WhatsApp text to Stayshay. The listing link comes first so WhatsApp shows the photo preview;
+ * then the ref, the location (with a map pin) and who is asking.
+ */
+export function whatsappMessage(listing: Listing | null, inq: Partial<Inquiry>, site = "https://stayshay.com"): string {
+  const lines = [listing ? "Hi Stayshay, I'm interested in this place:" : "Hi Stayshay, I found you online."];
+  if (listing) {
+    lines.push(`${site}/listing/${listing.id.toLowerCase()}`);
+    lines.push(`Ref ${listing.id} · ${TYPE_LABEL[listing.type]} · AED ${listing.priceAed.toLocaleString("en-US")}/month`);
+    const area = listing.areaName || titleCase(listing.areaSlug);
+    const place = [listing.building && listing.building !== area ? listing.building : "", area, listing.city || ""].filter(Boolean).join(", ");
+    lines.push(`Location: ${place}`);
+    if (listing.lat && listing.lng) lines.push(`Map: https://maps.google.com/?q=${listing.lat.toFixed(5)},${listing.lng.toFixed(5)}`);
+  }
   if (inq.name) lines.push(`Name: ${inq.name}`);
   if (inq.moveIn) lines.push(`Move-in: ${inq.moveIn}`);
   if (inq.budget) lines.push(`Budget: AED ${Number(inq.budget).toLocaleString("en-US")}/month`);

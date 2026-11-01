@@ -12,6 +12,7 @@ const NAV = [
   { label: "Roommates", href: "/roommates" },
   { label: "Deals", href: "/deals" },
   { label: "Guides", href: "/blog" },
+  { label: "Refer & earn", href: "/refer" },
 ];
 
 function useMe() {
@@ -44,7 +45,7 @@ export function Header() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary">
           {NAV.map((item) => (
             <Link key={item.label} href={item.href} className="text-[14px] text-ink-2 hover:text-ink">
               {item.label}

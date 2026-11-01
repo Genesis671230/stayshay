@@ -7,6 +7,7 @@ import { ShayChat } from "@/components/shay-chat";
 import { ActivityToasts } from "@/components/activity-toasts";
 import { Analytics } from "@/components/analytics";
 import { JsonLd } from "@/components/json-ld";
+import { RefCapture } from "@/components/ref-capture";
 import { activeAnnouncement } from "@/lib/store";
 import { GA_ID, SITE, organizationLd, websiteLd } from "@/lib/seo";
 
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   openGraph: { title, description, siteName: BRAND.name, type: "website", locale: "en_AE", url: SITE, images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: BRAND.name }] },
   twitter: { card: "summary_large_image", title, description },
-  icons: { icon: "/brand/stayshay-mark.svg", apple: "/brand/stayshay-mark.svg" },
+  icons: { icon: "/brand/stayshay-icon.svg", apple: "/brand/stayshay-icon.svg" },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
     other: process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : undefined,
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <JsonLd data={[organizationLd(), websiteLd()]} />
         <Analytics id={GA_ID} />
+        <RefCapture />
         <AnnouncementBar a={a && { id: a.id, title: a.title, message: a.message, link: a.link ?? null }} />
         {children}
         <ShayChat />

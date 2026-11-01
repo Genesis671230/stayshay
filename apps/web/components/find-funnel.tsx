@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AREAS, AREA_BY_SLUG, PHOTOS, TYPE_LABEL, coverFor, filterListings, leadMessage, validateLead, type Area, type TenantRequest, type Gender, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, PHOTOS, TYPE_LABEL, coverFor, filterListings, leadMessage, validateLead, type Area, type TenantRequest, type Gender, type ListingType } from "@stayshay/core/src/client.ts";
 import { AsideStat, FunnelShell, OptionCard, fieldCls } from "@/components/funnel";
 import { AreaCombobox } from "@/components/search-bar";
 import { ListingCard } from "@/components/listing-card";

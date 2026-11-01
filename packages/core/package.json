@@ -7,7 +7,9 @@
   "types": "src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/*.test.ts"
+    "test": "node --experimental-strip-types --test src/*.test.ts",
+    "pretypecheck": "node ../../scripts/ensure-data.mjs",
+    "pretest": "node ../../scripts/ensure-data.mjs"
   },
   "devDependencies": {
     "typescript": "^5"

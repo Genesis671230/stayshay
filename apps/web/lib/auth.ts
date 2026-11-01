@@ -3,8 +3,8 @@ import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { normalizePhone } from "@stayshay/core";
-import { DATA_DIR } from "./store";
+import { makeRefCode, normalizePhone } from "@stayshay/core";
+import { DATA_DIR, refCodeFromRequest } from "./store";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
 
@@ -20,6 +20,10 @@ export interface User {
   googleSub: string | null;
   createdAt: string;
   lastLoginAt: string;
+  /** This person's own referral code (made the first time they open Refer & earn). */
+  refCode?: string | null;
+  /** Code of whoever referred them, captured at sign-up from the ss_ref cookie. */
+  referredBy?: string | null;
 }
 
 /** What the browser may see about the signed-in user. */
@@ -85,10 +89,11 @@ export async function signUp(input: { name?: string; email?: string; phone?: str
   if (password.length < 8) errors.password = "Use at least 8 characters";
   if (Object.keys(errors).length) return { errors };
   const passwordHash = await hashPassword(password);
+  const referredBy = await refCodeFromRequest();
   return updateUsers<{ user?: User; errors: AuthErrors }>((users) => {
     if (users.some((u) => u.email === email)) return { users, result: { errors: { email: "An account with this email already exists. Sign in instead." } } };
     const now = new Date().toISOString();
-    const user: User = { id: randomUUID(), email, name, phone, picture: null, passwordHash, googleSub: null, createdAt: now, lastLoginAt: now };
+    const user: User = { id: randomUUID(), email, name, phone, picture: null, passwordHash, googleSub: null, createdAt: now, lastLoginAt: now, referredBy };
     return { users: [...users, user], result: { user, errors: {} } };
   });
 }
@@ -104,6 +109,7 @@ export async function signIn(emailIn: string, password: string): Promise<User | 
 /** Google sign-in: link by Google id, else by verified email, else create. */
 export async function upsertGoogleUser(p: { sub: string; email: string; name: string; picture: string | null }): Promise<User> {
   const email = normEmail(p.email);
+  const referredBy = await refCodeFromRequest();
   return updateUsers((users) => {
     const now = new Date().toISOString();
     const i = users.findIndex((u) => u.googleSub === p.sub || u.email === email);
@@ -111,7 +117,7 @@ export async function upsertGoogleUser(p: { sub: string; email: string; name: st
       users[i] = { ...users[i], googleSub: p.sub, picture: users[i].picture ?? p.picture, name: users[i].name || p.name, lastLoginAt: now };
       return { users, result: users[i] };
     }
-    const user: User = { id: randomUUID(), email, name: p.name || email.split("@")[0], phone: null, picture: p.picture, passwordHash: null, googleSub: p.sub, createdAt: now, lastLoginAt: now };
+    const user: User = { id: randomUUID(), email, name: p.name || email.split("@")[0], phone: null, picture: p.picture, passwordHash: null, googleSub: p.sub, createdAt: now, lastLoginAt: now, referredBy };
     return { users: [...users, user], result: user };
   });
 }
@@ -128,6 +134,20 @@ export async function updateProfile(id: string, patch: { name?: string; phone?: 
     if (i < 0) return { users, result: { errors: { form: "Account not found" } } };
     users[i] = { ...users[i], ...(name != null && { name }), ...(phone && { phone }) };
     return { users, result: { user: users[i], errors: {} } };
+  });
+}
+
+/** Gives the user a referral code the first time they need one, and returns it. */
+export async function ensureRefCode(id: string): Promise<string | null> {
+  return updateUsers((users) => {
+    const i = users.findIndex((u) => u.id === id);
+    if (i < 0) return { users, result: null };
+    if (users[i].refCode) return { users, result: users[i].refCode! };
+    const taken = new Set(users.map((u) => u.refCode).filter(Boolean));
+    let code = makeRefCode(users[i].name);
+    while (taken.has(code)) code = makeRefCode(users[i].name);
+    users[i] = { ...users[i], refCode: code };
+    return { users, result: code };
   });
 }
 

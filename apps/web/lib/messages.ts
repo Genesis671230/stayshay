@@ -1,4 +1,4 @@
-import { TYPE_LABEL, whatsappLink, type ListingType } from "@stayshay/core";
+import { TYPE_LABEL, whatsappLink, type ListingType } from "@stayshay/core/src/client.ts";
 
 /** Ready-to-send WhatsApp texts for the admin. Every button opens WhatsApp with the text; nothing sends by itself. */
 const SITE = "https://stayshay.com";

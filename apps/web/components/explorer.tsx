@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { AREA_BY_SLUG, TYPE_LABEL, TYPE_LABEL_PLURAL, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core";
+import { AREA_BY_SLUG, TYPE_LABEL, TYPE_LABEL_PLURAL, type Listing, type ListingFilters, type ListingType, type SortKey } from "@stayshay/core/src/client.ts";
 import { Icon, aed } from "./ui";
 import { ListingCard, listingHref } from "./listing-card";
 import { useMarketplace } from "./marketplace";

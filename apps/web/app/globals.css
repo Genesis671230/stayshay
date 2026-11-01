@@ -261,3 +261,107 @@ body {
 @keyframes shay-dot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
 .shay-dot { animation: shay-dot 1.1s infinite; }
 @media (prefers-reduced-motion: reduce) { .shay * { animation: none !important; } }
+
+/* ---------- glow surfaces (forest + mint light) ---------- */
+.glow-panel {
+  background:
+    radial-gradient(60% 80% at 85% 0%, rgb(110 231 183 / 0.22) 0%, transparent 60%),
+    radial-gradient(50% 70% at 0% 100%, rgb(39 174 120 / 0.18) 0%, transparent 60%),
+    linear-gradient(160deg, #1b3f2e 0%, #10291e 60%, #0b1d15 100%);
+}
+.glow-text {
+  background: linear-gradient(90deg, #8fe3bd, #e3fbd0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px rgb(143 227 189 / 0.25);
+}
+
+/* ---------- "Choose a room" fan ---------- */
+.fan-stage {
+  background:
+    radial-gradient(45% 55% at 50% 62%, rgb(200 247 160 / 0.16) 0%, transparent 70%),
+    radial-gradient(80% 60% at 50% 0%, rgb(27 63 46 / 0.9) 0%, transparent 70%),
+    #050b08;
+}
+.fan-stage:focus-visible { outline-offset: -4px; }
+.fan {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  height: 280px;
+  --w: 160px;
+  --h: 236px;
+}
+.fan-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--w);
+  height: var(--h);
+  border-radius: 20px;
+  overflow: hidden;
+  transform-origin: 50% 320%;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s, box-shadow 0.5s;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow: 0 30px 60px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.15);
+  background: #10291e;
+  cursor: pointer;
+}
+.fan-card.is-on {
+  cursor: default;
+  border-color: rgb(225 252 190 / 0.6);
+  box-shadow: 0 0 0 1px rgb(225 252 190 / 0.35), 0 0 60px rgb(200 247 160 / 0.45), 0 30px 70px rgb(0 0 0 / 0.6);
+}
+.fan-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(5 11 8 / 0.15) 0%, rgb(5 11 8 / 0.55) 55%, rgb(5 11 8 / 0.85) 100%);
+  transition: opacity 0.5s;
+}
+.fan-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(110 231 183 / 0) 25%, rgb(110 231 183 / 0.55) 65%, rgb(214 248 140 / 0.92) 100%);
+  mix-blend-mode: screen;
+  animation: fan-glow 0.7s ease-out;
+}
+@keyframes fan-glow { from { opacity: 0; } to { opacity: 1; } }
+.fan-price {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  text-align: left;
+  color: white;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s 0.15s, transform 0.5s 0.15s;
+}
+.fan-card.is-on .fan-price {
+  opacity: 1;
+  transform: none;
+  color: #0d241a;
+}
+.fan-cta {
+  background: linear-gradient(90deg, #8fe3bd, #d6f88c);
+  box-shadow: 0 0 40px rgb(200 247 160 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.5);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.fan-cta:hover { box-shadow: 0 0 60px rgb(200 247 160 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.5); transform: translateY(-1px); }
+@media (min-width: 768px) {
+  .fan { height: 400px; --w: 240px; --h: 350px; }
+  .fan-card { border-radius: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fan-card, .fan-price, .fan-glow { transition: none; animation: none; }
+}
+
+/* Long supporting paragraphs collapse to three lines on phones; desktop shows them in full. */
+@media (max-width: 640px) {
+  .m-short {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

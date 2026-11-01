@@ -14,3 +14,4 @@ apps/web/.data/
 .cache/
 apps/web/.data-test/
 apps/web/.data-test*
+packages/core/src/data/areas-merged.json

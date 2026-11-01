@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { QuickSignIn, useMe } from "@/components/quick-signin";
-import { AMENITY_LABEL, AREA_BY_SLUG, PHOTOS, TYPE_LABEL, coverFor, median, type Amenity, type Area, type Gender, type ListingType } from "@stayshay/core";
+import { AMENITY_LABEL, AREA_BY_SLUG, PHOTOS, TYPE_LABEL, coverFor, median, type Amenity, type Area, type Gender, type ListingType } from "@stayshay/core/src/client.ts";
 import { AsideStat, FunnelShell, OptionCard, fieldCls } from "@/components/funnel";
 import { AreaCombobox } from "@/components/search-bar";
 import { useMarketplace } from "@/components/marketplace";

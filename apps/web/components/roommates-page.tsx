@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { AREA_BY_SLUG, BRAND, LIFESTYLE_LABEL, leadMessage, validateLead, type Area, type RoommateLead } from "@stayshay/core";
+import { AREA_BY_SLUG, BRAND, LIFESTYLE_LABEL, leadMessage, validateLead, type Area, type RoommateLead } from "@stayshay/core/src/client.ts";
 import type { PublicRoommate } from "@/lib/roommates";
 import { AreaCombobox } from "./search-bar";
 import { Shay } from "./shay";

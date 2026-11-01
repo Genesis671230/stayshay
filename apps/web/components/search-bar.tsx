@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AREAS, AREA_BY_SLUG, TYPE_LABEL, searchAreas, type Area, type ListingType } from "@stayshay/core";
+import { AREAS, AREA_BY_SLUG, TYPE_LABEL, searchAreas, type Area, type ListingType } from "@stayshay/core/src/client.ts";
 import { Icon } from "./ui";
 import { searchHref, useMarketplace } from "./marketplace";
 

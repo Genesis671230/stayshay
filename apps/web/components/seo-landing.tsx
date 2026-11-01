@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { AREAS, TYPE_LABEL_PLURAL, type Area, type Listing, type ListingType } from "@stayshay/core";
+import { AREAS, TYPE_LABEL_PLURAL, type Area, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import { Header } from "./header";
 import { Footer } from "./sections";
 import { MarketplaceProvider } from "./marketplace";
+import { slim } from "@/lib/store";
 import { JsonLd } from "./json-ld";
 import { Cta, Faq, ListingGrid, PriceTable } from "./seo-blocks";
 import { Icon, aed } from "./ui";
@@ -49,7 +50,7 @@ export function SeoLanding({
   const fallback = !listings.length ? all.filter((l) => (!type || l.type === type) && near.some((a) => a.slug === l.areaSlug)).slice(0, 6) : [];
 
   return (
-    <MarketplaceProvider listings={all}>
+    <MarketplaceProvider listings={slim(all)}>
       <JsonLd data={[breadcrumbLd(crumbs), itemListLd(h1, listings), ...(faq.length ? [faqLd(faq)] : [])]} />
       <Header />
       <main>
@@ -66,7 +67,7 @@ export function SeoLanding({
               </nav>
               <p className="mt-6 text-[12px] font-bold uppercase tracking-[0.12em] text-[#8fe3bd]">{eyebrow}</p>
               <h1 className="font-display mt-3 max-w-[900px] text-[34px] leading-[1.05] text-white md:text-[52px]">{h1}</h1>
-              <p className="mt-4 max-w-[720px] text-[16.5px] leading-relaxed text-white/85">{intro}</p>
+              <p className="m-short mt-4 max-w-[720px] text-[15px] leading-relaxed text-white/85 md:text-[16.5px]">{intro}</p>
               {stats && (
                 <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4 text-white">
                   <div><dt className="text-[12px] text-white/60">Live now</dt><dd className="font-figure text-[26px] font-bold">{stats.count}</dd></div>
