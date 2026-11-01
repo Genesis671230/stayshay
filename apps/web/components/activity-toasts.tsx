@@ -100,7 +100,7 @@ export function ActivityToasts() {
   };
 
   return (
-    <div className="shay-pop fixed bottom-4 left-4 z-[55] w-[calc(100vw-120px)] max-w-[360px] md:bottom-6 md:left-6" role="status" aria-live="polite">
+    <div className="shay-pop fixed bottom-[88px] left-4 z-[55] w-[calc(100vw-120px)] max-w-[360px] md:bottom-6 md:left-6" role="status" aria-live="polite">
       {toast.type === "location" ? (
         <div className="flex items-start gap-3 rounded-[20px] bg-white p-3.5 shadow-[0_14px_40px_rgb(0_0_0/0.16)] ring-1 ring-line">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-mint"><span className="h-2.5 w-2.5 rounded-full bg-fresh shadow-[0_0_12px_#27ae78]" /></span>

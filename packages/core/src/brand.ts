@@ -9,6 +9,12 @@ export const BRAND = {
   /** WhatsApp for every inquiry, roommate profile and new listing (E.164 digits). */
   whatsapp: "971569048493",
   whatsappDisplay: "+971 56 904 8493",
+  /** Social profiles. Empty ones are hidden; fill them in when the accounts exist. */
+  social: {
+    facebook: "https://www.facebook.com/profile.php?id=61595901250428",
+    instagram: "",
+    tiktok: "",
+  },
   /**
    * Shown while the catalogue is seeded with sample listings.
    * Flip to false once real lister data is live.

@@ -8,6 +8,7 @@ import { ActivityToasts } from "@/components/activity-toasts";
 import { Analytics } from "@/components/analytics";
 import { JsonLd } from "@/components/json-ld";
 import { RefCapture } from "@/components/ref-capture";
+import { MobileNav } from "@/components/mobile-nav";
 import { activeAnnouncement } from "@/lib/store";
 import { GA_ID, SITE, organizationLd, websiteLd } from "@/lib/seo";
 
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
   category: "real estate",
 };
 
-export const viewport: Viewport = { themeColor: "#145C46", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#123D2E", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const a = await activeAnnouncement();
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <RefCapture />
         <AnnouncementBar a={a && { id: a.id, title: a.title, message: a.message, link: a.link ?? null }} />
         {children}
+        <MobileNav />
         <ShayChat />
         <ActivityToasts />
       </body>

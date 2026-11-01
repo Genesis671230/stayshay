@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Stayshay — "Trust made affordable": Forest Green + Mint + Warm Ivory */
+  /* Stayshay — deep forest green, pale mint surfaces, a touch of lime */
   --bg: #ffffff;
-  --surface: #f4f2e9; /* warm ivory: section backgrounds, used sparingly */
-  --ink: #202b27; /* deep charcoal: text, prices */
-  --ink-2: #3c4843;
-  --muted: #66716c;
-  --line: #e6e8e1;
-  --line-strong: #d3d8cf;
-  --brand: #145c46; /* forest green: logo, nav, main buttons, links */
-  --brand-deep: #0f4a38;
-  --fresh: #27ae78; /* fresh green: selected states, savings */
-  --mint: #ddf4e8; /* soft mint: verification callouts, highlights */
-  --brass: #27ae78;
-  --verified: #145c46;
-  --verified-bg: #ddf4e8;
+  --surface: #eef5f0; /* pale mint: section and app backgrounds */
+  --ink: #15261f; /* near-black green: text, prices */
+  --ink-2: #33473e;
+  --muted: #64746c;
+  --line: #e0e9e3;
+  --line-strong: #cbd8cf;
+  --brand: #123d2e; /* deep forest green: primary buttons, active states, links */
+  --brand-deep: #0b2a1f;
+  --fresh: #2b9a6a; /* fresh green: savings, positive numbers */
+  --mint: #e1efe4; /* soft mint: chips, verification callouts */
+  --lime: #d3f0b9; /* pale lime: highlights, active pills */
+  --brass: #2b9a6a;
+  --verified: #123d2e;
+  --verified-bg: #e1efe4;
   --warn: #8a4b14;
   --warn-bg: #f8efe4;
   --whatsapp: #1d9e57;
-  --focus: #27ae78;
+  --focus: #2b9a6a;
 }
 
 @theme inline {
@@ -34,6 +35,7 @@
   --color-brand-deep: var(--brand-deep);
   --color-fresh: var(--fresh);
   --color-mint: var(--mint);
+  --color-lime: var(--lime);
   --color-brass: var(--brass);
   --color-verified: var(--verified);
   --color-verified-bg: var(--verified-bg);
@@ -51,7 +53,7 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(180deg, #f2f8f3 0, #ffffff 720px) no-repeat, var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -265,9 +267,9 @@ body {
 /* ---------- glow surfaces (forest + mint light) ---------- */
 .glow-panel {
   background:
-    radial-gradient(60% 80% at 85% 0%, rgb(110 231 183 / 0.22) 0%, transparent 60%),
-    radial-gradient(50% 70% at 0% 100%, rgb(39 174 120 / 0.18) 0%, transparent 60%),
-    linear-gradient(160deg, #1b3f2e 0%, #10291e 60%, #0b1d15 100%);
+    radial-gradient(60% 80% at 88% 0%, rgb(211 240 185 / 0.16) 0%, transparent 60%),
+    radial-gradient(50% 70% at 0% 100%, rgb(43 154 106 / 0.16) 0%, transparent 60%),
+    linear-gradient(160deg, #174a37 0%, #10382a 55%, #0a271d 100%);
 }
 .glow-text {
   background: linear-gradient(90deg, #8fe3bd, #e3fbd0);
@@ -363,3 +365,47 @@ body {
 }
 
 /* Buttons are flat brand colour: no glow, no shadow. */
+
+/* ---------- surfaces from the design system ---------- */
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--brand);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ---------- smooth on phones ---------- */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+a,
+button,
+summary,
+label {
+  touch-action: manipulation;
+}
+@media (hover: none) {
+  a:active,
+  button:active {
+    transform: scale(0.985);
+    transition: transform 0.08s;
+  }
+}
+@media (max-width: 767px) {
+  body:has(.mobile-nav) {
+    padding-bottom: 84px;
+  }
+}
+.mobile-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}

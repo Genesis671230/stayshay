@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, Logo } from "./ui";
 import { Shay } from "./shay";
+import { RefField } from "./ref-field";
 
 const field = "w-full rounded-[14px] border border-line bg-white px-4 py-3.5 text-[15.5px] focus:border-brand focus:outline-none";
 type Errors = Partial<Record<"name" | "email" | "phone" | "password" | "form", string>>;
@@ -33,6 +34,7 @@ export function LoginForm({ next, error }: { google: boolean; next: string; erro
   const [f, setF] = useState({ name: "", email: "", phone: "", password: "" });
   const [errors, setErrors] = useState<Errors>(error ? { form: ERROR_TEXT[error] ?? "Sign-in failed" } : {});
   const [busy, setBusy] = useState(false);
+  const [ref, setRef] = useState("");
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const submit = async (e: React.FormEvent) => {
@@ -42,7 +44,7 @@ export function LoginForm({ next, error }: { google: boolean; next: string; erro
     const res = await fetch(mode === "signin" ? "/api/auth/login" : "/api/auth/signup", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(mode === "signin" ? { email: f.email, password: f.password } : f),
+      body: JSON.stringify(mode === "signin" ? { email: f.email, password: f.password } : { ...f, ref }),
     }).catch(() => null);
     const j = await res?.json().catch(() => ({}));
     setBusy(false);
@@ -97,6 +99,7 @@ export function LoginForm({ next, error }: { google: boolean; next: string; erro
               <input className={field} type="password" value={f.password} onChange={set("password")} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
               {err("password")}
             </label>
+            {mode === "signup" && <RefField value={ref} onChange={setRef} />}
             {errors.form && <p className="rounded-[12px] bg-warn-bg px-3.5 py-2.5 text-[13.5px] font-medium text-warn">{errors.form}</p>}
             <button disabled={busy} className="h-12 w-full rounded-[12px] bg-brand text-[15.5px] font-semibold text-white disabled:opacity-50">
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}

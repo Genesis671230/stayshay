@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AREAS, BRAND, TYPE_LABEL, filterListings, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
 import { Shay, type ShayMood } from "./shay";
 import { Icon, aed } from "./ui";
+import { hidesMobileNav } from "./mobile-nav";
 
 type Card = { id: string; title: string; type: string; area: string; priceAed: number; photo: string | null; billsIncluded: boolean };
 type Msg = { role: "user" | "assistant"; text: string; cards?: Card[]; chips?: { label: string; value: string }[] };
@@ -301,7 +302,8 @@ export function ShayChat() {
   if (path?.startsWith("/admin")) return null;
 
   const mood: ShayMood = busy ? "thinking" : hello ? "happy" : "idle";
-  const lift = /^\/(listing|find|list)\b/.test(path ?? "") ? "bottom-24 lg:bottom-6" : "bottom-4";
+  // Above the listing page's action bar and the phone tab bar.
+  const lift = /^\/(listing|find|list)\b/.test(path ?? "") || !hidesMobileNav(path ?? "/") ? "bottom-[88px] lg:bottom-6" : "bottom-4";
   const wa = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent("Hi Stayshay, I need help finding a place.")}`;
 
   return (
@@ -349,7 +351,7 @@ export function ShayChat() {
 
       {open && (
         <div className="shay-pop fixed inset-0 z-[70] flex flex-col bg-white md:inset-auto md:bottom-6 md:right-6 md:h-[660px] md:max-h-[calc(100vh-48px)] md:w-[410px] md:overflow-hidden md:rounded-[30px] md:shadow-[0_28px_80px_rgb(0_0_0/0.24)] md:ring-1 md:ring-line" role="dialog" aria-label="Chat with Shay">
-          <div className="relative overflow-hidden bg-[linear-gradient(135deg,#0f4a38,#145c46_55%,#1d7a5c)] px-4 pb-4 pt-3 text-white">
+          <div className="relative overflow-hidden bg-[linear-gradient(135deg,#0b2a1f,#123d2e_55%,#1a5440)] px-4 pb-4 pt-3 text-white">
             <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-[#6ee7b7]/20 blur-2xl" />
             <div className="relative flex items-center gap-3">
               <Shay size={46} mood={busy ? "talking" : "happy"} />

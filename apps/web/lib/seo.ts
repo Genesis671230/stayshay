@@ -71,6 +71,7 @@ export function organizationLd() {
     description: "UAE marketplace for affordable monthly bed spaces, partitions, private rooms, studios and roommates.",
     areaServed: ["Dubai", "Sharjah", "Abu Dhabi", "Ajman", "United Arab Emirates"],
     contactPoint: [{ "@type": "ContactPoint", telephone: `+${BRAND.whatsapp}`, contactType: "customer support", availableLanguage: ["English", "Arabic", "Hindi", "Urdu"] }],
+    sameAs: Object.values(BRAND.social).filter(Boolean),
   };
 }
 

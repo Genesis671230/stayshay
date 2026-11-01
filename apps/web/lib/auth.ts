@@ -3,7 +3,7 @@ import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { makeRefCode, normalizePhone } from "@stayshay/core";
+import { makeRefCode, normalizePhone, normalizeRefCode } from "@stayshay/core";
 import { DATA_DIR, refCodeFromRequest } from "./store";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
@@ -77,7 +77,7 @@ async function verifyPassword(pw: string, stored: string | null): Promise<boolea
 
 export type AuthErrors = Partial<Record<"name" | "email" | "phone" | "password" | "form", string>>;
 
-export async function signUp(input: { name?: string; email?: string; phone?: string; password?: string }): Promise<{ user?: User; errors: AuthErrors }> {
+export async function signUp(input: { name?: string; email?: string; phone?: string; password?: string; ref?: string }): Promise<{ user?: User; errors: AuthErrors }> {
   const errors: AuthErrors = {};
   const name = String(input.name ?? "").trim();
   const email = normEmail(String(input.email ?? ""));
@@ -89,7 +89,8 @@ export async function signUp(input: { name?: string; email?: string; phone?: str
   if (password.length < 8) errors.password = "Use at least 8 characters";
   if (Object.keys(errors).length) return { errors };
   const passwordHash = await hashPassword(password);
-  const referredBy = await refCodeFromRequest();
+  const typed = normalizeRefCode(input.ref);
+  const referredBy = (typed && (await readUsers()).some((u) => u.refCode === typed) ? typed : null) ?? (await refCodeFromRequest());
   return updateUsers<{ user?: User; errors: AuthErrors }>((users) => {
     if (users.some((u) => u.email === email)) return { users, result: { errors: { email: "An account with this email already exists. Sign in instead." } } };
     const now = new Date().toISOString();

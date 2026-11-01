@@ -222,6 +222,21 @@ export function Footer() {
           >
             Talk to us on WhatsApp
           </a>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(
+              [
+                ["Facebook", BRAND.social.facebook],
+                ["Instagram", BRAND.social.instagram],
+                ["TikTok", BRAND.social.tiktok],
+              ] as [string, string][]
+            )
+              .filter(([, u]) => u)
+              .map(([name, u]) => (
+                <a key={name} href={u} target="_blank" rel="noopener noreferrer me" className="inline-flex h-9 items-center rounded-[10px] border border-line px-3.5 text-[13px] font-semibold text-ink-2 hover:border-brand hover:text-brand">
+                  {name}
+                </a>
+              ))}
+          </div>
         </div>
         {(
           [

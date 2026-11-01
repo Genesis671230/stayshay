@@ -36,3 +36,11 @@ Free owner dashboard. Data in `manager.json` (properties, tenants, payments, eac
 - Report per month: expected vs collected, outstanding and late tenants, running costs (head-lease rent / 12 + bills spread monthly), profit if everyone pays, full-house margin, empty spaces and missed rent, alerts (late rent, permit/lease/visa expiry, missing permit, vacancies). WhatsApp rent reminder, mark paid, CSV export.
 - Empty space → "List on Stayshay" pre-fills the listing form (type, area, rent).
 Next: rent reminders sent automatically, tenant receipts, resident register export for the shared-housing permit, multi-user (partner/caretaker) access.
+
+### Manager update (2026-11-02)
+- Spaces hold 1–6 people (`capacity`); rent splits per person; "room for N more" and per-person asking rent.
+- Payments can cover several months (`months`); cheques have number + status (pending / cleared / bounced) and only count once cleared.
+- Landlord cheque schedule from the lease (yearly rent ÷ cheques, months each), mark given / cleared / bounced.
+- Apartment photos (`/api/manager/photo`, max 20, resized, EXIF stripped).
+- Snapshot: occupancy, tenants needed to cover costs, tenants needed to fill, cheques pending.
+- Admin `/admin/manager`: all owners' occupancy and where tenants are needed (area × type) — demand to feed from the marketplace.

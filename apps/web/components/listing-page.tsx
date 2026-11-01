@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core/src/client.ts";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { RefField } from "./ref-field";
 import { track } from "./analytics";
 import { QuickSignIn, useMe } from "./quick-signin";
 
@@ -125,6 +126,7 @@ function resumeParams() {
 export function ViewingFunnel({ listing }: { listing: Listing }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [f, setF] = useState({ moveIn: "", people: "1", name: "", phone: "", message: "" });
+  const [ref, setRef] = useState("");
   const [errors, setErrors] = useState<InquiryErrors>({});
   const [busy, setBusy] = useState(false);
   const [editContact, setEditContact] = useState(false);
@@ -160,10 +162,10 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
     const tab = window.open("about:blank", "_blank");
     setBusy(true);
     track("generate_lead", { method: "viewing_request", listing_id: listing.id, value: listing.priceAed, currency: "AED" });
-    await fetch("/api/inquiry", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...check.value, via: "whatsapp" }) }).catch(() => null);
+    await fetch("/api/inquiry", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...check.value, via: "whatsapp", refCode: ref || undefined }) }).catch(() => null);
     setBusy(false);
     setStep(3);
-    const url = stayshayWhatsapp(whatsappMessage(listing, check.value));
+    const url = stayshayWhatsapp(whatsappMessage(listing, { ...check.value, message: [check.value.message, ref && `Referral code: ${ref}`].filter(Boolean).join(". ") }));
     if (tab) tab.location.href = url;
     else window.location.href = url;
   };
@@ -270,6 +272,7 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
             </span>
             <textarea className={`${input} min-h-[64px]`} maxLength={300} value={f.message} onChange={(e) => setF({ ...f, message: e.target.value })} placeholder="Job, hours, cooking…" />
           </label>
+          <RefField value={ref} onChange={setRef} />
           <button onClick={send} disabled={busy} className="flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-whatsapp text-[15px] font-medium text-white disabled:opacity-60">
             <Icon name="whatsapp" size={18} /> Request viewing on WhatsApp
           </button>

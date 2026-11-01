@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { cleanPayment, cleanProperty, cleanTenant, normalizePhone, type MPayment, type MProperty, type MTenant } from "@stayshay/core";
+import { cleanPayment, cleanProperty, cleanTenant, normalizePhone, portfolioReport, type MPayment, type MProperty, type MTenant } from "@stayshay/core";
 import { readJson, updateJson } from "./store";
 
 /** Stayshay Manager data: one file, every record stamped with its owner's user id. */
@@ -21,10 +21,14 @@ export interface OwnerData {
 
 export async function ownerData(ownerId: string): Promise<OwnerData> {
   const f = await readJson<ManagerFile>(FILE, EMPTY);
+  // Records saved before shared spaces, photos and cheques existed get the defaults.
   return {
-    properties: f.properties.filter((p) => p.ownerId === ownerId),
+    properties: f.properties.filter((p) => p.ownerId === ownerId).map((p) => ({ ...p, photos: p.photos ?? [], spaces: p.spaces.map((s) => ({ ...s, capacity: s.capacity || 1 })) })),
     tenants: f.tenants.filter((t) => t.ownerId === ownerId),
-    payments: f.payments.filter((p) => p.ownerId === ownerId).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
+    payments: f.payments
+      .filter((p) => p.ownerId === ownerId)
+      .map((p) => ({ ...p, months: p.months || 1, chequeNo: p.chequeNo ?? "", chequeStatus: p.chequeStatus ?? null, chequeIndex: p.chequeIndex ?? null }))
+      .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
   };
 }
 
@@ -52,7 +56,9 @@ export async function managerAction(ownerId: string, body: Record<string, unknow
           error = "Limit of 50 properties reached";
           break;
         }
-        const p: MProperty = { ...clean, id: existing?.id ?? newId(), ownerId, createdAt: existing?.createdAt ?? now, updatedAt: now };
+        // Photos are added through the upload route; keep the ones already on the record.
+        const keep = new Set(existing?.photos ?? []);
+        const p: MProperty = { ...clean, photos: existing ? clean.photos.filter((u) => keep.has(u)) : [], id: existing?.id ?? newId(), ownerId, createdAt: existing?.createdAt ?? now, updatedAt: now };
         f.properties = existing ? f.properties.map((x) => (x.id === p.id ? p : x)) : [...f.properties, p];
         id = p.id;
         break;
@@ -85,9 +91,10 @@ export async function managerAction(ownerId: string, body: Record<string, unknow
           error = "Tenant not found";
           break;
         }
-        const clash = f.tenants.find((t) => t.status === "active" && t.spaceId === c.value!.spaceId && t.id !== existing?.id && c.value!.status === "active");
-        if (clash) {
-          error = `${clash.name} already lives in that space`;
+        const space = prop.spaces.find((x) => x.id === c.value!.spaceId)!;
+        const others = f.tenants.filter((t) => t.status === "active" && t.spaceId === space.id && t.id !== existing?.id);
+        if (c.value.status === "active" && others.length >= Math.max(1, space.capacity || 1)) {
+          error = `${space.label} is full (${others.map((t) => t.name).join(", ")}). Raise how many people it holds in the apartment settings.`;
           break;
         }
         const t: MTenant = { ...c.value, id: existing?.id ?? newId(), ownerId, createdAt: existing?.createdAt ?? now };
@@ -120,6 +127,28 @@ export async function managerAction(ownerId: string, body: Record<string, unknow
         id = p.id;
         break;
       }
+      case "payment.cheque": {
+        // Mark a cheque cleared or bounced.
+        const status = body.status === "cleared" || body.status === "bounced" || body.status === "pending" ? body.status : null;
+        const pay = f.payments.find((p) => p.id === body.id && p.ownerId === ownerId);
+        if (!pay || !status || pay.method !== "cheque") {
+          error = "Cheque not found";
+          break;
+        }
+        pay.chequeStatus = status;
+        if (status === "cleared") pay.note = pay.note || `Cleared ${now.slice(0, 10)}`;
+        break;
+      }
+      case "photo.remove": {
+        const prop = mineProp(body.propertyId);
+        if (!prop) {
+          error = "Property not found";
+          break;
+        }
+        prop.photos = (prop.photos ?? []).filter((u) => u !== body.url);
+        prop.updatedAt = now;
+        break;
+      }
       case "payment.delete": {
         const before = f.payments.length;
         f.payments = f.payments.filter((p) => !(p.id === body.id && p.ownerId === ownerId));
@@ -134,4 +163,52 @@ export async function managerAction(ownerId: string, body: Record<string, unknow
 
   if (error) return { ok: false, error };
   return { ok: true, data: await ownerData(ownerId), id };
+}
+
+/** Adds an uploaded photo URL to the owner's apartment (max 20). */
+export async function addPhoto(ownerId: string, propertyId: string, url: string): Promise<OwnerData | null> {
+  let ok = false;
+  await updateJson<ManagerFile>(FILE, EMPTY, (f) => {
+    const p = f.properties.find((x) => x.id === propertyId && x.ownerId === ownerId);
+    if (p && (p.photos ?? []).length < 20) {
+      p.photos = [...(p.photos ?? []), url];
+      p.updatedAt = new Date().toISOString();
+      ok = true;
+    }
+    return f;
+  });
+  return ok ? ownerData(ownerId) : null;
+}
+
+/** Stayshay's own view across every owner: how full the managed beds are and where tenants are needed. */
+export async function managerOverview(today: string) {
+  const f = await readJson<ManagerFile>(FILE, EMPTY);
+  const owners = new Set(f.properties.map((p) => p.ownerId));
+  const reports = [...owners].map((o) => {
+    const d = { properties: f.properties.filter((p) => p.ownerId === o).map((p) => ({ ...p, photos: p.photos ?? [], spaces: p.spaces.map((s) => ({ ...s, capacity: s.capacity || 1 })) })), tenants: f.tenants.filter((t) => t.ownerId === o), payments: f.payments.filter((p) => p.ownerId === o).map((p) => ({ ...p, months: p.months || 1 })) };
+    return { ownerId: o, report: portfolioReport(d.properties, d.tenants, d.payments, today.slice(0, 7), today) };
+  });
+  const needs = new Map<string, { area: string; kind: string; slots: number; avgRent: number; rents: number[] }>();
+  for (const { report } of reports)
+    for (const r of report.properties)
+      for (const v of r.vacant) {
+        const key = `${r.property.areaSlug}|${v.space.kind}`;
+        const n = needs.get(key) ?? { area: r.property.areaSlug, kind: v.space.kind, slots: 0, avgRent: 0, rents: [] };
+        n.slots += v.free;
+        n.rents.push(...Array.from({ length: v.free }, () => v.perPersonAed));
+        needs.set(key, n);
+      }
+  const sum = (k: "spaces" | "occupied" | "toFill" | "missing" | "expected" | "collected") => reports.reduce((s, r) => s + r.report[k], 0);
+  return {
+    owners: owners.size,
+    apartments: f.properties.length,
+    tenants: f.tenants.filter((t) => t.status === "active").length,
+    spaces: sum("spaces"),
+    occupied: sum("occupied"),
+    toFill: sum("toFill"),
+    missing: sum("missing"),
+    expected: sum("expected"),
+    collected: sum("collected"),
+    needs: [...needs.values()].map((n) => ({ ...n, avgRent: Math.round(n.rents.reduce((a, b) => a + b, 0) / Math.max(1, n.rents.length)) })).sort((a, b) => b.slots - a.slots),
+  };
 }

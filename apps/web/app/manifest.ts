@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#145C46",
+    theme_color: "#123D2E",
     icons: [{ src: "/brand/stayshay-icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
-import { validateInquiry } from "@stayshay/core";
+import { normalizeRefCode, validateInquiry } from "@stayshay/core";
 import { addLead, getListing } from "@/lib/store";
 
 // Best-effort per-instance throttle. Replace with a shared store (Upstash/Supabase) once inquiries persist.
@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     listingTitle: listing?.title ?? null,
     source: body.via === "app" ? "app" : "web",
     ...(await accountOf()),
+    ...(normalizeRefCode(body.refCode) && { refCode: normalizeRefCode(body.refCode) }),
   });
 
   const hook = process.env.STAYSHAY_INQUIRY_WEBHOOK;

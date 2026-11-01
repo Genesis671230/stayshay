@@ -16,12 +16,15 @@ import {
   periodLabel,
   portfolioReport,
   rentReminder,
+  settled,
+  shareIn,
   shiftPeriod,
   shortDay,
   whatsappLink,
   type Bill,
   type BillKind,
   type Every,
+  type LeaseCheque,
   type Layout,
   type MPayment,
   type MProperty,
@@ -100,6 +103,8 @@ export function ManagerApp({ initial, ownerName }: { initial: Data; ownerName: s
   const markPaid = (t: MTenant, amount: number) =>
     run({ action: "payment.add", payment: { propertyId: t.propertyId, kind: "rent", tenantId: t.id, period, amountAed: amount, date: today(), method: "cash" } }, `Rent from ${t.name.split(" ")[0]} recorded`);
 
+  const chequeStatus = (id: string, status: "cleared" | "bounced") => run({ action: "payment.cheque", id, status }, status === "cleared" ? "Cheque marked cleared" : "Cheque marked bounced");
+
   const open = openId ? report.properties.find((r) => r.property.id === openId) : undefined;
   const firstName = ownerName.split(" ")[0];
 
@@ -151,7 +156,8 @@ export function ManagerApp({ initial, ownerName }: { initial: Data; ownerName: s
           <PropertyView
             r={open}
             tenants={data.tenants.filter((t) => t.propertyId === open.property.id)}
-            payments={data.payments.filter((p) => p.propertyId === open.property.id && p.period === period)}
+            payments={data.payments.filter((p) => p.propertyId === open.property.id && shareIn(p, period) > 0)}
+            allPayments={data.payments.filter((p) => p.propertyId === open.property.id)}
             period={period}
             onBack={() => setOpenId(null)}
             onEdit={() => setSheet({ kind: "property", value: open.property })}
@@ -159,11 +165,30 @@ export function ManagerApp({ initial, ownerName }: { initial: Data; ownerName: s
               if (!confirm(`Delete ${open.property.name} with its tenants and payments? This can't be undone.`)) return;
               if (await run({ action: "property.delete", id: open.property.id }, "Apartment deleted")) setOpenId(null);
             }}
-            onAddTenant={(space) => setSheet({ kind: "tenant", value: { propertyId: open.property.id, spaceId: space.id, rentAed: space.rentAed, depositAed: space.rentAed, dueDay: 1, moveIn: today(), status: "active" } })}
+            onAddTenant={(space, each) => setSheet({ kind: "tenant", value: { propertyId: open.property.id, spaceId: space.id, rentAed: each, depositAed: each, dueDay: 1, moveIn: today(), status: "active" } })}
             onEditTenant={(t) => setSheet({ kind: "tenant", value: t })}
             onMarkPaid={markPaid}
             onPayCost={(kind, amount, billId, note) => run({ action: "payment.add", payment: { propertyId: open.property.id, kind, billId, period, amountAed: amount, date: today(), method: "transfer", note } }, "Payment recorded")}
-            onRecord={() => setSheet({ kind: "payment", value: { propertyId: open.property.id, period, date: today(), kind: "rent", method: "cash" } })}
+            onLeaseCheque={(c, status) =>
+              run(
+                { action: "payment.add", payment: { propertyId: open.property.id, kind: "lease", period: c.dueDate.slice(0, 7), months: c.months, amountAed: c.amountAed, date: today(), method: "cheque", chequeStatus: status, chequeIndex: c.index, note: `Landlord cheque ${c.index + 1}` } },
+                status === "cleared" ? `Cheque ${c.index + 1} marked cleared` : `Cheque ${c.index + 1} recorded as given`,
+              )
+            }
+            onChequeStatus={chequeStatus}
+            onPhoto={async (f) => {
+              const fd = new FormData();
+              fd.set("propertyId", open.property.id);
+              fd.set("photo", f);
+              const res = await fetch("/api/manager/photo", { method: "POST", body: fd }).catch(() => null);
+              const j = await res?.json().catch(() => null);
+              if (res?.ok && j) {
+                setData({ properties: j.properties, tenants: j.tenants, payments: j.payments });
+                flash("Photo added");
+              } else flash(j?.error ?? "Upload failed");
+            }}
+            onPhotoRemove={(url) => run({ action: "photo.remove", propertyId: open.property.id, url }, "Photo removed")}
+            onRecord={() => setSheet({ kind: "payment", value: { propertyId: open.property.id, period, date: today(), kind: "rent", method: "cash", months: 1 } })}
             onDeletePayment={(p) => run({ action: "payment.delete", id: p.id }, "Payment removed")}
           />
         ) : tab === "overview" ? (
@@ -176,8 +201,9 @@ export function ManagerApp({ initial, ownerName }: { initial: Data; ownerName: s
           <Payments
             data={data}
             period={period}
-            onRecord={() => setSheet({ kind: "payment", value: { propertyId: data.properties[0]?.id, period, date: today(), kind: "rent", method: "cash" } })}
+            onRecord={() => setSheet({ kind: "payment", value: { propertyId: data.properties[0]?.id, period, date: today(), kind: "rent", method: "cash", months: 1 } })}
             onDelete={(p) => run({ action: "payment.delete", id: p.id }, "Payment removed")}
+            onChequeStatus={chequeStatus}
           />
         )}
       </main>
@@ -260,9 +286,11 @@ function Overview({ report, name, onOpen, onMarkPaid, onAdd }: { report: ReturnT
           <Kpi k="Still to collect" v={aed(report.outstanding)} tone={report.outstanding ? "bad" : "good"} sub={late.length ? `${late.length} late` : "Nobody late"} />
           <Kpi k="Running costs" v={aed(report.costs)} sub="Rent to landlord + bills" />
           <Kpi k="Profit this month" v={signed(report.profit)} tone={report.profit >= 0 ? "good" : "bad"} sub="If everyone pays" />
-          <Kpi k="Empty spaces cost you" v={aed(report.properties.reduce((s, r) => s + r.vacant.reduce((x, v) => x + v.rentAed, 0), 0))} sub="a month in missed rent" />
+          <Kpi k="Empty spaces cost you" v={aed(report.missing)} sub="a month in missed rent" />
         </div>
       </section>
+
+      <Snapshot r={report} />
 
       {(late.length > 0 || other.length > 0) && (
         <section className="rounded-[24px] border border-line bg-white p-5">
@@ -360,30 +388,43 @@ function PropertyView(props: {
   r: PropertyReport;
   tenants: MTenant[];
   payments: MPayment[];
+  allPayments: MPayment[];
   period: string;
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onAddTenant: (s: Space) => void;
+  onAddTenant: (s: Space, perPerson: number) => void;
   onEditTenant: (t: MTenant) => void;
   onMarkPaid: (t: MTenant, amount: number) => void;
   onPayCost: (kind: PayKind, amount: number, billId: string | null, note: string) => void;
+  onLeaseCheque: (c: LeaseCheque, status: "pending" | "cleared") => void;
+  onChequeStatus: (paymentId: string, status: "cleared" | "bounced") => void;
+  onPhoto: (f: File) => void;
+  onPhotoRemove: (url: string) => void;
   onRecord: () => void;
   onDeletePayment: (p: MPayment) => void;
 }) {
   const { r } = props;
   const p = r.property;
   const active = props.tenants.filter((t) => t.status === "active");
-  const paidFor = (billId: string | null, kind: PayKind) => props.payments.some((x) => x.kind === kind && x.billId === billId);
-  const listHref = (s: Space) => `/list?type=${s.kind === "studio" ? "studio" : s.kind}&area=${p.areaSlug}&price=${s.rentAed}`;
+  const paidFor = (billId: string | null, kind: PayKind) => props.payments.some((x) => x.kind === kind && x.billId === billId && settled(x));
+  const listHref = (s: Space) => `/list?type=${s.kind === "studio" ? "studio" : s.kind}&area=${p.areaSlug}&price=${Math.round(s.rentAed / Math.max(1, s.capacity || 1))}`;
+  const [uploading, setUploading] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <button onClick={props.onBack} className="text-[13.5px] font-semibold text-brand">
         ‹ All apartments
       </button>
-      <section className="glow-panel rounded-[28px] p-5 text-white md:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <section className="glow-panel relative overflow-hidden rounded-[28px] p-5 text-white md:p-8">
+        {p.photos[0] && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.photos[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_29_21/0.95)_0%,rgb(9_29_21/0.82)_55%,rgb(9_29_21/0.5)_100%)]" />
+          </>
+        )}
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">
               {LAYOUT_LABEL[p.layout]} · {p.arrangement === "leased" ? "Sublet from landlord" : "Owned"}
@@ -400,77 +441,87 @@ function PropertyView(props: {
             </button>
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Kpi k="Collected" v={aed(r.collected)} sub={`of ${aed(r.expected)}`} />
+        <div className="relative mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Kpi k="Collected" v={aed(r.collected)} sub={r.pendingCheques ? `+ ${aed(r.pendingCheques)} in cheques` : `of ${aed(r.expected)}`} />
           <Kpi k="Still to collect" v={aed(r.outstanding)} tone={r.outstanding ? "bad" : "good"} />
           <Kpi k="Running costs" v={aed(r.costs)} sub={p.arrangement === "leased" ? `incl. ${aed(leaseMonthly(p))} to landlord` : "bills"} />
           <Kpi k="Profit this month" v={signed(r.profit)} tone={r.profit >= 0 ? "good" : "bad"} sub={`Full house: ${signed(r.potential - r.costs)}`} />
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <section className="rounded-[24px] border border-line bg-white p-5">
+      <Snapshot r={r} />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="card p-5">
           <h2 className="text-[17px] font-bold">Spaces and tenants</h2>
           {!p.spaces.length && <p className="mt-3 text-[14px] text-muted">No spaces yet. Edit the apartment to add beds, partitions or rooms.</p>}
           <ul className="mt-3 divide-y divide-line">
             {p.spaces.map((s) => {
-              const t = active.find((x) => x.spaceId === s.id);
-              const due = t ? r.dues.find((d) => d.tenant.id === t.id) : undefined;
+              const here = active.filter((x) => x.spaceId === s.id);
+              const slot = r.vacant.find((v) => v.space.id === s.id);
+              const cap = Math.max(1, s.capacity || 1);
               return (
-                <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3.5">
-                  <div className="min-w-0">
+                <li key={s.id} className="py-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-[14.5px] font-semibold">
-                      {s.label} <span className="font-normal text-muted">· {SPACE_LABEL[s.kind]}</span>
+                      {s.label} <span className="font-normal text-muted">· {SPACE_LABEL[s.kind]}{cap > 1 ? ` for ${cap}` : ""} · {aed(s.rentAed)}</span>
                     </p>
-                    {t ? (
-                      <button className="text-left text-[13.5px] text-ink-2 hover:text-brand" onClick={() => props.onEditTenant(t)}>
-                        {t.name} · {aed(t.rentAed)} · due {t.dueDay}
-                        {due && (
-                          <span className={`ml-2 rounded-full px-2 py-0.5 text-[11.5px] font-semibold ${due.outstanding === 0 ? "bg-mint text-brand" : due.late ? "bg-[#fde4dc] text-[#b4472c]" : "bg-surface text-ink-2"}`}>
-                            {due.outstanding === 0 ? "Paid" : due.late ? `Late · ${aed(due.outstanding)}` : `Due ${aed(due.outstanding)}`}
+                    {cap > 1 && <span className="chip">{here.length}/{cap} filled</span>}
+                  </div>
+                  {here.map((t) => {
+                    const due = r.dues.find((d) => d.tenant.id === t.id);
+                    return (
+                      <div key={t.id} className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-surface px-3 py-2">
+                        <button className="text-left text-[13.5px] text-ink hover:text-brand" onClick={() => props.onEditTenant(t)}>
+                          <b className="font-semibold">{t.name}</b> · {aed(t.rentAed)} · due {t.dueDay}
+                          {due && (
+                            <span className={`ml-2 rounded-full px-2 py-0.5 text-[11.5px] font-semibold ${due.outstanding === 0 ? "bg-mint text-brand" : due.late ? "bg-[#fde4dc] text-[#b4472c]" : due.pending ? "bg-[#fff3cd] text-[#7a5a00]" : "bg-white text-ink-2"}`}>
+                              {due.outstanding === 0 ? "Paid" : due.late ? `Late · ${aed(due.outstanding)}` : due.pending ? "Cheque pending" : `Due ${aed(due.outstanding)}`}
+                            </span>
+                          )}
+                        </button>
+                        {due && due.outstanding > 0 && (
+                          <span className="flex gap-2">
+                            {t.phone && (
+                              <a className={ghost} href={whatsappLink(t.phone, rentReminder(t, p, due))} target="_blank" rel="noopener noreferrer">
+                                Remind
+                              </a>
+                            )}
+                            <button className={ghost} onClick={() => props.onMarkPaid(t, due.outstanding)}>
+                              Mark paid
+                            </button>
                           </span>
                         )}
-                      </button>
-                    ) : (
-                      <p className="text-[13.5px] text-[#b4472c]">Empty · asking {aed(s.rentAed)}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {t && due && due.outstanding > 0 && (
-                      <>
-                        {t.phone && (
-                          <a className={ghost} href={whatsappLink(t.phone, rentReminder(t, p, due))} target="_blank" rel="noopener noreferrer">
-                            Remind
-                          </a>
-                        )}
-                        <button className={ghost} onClick={() => props.onMarkPaid(t, due.outstanding)}>
-                          Mark paid
-                        </button>
-                      </>
-                    )}
-                    {!t && (
-                      <>
-                        <button className={ghost} onClick={() => props.onAddTenant(s)}>
+                      </div>
+                    );
+                  })}
+                  {slot && (
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[13px] text-[#b4472c]">
+                        {here.length ? `Room for ${slot.free} more · ${aed(slot.perPersonAed)} each` : `Empty · asking ${aed(s.rentAed)}${cap > 1 ? ` (${aed(slot.perPersonAed)} each)` : ""}`}
+                      </p>
+                      <span className="flex gap-2">
+                        <button className={ghost} onClick={() => props.onAddTenant(s, slot.perPersonAed)}>
                           Add tenant
                         </button>
                         <Link className={ghost} href={listHref(s)}>
                           List on Stayshay
                         </Link>
-                      </>
-                    )}
-                  </div>
+                      </span>
+                    </div>
+                  )}
                 </li>
               );
             })}
           </ul>
         </section>
 
-        <div className="space-y-6">
-          <section className="rounded-[24px] border border-line bg-white p-5">
+        <div className="space-y-5">
+          <section className="card p-5">
             <h2 className="text-[17px] font-bold">Running costs this month</h2>
             <ul className="mt-3 divide-y divide-line text-[14px]">
               {p.arrangement === "leased" && p.lease && (
-                <CostRow name={`Rent to ${p.lease.landlord || "landlord"}`} sub={`${aed(p.lease.yearlyRentAed)} a year · ${p.lease.cheques} ${p.lease.cheques === 1 ? "cheque" : "cheques"}`} monthly={leaseMonthly(p)} paid={paidFor(null, "lease")} onPay={() => props.onPayCost("lease", leaseMonthly(p), null, "Monthly share of head lease")} />
+                <CostRow name={`Rent to ${p.lease.landlord || "landlord"}`} sub={`${aed(p.lease.yearlyRentAed)} a year · ${p.lease.cheques} ${p.lease.cheques === 1 ? "cheque" : "cheques"}`} monthly={leaseMonthly(p)} paid={props.payments.some((x) => x.kind === "lease" && settled(x))} onPay={() => props.onPayCost("lease", leaseMonthly(p), null, "Monthly share of head lease")} />
               )}
               {p.bills.map((b) => (
                 <CostRow key={b.id} name={b.label || BILL_LABEL[b.kind]} sub={`${aed(b.amountAed)} ${EVERY_LABEL[b.every]}`} monthly={billMonthly(b)} paid={paidFor(b.id, "bill")} onPay={() => props.onPayCost("bill", billMonthly(b), b.id, b.label || BILL_LABEL[b.kind])} />
@@ -482,33 +533,135 @@ function PropertyView(props: {
             </p>
           </section>
 
-          <section className="rounded-[24px] border border-line bg-white p-5">
+          {r.cheques.length > 0 && (
+            <section className="card p-5">
+              <h2 className="text-[17px] font-bold">Cheques to the landlord</h2>
+              <p className="text-[13px] text-muted">Each cheque covers {r.cheques[0].months} {r.cheques[0].months === 1 ? "month" : "months"}.</p>
+              <ul className="mt-3 divide-y divide-line text-[14px]">
+                {r.cheques.map((c) => (
+                  <li key={c.index} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                    <span>
+                      <span className="block font-semibold">
+                        Cheque {c.index + 1} · {aed(c.amountAed)}
+                      </span>
+                      <span className="block text-[12.5px] text-muted">
+                        Due {shortDay(c.dueDate)} {c.dueDate.slice(0, 4)}
+                      </span>
+                    </span>
+                    {c.status === "cleared" ? (
+                      <span className="chip">Cleared</span>
+                    ) : c.status === "pending" ? (
+                      <span className="flex gap-2">
+                        <button className={ghost} onClick={() => props.onChequeStatus(c.paymentId!, "cleared")}>
+                          Mark cleared
+                        </button>
+                        <button className={ghost} onClick={() => props.onChequeStatus(c.paymentId!, "bounced")}>
+                          Bounced
+                        </button>
+                      </span>
+                    ) : (
+                      <span className="flex gap-2">
+                        {c.status === "bounced" && <span className="rounded-full bg-[#fde4dc] px-2 py-0.5 text-[11.5px] font-semibold text-[#b4472c]">Bounced</span>}
+                        <button className={ghost} onClick={() => props.onLeaseCheque(c, "pending")}>
+                          Given
+                        </button>
+                        <button className={ghost} onClick={() => props.onLeaseCheque(c, "cleared")}>
+                          Cleared
+                        </button>
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="card p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[17px] font-bold">Photos</h2>
+              <label className={`${ghost} cursor-pointer`}>
+                {uploading ? "Uploading" : "Add photos"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={async (e) => {
+                    const files = [...(e.target.files ?? [])].slice(0, 10);
+                    e.target.value = "";
+                    setUploading(true);
+                    for (const f of files) await props.onPhoto(f);
+                    setUploading(false);
+                  }}
+                />
+              </label>
+            </div>
+            {p.photos.length ? (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {p.photos.map((u) => (
+                  <div key={u} className="group relative aspect-square overflow-hidden rounded-[14px] bg-surface">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={u} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <button onClick={() => confirm("Remove this photo?") && props.onPhotoRemove(u)} className="absolute right-1.5 top-1.5 rounded-[8px] bg-white/90 px-2 py-0.5 text-[11.5px] font-semibold text-ink opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-[13.5px] text-muted">Add photos of the rooms, kitchen and building. They help when you list empty spaces.</p>
+            )}
+          </section>
+
+          <section className="card p-5">
             <h2 className="text-[17px] font-bold">Details</h2>
             <dl className="mt-3 space-y-2 text-[14px]">
               <Detail k="Permit" v={p.permitNo ? `${p.permitNo}${p.permitExpiry ? ` · expires ${shortDay(p.permitExpiry)} ${p.permitExpiry.slice(0, 4)}` : ""}` : "Not added"} />
               {p.lease && <Detail k="Lease" v={`${p.lease.startDate || "?"} to ${p.lease.endDate || "?"} · deposit ${aed(p.lease.depositAed)}`} />}
-              <Detail k="Spaces" v={`${p.spaces.length} · full house ${aed(r.potential)} a month`} />
+              <Detail k="Holds" v={`${r.spaces} ${r.spaces === 1 ? "person" : "people"} · full house ${aed(r.potential)} a month`} />
               {p.notes && <Detail k="Notes" v={p.notes} />}
             </dl>
           </section>
         </div>
       </div>
 
-      <Ledger payments={props.payments} tenants={props.tenants} bills={p.bills} title={`Payments in ${periodLabel(props.period)}`} onRecord={props.onRecord} onDelete={props.onDeletePayment} />
+      <Ledger payments={props.payments} period={props.period} tenants={props.tenants} bills={p.bills} title={`Payments in ${periodLabel(props.period)}`} onRecord={props.onRecord} onDelete={props.onDeletePayment} onChequeStatus={props.onChequeStatus} />
     </div>
+  );
+}
+
+/** Where the apartment (or the whole portfolio) stands, and how many more tenants it needs. */
+function Snapshot({ r }: { r: { spaces: number; occupied: number; toBreakEven: number; toFill: number; pendingCheques: number; expected: number; costs: number } }) {
+  const pct = r.spaces ? Math.round((r.occupied / r.spaces) * 100) : 0;
+  const items: [string, string, string][] = [
+    ["Occupancy", `${pct}%`, `${r.occupied} of ${r.spaces} people`],
+    ["To cover costs", r.toBreakEven ? `${r.toBreakEven} more` : "Covered", r.toBreakEven ? `rent ${aed(r.expected)} vs costs ${aed(r.costs)}` : `rent ${aed(r.expected)} covers ${aed(r.costs)}`],
+    ["To fill up", r.toFill ? `${r.toFill} more` : "Full", r.toFill ? "tenants until every space is let" : "every space is let"],
+    ["Cheques pending", aed(r.pendingCheques), "received, not cleared yet"],
+  ];
+  return (
+    <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {items.map(([k, v, sub]) => (
+        <div key={k} className="card p-4">
+          <p className="text-[12px] font-semibold text-muted">{k}</p>
+          <p className="font-figure mt-1 text-[20px] font-bold text-brand md:text-[24px]">{v}</p>
+          <p className="mt-0.5 text-[12px] text-muted">{sub}</p>
+        </div>
+      ))}
+    </section>
   );
 }
 
 function CostRow({ name, sub, monthly, paid, onPay }: { name: string; sub: string; monthly: number; paid: boolean; onPay: () => void }) {
   return (
     <li className="flex items-center justify-between gap-3 py-3">
-      <span>
+      <span className="min-w-0">
         <span className="block font-semibold">{name}</span>
         <span className="block text-[12.5px] text-muted">{sub}</span>
       </span>
       <span className="flex items-center gap-2">
-        <span className="font-figure font-semibold">{aed(monthly)}</span>
-        {paid ? <span className="rounded-full bg-mint px-2 py-0.5 text-[11.5px] font-semibold text-brand">Paid</span> : <button className={ghost} onClick={onPay}>Mark paid</button>}
+        <span className="font-figure whitespace-nowrap font-semibold">{aed(monthly)}</span>
+        {paid ? <span className="chip">Paid</span> : <button className={`${ghost} whitespace-nowrap`} onClick={onPay}>Mark paid</button>}
       </span>
     </li>
   );
@@ -561,12 +714,12 @@ function Tenants({ data, onEdit }: { data: Data; onEdit: (t: MTenant) => void })
   );
 }
 
-function Payments({ data, period, onRecord, onDelete }: { data: Data; period: string; onRecord: () => void; onDelete: (p: MPayment) => void }) {
-  const list = data.payments.filter((p) => p.period === period);
+function Payments({ data, period, onRecord, onDelete, onChequeStatus }: { data: Data; period: string; onRecord: () => void; onDelete: (p: MPayment) => void; onChequeStatus: (id: string, status: "cleared" | "bounced") => void }) {
+  const list = data.payments.filter((p) => shareIn(p, period) > 0);
   const csv = () => {
     const prop = (id: string) => data.properties.find((p) => p.id === id)?.name ?? "";
     const ten = (id: string | null) => data.tenants.find((t) => t.id === id)?.name ?? "";
-    const rows = [["Date", "For month", "Apartment", "Type", "Tenant", "Amount AED", "In/Out", "Method", "Note"], ...list.map((p) => [p.date, p.period, prop(p.propertyId), PAY_LABEL[p.kind], ten(p.tenantId), String(p.amountAed), PAY_IN.has(p.kind) ? "in" : "out", p.method, p.note])];
+    const rows = [["Date", "From month", "Months", "Apartment", "Type", "Tenant", "Amount AED", "In/Out", "Method", "Cheque no", "Cheque status", "Note"], ...list.map((p) => [p.date, p.period, String(p.months || 1), prop(p.propertyId), PAY_LABEL[p.kind], ten(p.tenantId), String(p.amountAed), PAY_IN.has(p.kind) ? "in" : "out", p.method, p.chequeNo ?? "", p.chequeStatus ?? "", p.note])];
     const blob = new Blob([rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -575,7 +728,7 @@ function Payments({ data, period, onRecord, onDelete }: { data: Data; period: st
   };
   return (
     <div className="space-y-3">
-      <Ledger payments={list} tenants={data.tenants} bills={data.properties.flatMap((p) => p.bills)} properties={data.properties} title={`All payments in ${periodLabel(period)}`} onRecord={onRecord} onDelete={onDelete} />
+      <Ledger payments={list} tenants={data.tenants} bills={data.properties.flatMap((p) => p.bills)} properties={data.properties} period={period} title={`All payments in ${periodLabel(period)}`} onRecord={onRecord} onDelete={onDelete} onChequeStatus={onChequeStatus} />
       {list.length > 0 && (
         <button className={ghost} onClick={csv}>
           Download as spreadsheet (CSV)
@@ -585,11 +738,12 @@ function Payments({ data, period, onRecord, onDelete }: { data: Data; period: st
   );
 }
 
-function Ledger({ payments, tenants, bills, properties, title, onRecord, onDelete }: { payments: MPayment[]; tenants: MTenant[]; bills: Bill[]; properties?: MProperty[]; title: string; onRecord: () => void; onDelete: (p: MPayment) => void }) {
-  const inn = payments.filter((p) => PAY_IN.has(p.kind)).reduce((s, p) => s + p.amountAed, 0);
-  const out = payments.filter((p) => !PAY_IN.has(p.kind)).reduce((s, p) => s + p.amountAed, 0);
+function Ledger({ payments, period, tenants, bills, properties, title, onRecord, onDelete, onChequeStatus }: { payments: MPayment[]; period: string; tenants: MTenant[]; bills: Bill[]; properties?: MProperty[]; title: string; onRecord: () => void; onDelete: (p: MPayment) => void; onChequeStatus: (id: string, status: "cleared" | "bounced") => void }) {
+  const counted = payments.filter(settled);
+  const inn = Math.round(counted.filter((p) => PAY_IN.has(p.kind)).reduce((s, p) => s + shareIn(p, period), 0));
+  const out = Math.round(counted.filter((p) => !PAY_IN.has(p.kind)).reduce((s, p) => s + shareIn(p, period), 0));
   return (
-    <section className="rounded-[24px] border border-line bg-white p-5">
+    <section className="card p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-[17px] font-bold">{title}</h2>
@@ -604,23 +758,41 @@ function Ledger({ payments, tenants, bills, properties, title, onRecord, onDelet
       <ul className="mt-3 divide-y divide-line">
         {!payments.length && <li className="py-4 text-[14px] text-muted">Nothing recorded for this month yet.</li>}
         {payments.map((p) => {
-          const who = p.tenantId ? tenants.find((t) => t.id === p.tenantId)?.name : p.billId ? bills.find((b) => b.id === p.billId)?.label || BILL_LABEL[bills.find((b) => b.id === p.billId)?.kind ?? "other"] : "";
+          const who = p.tenantId ? tenants.find((t) => t.id === p.tenantId)?.name : p.billId ? bills.find((b) => b.id === p.billId)?.label || BILL_LABEL[bills.find((b) => b.id === p.billId)?.kind ?? "other"] : p.chequeIndex != null ? `Cheque ${p.chequeIndex + 1}` : "";
           const where = properties?.find((x) => x.id === p.propertyId)?.name;
           const isIn = PAY_IN.has(p.kind);
+          const months = Math.max(1, p.months || 1);
+          const span = months > 1 ? `${periodLabel(p.period).split(" ")[0].slice(0, 3)}–${periodLabel(shiftPeriod(p.period, months - 1)).slice(0, 3)} (${months} months)` : "";
           return (
-            <li key={p.id} className="flex items-center justify-between gap-3 py-3 text-[14px]">
+            <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-[14px]">
               <span className="min-w-0">
                 <span className="block font-semibold">
                   {PAY_LABEL[p.kind]}
                   {who ? ` · ${who}` : ""}
+                  {p.method === "cheque" && (
+                    <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${p.chequeStatus === "cleared" ? "bg-mint text-brand" : p.chequeStatus === "bounced" ? "bg-[#fde4dc] text-[#b4472c]" : "bg-[#fff3cd] text-[#7a5a00]"}`}>
+                      Cheque {p.chequeNo} {p.chequeStatus === "cleared" ? "cleared" : p.chequeStatus === "bounced" ? "bounced" : "pending"}
+                    </span>
+                  )}
                 </span>
                 <span className="block truncate text-[12.5px] text-muted">
                   {shortDay(p.date)} · {p.method}
+                  {span ? ` · ${span}` : ""}
                   {where ? ` · ${where}` : ""}
                   {p.note ? ` · ${p.note}` : ""}
                 </span>
               </span>
-              <span className="flex shrink-0 items-center gap-3">
+              <span className="flex shrink-0 items-center gap-2">
+                {p.method === "cheque" && p.chequeStatus === "pending" && (
+                  <>
+                    <button className={ghost} onClick={() => onChequeStatus(p.id, "cleared")}>
+                      Cleared
+                    </button>
+                    <button className={ghost} onClick={() => onChequeStatus(p.id, "bounced")}>
+                      Bounced
+                    </button>
+                  </>
+                )}
                 <span className={`font-figure font-bold ${isIn ? "text-brand" : "text-ink"}`}>
                   {isIn ? "+" : "−"}
                   {aed(p.amountAed)}
@@ -701,10 +873,10 @@ function PropertyForm({ initial, onSave }: { initial: Partial<MProperty>; onSave
   const setLease = (k: keyof typeof lease, v: string | number) => set("lease", { ...lease, [k]: v });
   const spaces = p.spaces ?? [];
   const bills = p.bills ?? [];
-  const addSpaces = (kind: SpaceKind, n: number, rent: number) => {
+  const addSpaces = (kind: SpaceKind, n: number, rent: number, capacity = 1) => {
     const count = (k: SpaceKind) => spaces.filter((s) => s.kind === k).length;
     const name = { bed_space: "Bed", partition: "Partition", room: "Room", studio: "Unit" }[kind];
-    set("spaces", [...spaces, ...Array.from({ length: n }, (_, i) => ({ id: tmpId(), label: `${name} ${count(kind) + i + 1}`, kind, rentAed: rent }))]);
+    set("spaces", [...spaces, ...Array.from({ length: n }, (_, i) => ({ id: tmpId(), label: `${name} ${count(kind) + i + 1}`, kind, rentAed: rent, capacity }))]);
   };
   const full = spaces.reduce((s, x) => s + Number(x.rentAed || 0), 0);
   const cost = (p.arrangement === "leased" ? Number(lease.yearlyRentAed || 0) / 12 : 0) + bills.reduce((s, b) => s + billMonthly({ ...b, amountAed: Number(b.amountAed || 0) }), 0);
@@ -804,6 +976,7 @@ function PropertyForm({ initial, onSave }: { initial: Partial<MProperty>; onSave
 
       <div>
         <p className={label}>Spaces you rent out</p>
+        <p className="text-[12px] text-muted">Rent is for the whole space; the last box is how many people share it. The rent splits between them.</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <button type="button" className={ghost} onClick={() => addSpaces("bed_space", 1, 800)}>
             Add a bed
@@ -814,8 +987,14 @@ function PropertyForm({ initial, onSave }: { initial: Partial<MProperty>; onSave
           <button type="button" className={ghost} onClick={() => addSpaces("partition", 1, 1500)}>
             Add a partition
           </button>
+          <button type="button" className={ghost} onClick={() => addSpaces("partition", 1, 1800, 2)}>
+            Partition for 2
+          </button>
           <button type="button" className={ghost} onClick={() => addSpaces("room", 1, 2500)}>
             Add a room
+          </button>
+          <button type="button" className={ghost} onClick={() => addSpaces("room", 1, 2700, 3)}>
+            Shared room for 3
           </button>
           <button type="button" className={ghost} onClick={() => addSpaces("studio", 1, 4000)}>
             Whole unit
@@ -823,9 +1002,16 @@ function PropertyForm({ initial, onSave }: { initial: Partial<MProperty>; onSave
         </div>
         <ul className="mt-3 space-y-2">
           {spaces.map((s, i) => (
-            <li key={s.id} className="grid grid-cols-[minmax(0,1fr)_110px_auto] items-center gap-2">
+            <li key={s.id} className="grid grid-cols-[minmax(0,1fr)_92px_64px_auto] items-center gap-2">
               <input className={field} value={s.label} onChange={(e) => set("spaces", spaces.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} aria-label="Space name" />
-              <input className={field} inputMode="numeric" value={s.rentAed || ""} placeholder="Rent" onChange={(e) => set("spaces", spaces.map((x, j) => (j === i ? { ...x, rentAed: Number(e.target.value.replace(/\D/g, "")) } : x)))} aria-label="Monthly rent" />
+              <input className={field} inputMode="numeric" value={s.rentAed || ""} placeholder="Rent" onChange={(e) => set("spaces", spaces.map((x, j) => (j === i ? { ...x, rentAed: Number(e.target.value.replace(/\D/g, "")) } : x)))} aria-label="Monthly rent for the whole space" />
+              <select className={field} value={s.capacity || 1} onChange={(e) => set("spaces", spaces.map((x, j) => (j === i ? { ...x, capacity: Number(e.target.value) } : x)))} aria-label="People">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
               <button type="button" className="h-11 px-2 text-[13px] text-muted hover:text-[#b4472c]" onClick={() => set("spaces", spaces.filter((_, j) => j !== i))}>
                 Remove
               </button>
@@ -896,7 +1082,8 @@ function TenantForm({ initial, properties, tenants, onSave, onDelete }: { initia
   const [t, setT] = useState<Partial<MTenant>>(initial);
   const set = <K extends keyof MTenant>(k: K, v: MTenant[K]) => setT((x) => ({ ...x, [k]: v }));
   const prop = properties.find((p) => p.id === t.propertyId);
-  const taken = new Set(tenants.filter((x) => x.status === "active" && x.id !== t.id).map((x) => x.spaceId));
+  const used = (spaceId: string) => tenants.filter((x) => x.status === "active" && x.id !== t.id && x.spaceId === spaceId).length;
+  const taken = new Set((prop?.spaces ?? []).filter((sp) => used(sp.id) >= Math.max(1, sp.capacity || 1)).map((sp) => sp.id));
   return (
     <form
       className="grid grid-cols-2 gap-3"
@@ -934,7 +1121,8 @@ function TenantForm({ initial, properties, tenants, onSave, onDelete }: { initia
           {prop?.spaces.map((s) => (
             <option key={s.id} value={s.id} disabled={taken.has(s.id)}>
               {s.label}
-              {taken.has(s.id) ? " (taken)" : ""}
+              {(s.capacity || 1) > 1 ? ` (${used(s.id)}/${s.capacity})` : ""}
+              {taken.has(s.id) ? " full" : ""}
             </option>
           ))}
         </select>
@@ -1029,7 +1217,7 @@ function PaymentForm({ initial, data, onSave }: { initial: Partial<MPayment>; da
             value={p.tenantId ?? ""}
             onChange={(e) => {
               const t = tenants.find((x) => x.id === e.target.value);
-              setP((x) => ({ ...x, tenantId: e.target.value || null, amountAed: x.amountAed || (t ? (p.kind === "rent" ? t.rentAed : t.depositAed) : 0) }));
+              setP((x) => ({ ...x, tenantId: e.target.value || null, amountAed: x.amountAed || (t ? (p.kind === "rent" ? t.rentAed * (x.months ?? 1) : t.depositAed) : 0) }));
             }}
           >
             <option value="">Choose</option>
@@ -1084,6 +1272,34 @@ function PaymentForm({ initial, data, onSave }: { initial: Partial<MPayment>; da
           ))}
         </select>
       </label>
+      <label>
+        <span className={label}>Covers how many months</span>
+        <select className={field} value={p.months ?? 1} onChange={(e) => set("months", Number(e.target.value))}>
+          {[1, 2, 3, 4, 6, 12].map((n) => (
+            <option key={n} value={n}>
+              {n === 1 ? "1 month" : `${n} months`}
+            </option>
+          ))}
+        </select>
+      </label>
+      {p.method === "cheque" ? (
+        <>
+          <label>
+            <span className={label}>Cheque number</span>
+            <input className={field} value={p.chequeNo ?? ""} onChange={(e) => set("chequeNo", e.target.value)} />
+          </label>
+          <label className="col-span-2">
+            <span className={label}>Cheque status</span>
+            <select className={field} value={p.chequeStatus ?? "pending"} onChange={(e) => set("chequeStatus", e.target.value as "pending" | "cleared")}>
+              <option value="pending">Received, not cleared yet</option>
+              <option value="cleared">Cleared</option>
+            </select>
+          </label>
+        </>
+      ) : (
+        <span />
+      )}
+      {(p.months ?? 1) > 1 && !!p.amountAed && <p className="col-span-2 text-[12.5px] text-muted">Counts as {aed(Math.round(p.amountAed / (p.months ?? 1)))} a month for {p.months} months.</p>}
       <label className="col-span-2">
         <span className={label}>Note</span>
         <input className={field} value={p.note ?? ""} onChange={(e) => set("note", e.target.value)} />

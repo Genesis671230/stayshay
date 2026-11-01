@@ -171,6 +171,9 @@ export function AdminConsole(props: {
             <a href="/admin/referrals" className="-mb-px flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] text-muted hover:text-ink">
               Referrals & partners
             </a>
+            <a href="/admin/manager" className="-mb-px flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] text-muted hover:text-ink">
+              Owners
+            </a>
           </nav>
         </header>
 
