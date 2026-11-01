@@ -34,3 +34,9 @@ Claude `claude-opus-5-5`, `output_config.effort: "low"`, server-side refusal fal
 
 ## Shared core (`packages/core`)
 Mobile imports **subpaths** (`@stayshay/core/src/search.ts` etc. via `apps/mobile/lib/core.ts`) — the package index statically imports test data and must not be bundled into the app.
+
+## Referrals & partners (added 2026-11-01) — `lib/referrals.ts`
+`?ref=CODE` → `ss_ref` cookie (client `RefCapture`, first referrer wins, 90 days). `addLead` stamps `refCode`; `signUp`/`upsertGoogleUser` set `referredBy`; `ensureRefCode` gives each user `refCode`. Files: `partners.json` (pending → approved/hidden), `rewards.json` (approved → paid/cancelled). Amounts in core `REFERRAL_REWARDS`. Pages: `/refer`, `/account/referrals`, `/partners[/<code>]`, `/admin/referrals`. Referrers never see phones/emails of the people they referred.
+
+## Client bundles
+Client components import `@stayshay/core/src/client.ts` (no catalogue; areas from `data/areas-merged.json`, written by `scripts/ensure-data.mjs` before build/typecheck/test). Browsing pages pass `slim(listings)`. `getAllListings()` runs `stripPhones` on title/description.

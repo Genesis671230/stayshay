@@ -365,3 +365,37 @@ body {
     overflow: hidden;
   }
 }
+
+/* ---------- branded primary buttons: depth + a soft mint glow underneath ---------- */
+:is(a, button).bg-brand:not([aria-pressed]):not([role="tab"]):not([role="option"]),
+.btn-brand {
+  position: relative;
+  background-image: linear-gradient(180deg, #24785a 0%, #17624a 48%, #0f4a38 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    inset 0 -1px 0 rgb(0 0 0 / 0.18),
+    0 1px 2px rgb(13 36 26 / 0.25),
+    0 12px 26px -12px rgb(39 174 120 / 0.85);
+  letter-spacing: -0.005em;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, filter 0.25s ease;
+}
+:is(a, button).bg-brand:not([aria-pressed]):not([role="tab"]):not([role="option"]):hover,
+.btn-brand:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.26),
+    inset 0 -1px 0 rgb(0 0 0 / 0.18),
+    0 2px 4px rgb(13 36 26 / 0.2),
+    0 18px 34px -12px rgb(110 231 183 / 0.95);
+}
+:is(a, button).bg-brand:not([aria-pressed]):not([role="tab"]):not([role="option"]):active { transform: translateY(0); }
+:is(a, button).bg-fresh {
+  background-image: linear-gradient(180deg, #34c48a 0%, #27ae78 55%, #1f9466 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 12px 26px -12px rgb(110 231 183 / 0.95);
+}
+:is(a, button).bg-whatsapp {
+  background-image: linear-gradient(180deg, #25b366 0%, #1d9e57 60%, #188a4b 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 12px 24px -12px rgb(29 158 87 / 0.8);
+}
+/* Selected filter chips stay flat: the glow is for actions, not states. */
+:is(button, a)[aria-pressed="true"].bg-brand { box-shadow: 0 0 0 3px rgb(110 231 183 / 0.25); }

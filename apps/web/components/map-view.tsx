@@ -131,6 +131,7 @@ export default function MapView({
       map.current.on("zoomend", () => draw(false));
       let settled = false;
       resize = new ResizeObserver(() => {
+        if (cancelled) return;
         map.current?.invalidateSize();
         if (!settled) {
           settled = true;
@@ -174,6 +175,7 @@ export function ListingMap({ listing }: { listing: Listing }) {
   const el = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let m: LeafletMap | null = null;
+    let ro: ResizeObserver | null = null;
     let cancelled = false;
     import("leaflet").then((mod) => {
       const p = listingPoint(listing);
@@ -188,11 +190,17 @@ export function ListingMap({ listing }: { listing: Listing }) {
           title: listing.title,
         })
         .addTo(m);
-      new ResizeObserver(() => m?.invalidateSize()).observe(el.current);
+      ro = new ResizeObserver(() => {
+        // The observer can fire after the map is removed (route change, fast refresh): ignore those.
+        if (!cancelled && m) m.invalidateSize();
+      });
+      ro.observe(el.current);
     });
     return () => {
       cancelled = true;
+      ro?.disconnect();
       m?.remove();
+      m = null;
     };
   }, [listing]);
   return <div ref={el} className="h-full w-full" aria-label="Location map" />;

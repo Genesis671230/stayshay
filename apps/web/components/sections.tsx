@@ -183,8 +183,8 @@ export function Faq() {
       <p className="eyebrow text-center">Questions</p>
       <h2 className={`${H2} text-center`}>Good to know before you move</h2>
       <div className="mt-10 divide-y divide-line border-y border-line">
-        {FAQ.map(([q, a]) => (
-          <details key={q} className="group py-5">
+        {FAQ.map(([q, a],i) => (
+          <details key={i} className="group py-5">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-[16px] font-medium">
               {q}
               <span aria-hidden className="shrink-0 text-[22px] font-light leading-none text-muted transition-transform group-open:rotate-45">+</span>

@@ -12,3 +12,5 @@
 - **Tight disk on the founder's Mac** (2–6 GB free). Don't download full photo sets; Expo node_modules ~1 GB.
 - **Cursor grabs localhost:3000** → run locally on 3210 (`-H 127.0.0.1`).
 - **Claude API on Opus 5.5**: no forced `tool_choice`, effort default is `medium` (set `low` for chat), thinking can't be disabled, keep history append-only, `fallbacks: "default"` needs beta `server-side-fallback-2026-07-01`.
+- **Server `git pull` blocked by `apps/web/next-env.d.ts`** (rewritten by every build): `ssh qumak-ec2 'cd ~/workspace/stayshay && git checkout -- apps/web/next-env.d.ts'` then redeploy.
+- **Headless Chrome screenshots below ~500px wide are clipped**: render the page inside a 390px iframe to check phone layout.

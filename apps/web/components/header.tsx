@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon, Logo } from "./ui";
 
+const RENT = [
+  { label: "Bed spaces", href: "/rent/bed-space", hint: "A bed in a shared room" },
+  { label: "Partitions", href: "/rent/partitions", hint: "Your own closed-off space" },
+  { label: "Private rooms", href: "/rent/rooms", hint: "A whole room in a shared flat" },
+  { label: "Studios", href: "/rent/studios", hint: "Your own place, monthly" },
+  { label: "Best deals", href: "/deals", hint: "Below the going rate today" },
+];
+
 const NAV = [
-  { label: "Bed spaces", href: "/rent/bed-space" },
-  { label: "Partitions", href: "/rent/partitions" },
-  { label: "Rooms", href: "/rent/rooms" },
-  { label: "Studios", href: "/rent/studios" },
   { label: "Roommates", href: "/roommates" },
-  { label: "Deals", href: "/deals" },
   { label: "Guides", href: "/blog" },
   { label: "Refer & earn", href: "/refer" },
 ];
@@ -30,6 +33,7 @@ export function Header() {
   const me = useMe();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [rentOpen, setRentOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -45,16 +49,40 @@ export function Header() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+          <div className="relative" onMouseEnter={() => setRentOpen(true)} onMouseLeave={() => setRentOpen(false)}>
+            <button
+              className="flex h-10 items-center gap-1.5 rounded-full px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink"
+              aria-expanded={rentOpen}
+              aria-haspopup="true"
+              onClick={() => setRentOpen((v) => !v)}
+              onKeyDown={(e) => e.key === "Escape" && setRentOpen(false)}
+            >
+              Rent
+              <span aria-hidden className={`mt-[-3px] h-1.5 w-1.5 rotate-45 border-b-[1.5px] border-r-[1.5px] border-current transition-transform ${rentOpen ? "translate-y-[3px] rotate-[225deg]" : ""}`} />
+            </button>
+            {rentOpen && (
+              <div className="absolute left-0 top-full pt-2">
+                <div className="w-[300px] rounded-[20px] border border-line bg-white p-2 shadow-[0_24px_60px_rgb(20_92_70/0.16)]">
+                  {RENT.map((r) => (
+                    <Link key={r.href} href={r.href} onClick={() => setRentOpen(false)} className="block rounded-[14px] px-4 py-3 hover:bg-surface">
+                      <span className="block text-[14.5px] font-semibold text-ink">{r.label}</span>
+                      <span className="block text-[12.5px] text-muted">{r.hint}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           {NAV.map((item) => (
-            <Link key={item.label} href={item.href} className="text-[14px] text-ink-2 hover:text-ink">
+            <Link key={item.label} href={item.href} className="flex h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink">
               {item.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link href="/find" className="hidden h-10 items-center px-3 text-[14px] font-medium text-ink-2 hover:text-ink md:inline-flex">
+          <Link href="/find" className="hidden h-10 items-center px-3 text-[14px] font-medium text-ink-2 hover:text-ink xl:inline-flex">
             Find me a room
           </Link>
           <Link href="/list" className="hidden h-10 items-center rounded-[12px] bg-brand px-4 text-[14px] font-medium text-white hover:bg-brand-deep sm:inline-flex">
@@ -83,8 +111,14 @@ export function Header() {
 
       {open && (
         <div className="border-t border-line bg-white px-4 pb-5 lg:hidden">
+          <p className="pt-4 text-[11.5px] font-bold uppercase tracking-[0.12em] text-muted">Rent</p>
+          {RENT.map((item) => (
+            <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="block border-b border-line py-3 text-[15px]">
+              {item.label}
+            </Link>
+          ))}
           {NAV.map((item) => (
-            <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="block border-b border-line py-3.5 text-[15px]">
+            <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="block border-b border-line py-3 text-[15px]">
               {item.label}
             </Link>
           ))}
