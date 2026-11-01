@@ -53,7 +53,7 @@ export function Header() {
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
           <div className="relative" onMouseEnter={() => setRentOpen(true)} onMouseLeave={() => setRentOpen(false)}>
             <button
-              className="flex h-10 items-center gap-1.5 rounded-full px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink"
+              className="flex h-10 items-center gap-1.5 rounded-[12px] px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink"
               aria-expanded={rentOpen}
               aria-haspopup="true"
               onClick={() => setRentOpen((v) => !v)}
@@ -76,7 +76,7 @@ export function Header() {
             )}
           </div>
           {NAV.map((item) => (
-            <Link key={item.label} href={item.href} className="flex h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink">
+            <Link key={item.label} href={item.href} className="flex h-10 items-center rounded-[12px] px-4 text-[14.5px] font-medium text-ink-2 hover:text-ink">
               {item.label}
             </Link>
           ))}

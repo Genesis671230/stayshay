@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { REFERRAL_REWARDS } from "@stayshay/core";
@@ -41,7 +42,9 @@ export default async function Page() {
       <main>
         <section className="px-2 pt-2 md:px-4 md:pt-3">
           <div className="glow-panel relative overflow-hidden rounded-[32px] px-5 pb-12 pt-14 text-white md:px-10 md:pb-16 md:pt-20">
-            <div className="mx-auto max-w-[1080px]">
+            <Image src="/photos/partners.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_29_21/0.94)_0%,rgb(9_29_21/0.8)_48%,rgb(9_29_21/0.35)_100%)]" aria-hidden />
+            <div className="relative mx-auto max-w-[1080px]">
               <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Refer & earn</p>
               <h1 className="font-display mt-4 max-w-[760px] text-[40px] leading-[1.0] md:text-[68px]">
                 Know someone looking for a room? <span className="glow-text">Get paid when they move in.</span>
@@ -50,7 +53,7 @@ export default async function Page() {
                 Built for brokers, agents and anyone who knows people moving in the UAE. Every person you bring stays linked to you.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href={cta} className="flex h-13 items-center justify-center rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep shadow-[0_0_40px_rgb(110_231_183/0.5)]">
+                <Link href={cta} className="flex h-13 items-center justify-center rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep">
                   Get my referral link
                 </Link>
                 <Link href="/partners" className="flex h-13 items-center justify-center rounded-[16px] border border-white/25 px-7 py-3.5 text-[16px] font-semibold hover:bg-white/10">

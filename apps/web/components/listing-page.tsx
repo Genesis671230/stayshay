@@ -82,7 +82,7 @@ function Lightbox({ photos, start, title, onClose }: { photos: string[]; start: 
         <span className="font-figure text-[14px]">
           {i + 1} / {photos.length}
         </span>
-        <button onClick={onClose} aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10">
+        <button onClick={onClose} aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-[12px] hover:bg-white/10">
           <Icon name="close" />
         </button>
       </div>

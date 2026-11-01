@@ -200,7 +200,7 @@ export function ListFunnel() {
             ))}
           </ol>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={stayshayWhatsapp(`Hi Stayshay, I just submitted listing ${submitted}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-2 rounded-full bg-whatsapp px-6 text-[15px] font-semibold text-white">
+            <a href={stayshayWhatsapp(`Hi Stayshay, I just submitted listing ${submitted}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-2 rounded-[12px] bg-whatsapp px-6 text-[15px] font-semibold text-white">
               <Icon name="whatsapp" size={18} /> Message the team
             </a>
             <Link href="/list" onClick={() => window.location.reload()} className="inline-flex h-12 items-center rounded-full border border-line px-6 text-[15px] font-semibold">

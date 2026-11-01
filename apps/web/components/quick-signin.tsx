@@ -17,14 +17,13 @@ export function useMe() {
 }
 
 /** One-tap sign-in offered at the moment someone commits (booking, request, profile), never before. */
-export function QuickSignIn({ next, google, note = "We’ll use your name and number so you don’t have to type them.", onBeforeLeave }: { next: string; google: boolean; note?: string; onBeforeLeave?: () => void }) {
-  if (!google) return null;
+export function QuickSignIn({ next, google: _google, note = "We’ll use your name and number so you don’t have to type them.", onBeforeLeave }: { next: string; google: boolean; note?: string; onBeforeLeave?: () => void }) {
   return (
     <div className="space-y-2">
       <a
         href={`/api/auth/google?next=${encodeURIComponent(next)}`}
         onClick={() => onBeforeLeave?.()}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-line-strong bg-white text-[15px] font-semibold text-ink hover:border-ink"
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-[12px] border border-line-strong bg-white text-[15px] font-semibold text-ink hover:border-ink"
       >
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
           <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />

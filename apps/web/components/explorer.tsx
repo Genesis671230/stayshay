@@ -37,7 +37,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`h-9 shrink-0 rounded-full border px-4 text-[13.5px] font-medium transition-colors ${active ? "border-brand bg-brand text-white" : "border-line bg-white text-ink-2 hover:border-brand"}`}
+      className={`h-9 shrink-0 rounded-[12px] border px-4 text-[13.5px] font-medium transition-colors ${active ? "border-brand bg-brand text-white" : "border-line bg-white text-ink-2 hover:border-brand"}`}
     >
       {children}
     </button>

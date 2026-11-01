@@ -5,6 +5,8 @@ export interface PhotoSet {
   hero: string[];
   areas: Record<string, string>;
   categories: Record<string, string>;
+  /** Page heroes: refer, partners, manager, roommates, metro. */
+  pages?: Record<string, string>;
   credits?: unknown[];
 }
 

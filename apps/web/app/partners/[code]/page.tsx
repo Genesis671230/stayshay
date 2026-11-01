@@ -67,7 +67,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
                 <h2 className="mt-8 text-[15px] font-bold uppercase tracking-[0.08em] text-muted">Areas</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.areas.map((a) => (
-                    <Link key={a} href={`/search?q=${encodeURIComponent(a)}`} className="rounded-full bg-mint px-3.5 py-1.5 text-[13.5px] font-medium text-brand">
+                    <Link key={a} href={`/search?q=${encodeURIComponent(a)}`} className="rounded-[12px] bg-mint px-3.5 py-1.5 text-[13.5px] font-medium text-brand">
                       {a}
                     </Link>
                   ))}

@@ -18,7 +18,6 @@ export default async function Home() {
       <Header />
       <main>
         <Hero />
-        <RoomFan />
         <Categories />
         <Rails />
         <HowItWorks />
@@ -27,6 +26,7 @@ export default async function Home() {
         <Areas />
         <Faq />
         <FinalCta />
+        <RoomFan />
       </main>
       <Footer />
     </MarketplaceProvider>

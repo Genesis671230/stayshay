@@ -1,8 +1,8 @@
 {
   "hero": [
-    "https://images.unsplash.com/photo-1632829882891-5047ccc421bc?w=1200&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?w=1200&q=80&auto=format&fit=crop"
+    "/photos/living.jpg",
+    "/photos/room.jpg",
+    "/photos/studio.jpg"
   ],
   "areas": {
     "downtown-dubai": "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=1200&q=80&auto=format&fit=crop",
@@ -10,18 +10,23 @@
     "business-bay": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&q=80&auto=format&fit=crop",
     "jlt": "https://images.unsplash.com/photo-1526495124232-a04e1849168c?w=1200&q=80&auto=format&fit=crop",
     "al-barsha-1": "https://images.unsplash.com/photo-1546412414-e1885259563a?w=1200&q=80&auto=format&fit=crop",
-    "jvc": "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?w=1200&q=80&auto=format&fit=crop",
+    "jvc": "/photos/area-jvc.jpg",
     "bur-dubai": "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80&auto=format&fit=crop",
     "al-karama": "https://images.unsplash.com/photo-1597659840241-37e2b9c2f55f?w=1200&q=80&auto=format&fit=crop",
-    "deira": "https://images.unsplash.com/photo-1526495124232-a04e1849168c?w=1200&q=80&auto=format&fit=crop",
-    "dubai-sports-city": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&q=80&auto=format&fit=crop"
+    "deira": "/photos/area-deira.jpg",
+    "dubai-sports-city": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&q=80&auto=format&fit=crop",
+    "al-rigga": "/photos/area-deira.jpg",
+    "naif": "/photos/area-deira.jpg",
+    "muraqqabat": "/photos/area-deira.jpg",
+    "jumeirah-village-circle": "/photos/area-jvc.jpg",
+    "international-city": "/photos/area-international-city.jpg"
   },
   "categories": {
-    "room": "https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?w=1200&q=80&auto=format&fit=crop",
-    "bed_space": "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80&auto=format&fit=crop",
-    "partition": "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=1200&q=80&auto=format&fit=crop",
-    "studio": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200&q=80&auto=format&fit=crop",
-    "roommate": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1200&q=80&auto=format&fit=crop"
+    "room": "/photos/room.jpg",
+    "bed_space": "/photos/bed-space.jpg",
+    "partition": "/photos/partition.jpg",
+    "studio": "/photos/studio.jpg",
+    "roommate": "/photos/roommates.jpg"
   },
   "credits": [
     {
@@ -365,6 +370,17 @@
       "source": "Unsplash",
       "license": "Unsplash License",
       "photographer": null
+    },
+    {
+      "source": "AI-generated for Stayshay (Higgsfield, gpt_image_2_5), 2026-11-02",
+      "files": "/photos/*"
     }
-  ]
+  ],
+  "pages": {
+    "refer": "/photos/partners.jpg",
+    "partners": "/photos/partners.jpg",
+    "manager": "/photos/manager.jpg",
+    "roommates": "/photos/roommates.jpg",
+    "metro": "/photos/metro.jpg"
+  }
 }

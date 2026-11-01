@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/header";
@@ -24,6 +25,9 @@ export default async function Page() {
         <p className="mt-4 max-w-[620px] text-[15.5px] leading-relaxed text-ink-2">
           Pick someone who knows your area. You message Stayshay, we coordinate with them, and you never pay a broker fee.
         </p>
+        <div className="relative mt-8 aspect-[16/7] overflow-hidden rounded-[24px]">
+          <Image src="/photos/partners.jpg" alt="A Stayshay partner handing keys to a new tenant" fill sizes="(min-width:1080px) 1080px, 100vw" className="object-cover" />
+        </div>
         {partners.length ? (
           <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {partners.map((p) => (

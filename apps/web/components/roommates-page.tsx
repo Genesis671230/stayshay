@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useMemo, useRef, useState } from "react";
 import { AREA_BY_SLUG, BRAND, LIFESTYLE_LABEL, leadMessage, validateLead, type Area, type RoommateLead } from "@stayshay/core/src/client.ts";
 import type { PublicRoommate } from "@/lib/roommates";
@@ -138,7 +140,7 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
                   href={stayshayWhatsapp(`Hi Stayshay, I'd like to connect with ${p.firstName} (roommate profile ${p.id}). Here's a bit about me: `)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-whatsapp text-[14px] font-semibold text-white hover:brightness-95"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-whatsapp text-[14px] font-semibold text-white hover:brightness-95"
                 >
                   <Icon name="whatsapp" size={16} /> Connect with {p.firstName}
                 </a>
@@ -151,7 +153,7 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
           <Shay size={96} mood="happy" />
           <p className="mt-4 text-[18px] font-bold">{profiles.length ? "Nobody matches those filters yet" : "Be one of the first profiles"}</p>
           <p className="mt-1 max-w-[440px] text-[14.5px] text-muted">Create your profile below. Once our team checks it, it appears here for others looking in your area.</p>
-          <a href="#profile" className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-brand px-5 text-[14px] font-semibold text-white">
+          <a href="#profile" className="mt-5 inline-flex h-11 items-center gap-2 rounded-[12px] bg-brand px-5 text-[14px] font-semibold text-white">
             Create my profile <Icon name="arrow-right" size={15} />
           </a>
         </div>
@@ -280,7 +282,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
             href={stayshayWhatsapp(leadMessage(done.lead, areaName))}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-whatsapp px-6 text-[15px] font-semibold text-white"
+            className="mt-6 inline-flex h-12 items-center gap-2 rounded-[12px] bg-whatsapp px-6 text-[15px] font-semibold text-white"
           >
             <Icon name="whatsapp" size={18} /> Say hi on WhatsApp too
           </a>
@@ -509,11 +511,11 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
             <span />
           )}
           {step < STEPS.length - 1 ? (
-            <button type="button" onClick={next} className="flex h-12 items-center gap-2 rounded-full bg-brand px-7 text-[15px] font-semibold text-white">
+            <button type="button" onClick={next} className="flex h-12 items-center gap-2 rounded-[12px] bg-brand px-7 text-[15px] font-semibold text-white">
               Continue <Icon name="arrow-right" size={16} />
             </button>
           ) : (
-            <button type="button" onClick={submit} disabled={busy} className="flex h-12 items-center gap-2 rounded-full bg-brand px-7 text-[15px] font-semibold text-white disabled:opacity-50">
+            <button type="button" onClick={submit} disabled={busy} className="flex h-12 items-center gap-2 rounded-[12px] bg-brand px-7 text-[15px] font-semibold text-white disabled:opacity-50">
               {busy ? "Saving…" : isPublic ? "Publish my profile" : "Send my profile"}
             </button>
           )}
@@ -539,27 +541,24 @@ export function RoommatesPage({ profiles, me }: { profiles: PublicRoommate[]; me
   return (
     <main>
       <section className="px-2 pt-2 md:px-4 md:pt-3">
-        <div className="relative overflow-hidden rounded-[28px] bg-brand">
-          <div className="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/5" />
-          <div className="absolute -bottom-24 right-40 h-56 w-56 rounded-full bg-white/5" />
+        <div className="relative overflow-hidden rounded-[28px] bg-brand-deep">
+          <Image src="/photos/roommates.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_29_21/0.94)_0%,rgb(9_29_21/0.78)_50%,rgb(9_29_21/0.3)_100%)]" aria-hidden />
           <div className="relative mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-6 px-5 py-12 md:grid-cols-[1fr_auto] md:px-10 md:py-16">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-mint px-3.5 py-1.5 text-[12.5px] font-semibold text-brand">
-                <Icon name="users" size={14} /> Roommate matching · free
+                Roommate matching · free
               </span>
               <h1 className="font-display mt-5 max-w-[720px] text-[38px] leading-[1.04] text-white md:text-[58px]">Find a roommate you’d actually live with.</h1>
               <p className="mt-4 max-w-[560px] text-[16.5px] leading-relaxed text-white/85">Browse people already looking, or add your own profile with a photo. We match budgets, areas and routines, and introduce you on WhatsApp.</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a href="#board" className="flex h-12 items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-brand">
+                <a href="#board" className="flex h-12 items-center gap-2 rounded-[12px] bg-white px-6 text-[15px] font-semibold text-brand">
                   Browse {profiles.length ? `${profiles.length} ${profiles.length === 1 ? "person" : "people"}` : "people"}
                 </a>
-                <a href="#profile" className="flex h-12 items-center gap-2 rounded-full border border-white/40 px-6 text-[15px] font-semibold text-white hover:bg-white/10">
-                  Create my profile <Icon name="arrow-right" size={16} />
+                <a href="#profile" className="flex h-12 items-center gap-2 rounded-[12px] border border-white/40 px-6 text-[15px] font-semibold text-white hover:bg-white/10">
+                  Create my profile
                 </a>
               </div>
-            </div>
-            <div className="hidden h-56 w-56 items-center justify-center rounded-full bg-white md:flex">
-              <Shay size={170} mood="happy" />
             </div>
           </div>
         </div>

@@ -58,7 +58,7 @@ function Pill({ children, tone }: { children: React.ReactNode; tone: string }) {
 
 function WaButton({ href, onClick, label = "WhatsApp" }: { href: string; onClick?: () => void; label?: string }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-whatsapp px-3.5 text-[13px] font-semibold text-white hover:brightness-95">
+    <a href={href} target="_blank" rel="noopener noreferrer" onClick={onClick} className="inline-flex h-9 items-center gap-1.5 rounded-[12px] bg-whatsapp px-3.5 text-[13px] font-semibold text-white hover:brightness-95">
       <Icon name="whatsapp" size={15} /> {label}
     </a>
   );
@@ -140,7 +140,7 @@ export function AdminConsole(props: {
               <span className="rounded-full bg-mint px-2.5 py-1 text-[12px] font-bold text-brand">Admin</span>
             </div>
             <div className="flex items-center gap-2">
-              <a href="/" target="_blank" className="hidden h-9 items-center rounded-full px-3 text-[13.5px] text-muted hover:text-ink sm:flex">
+              <a href="/" target="_blank" className="hidden h-9 items-center rounded-[12px] px-3 text-[13.5px] text-muted hover:text-ink sm:flex">
                 View site
               </a>
               <button
@@ -362,19 +362,19 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
                   {l.phone ? (
                     <>
                       <WaButton href={wa(l.phone, reply)} onClick={() => l.status === "new" && onPatch(l.id, { status: "contacted" })} label="Reply" />
-                      <a href={tel(l.phone)} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                      <a href={tel(l.phone)} className="inline-flex h-9 items-center rounded-[12px] border border-line px-3.5 text-[13px] font-semibold">
                         Call
                       </a>
                     </>
                   ) : null}
                   {l.email ? (
-                    <a href={`mailto:${l.email}?subject=${encodeURIComponent("Stayshay")}&body=${encodeURIComponent(reply)}`} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                    <a href={`mailto:${l.email}?subject=${encodeURIComponent("Stayshay")}&body=${encodeURIComponent(reply)}`} className="inline-flex h-9 items-center rounded-[12px] border border-line px-3.5 text-[13px] font-semibold">
                       Email
                     </a>
                   ) : null}
                   {l.kind === "owner" &&
                     (l.listingId ? (
-                      <a href={`/listing/${l.listingId.toLowerCase()}`} target="_blank" className="inline-flex h-9 items-center rounded-full bg-brand px-3.5 text-[13px] font-semibold text-white">
+                      <a href={`/listing/${l.listingId.toLowerCase()}`} target="_blank" className="inline-flex h-9 items-center rounded-[12px] bg-brand px-3.5 text-[13px] font-semibold text-white">
                         {listings.find((x) => x.id === l.listingId)?.status === "pending_review" ? "Review in Listings" : "Open listing"}
                       </a>
                     ) : (
@@ -433,7 +433,7 @@ function Listings({ listings, adminIds, tenancies, onNew, onEdit, onDelete, onSt
             {counts("live")} live · {counts("reserved")} reserved · {counts("rented")} rented. Rented and reserved places are hidden from renters.
           </p>
         </div>
-        <button onClick={onNew} className="flex h-11 items-center gap-2 rounded-full bg-brand px-5 text-[14.5px] font-semibold text-white">
+        <button onClick={onNew} className="flex h-11 items-center gap-2 rounded-[12px] bg-brand px-5 text-[14.5px] font-semibold text-white">
           + New listing
         </button>
       </div>
@@ -1035,7 +1035,7 @@ function People({ users, leads }: { users: AdminUser[]; leads: LeadRecord[] }) {
               </div>
               <div className="flex gap-2">
                 {u.phone && <WaButton href={wa(u.phone, `Hi ${u.name.split(" ")[0]}, this is Stayshay.`)} />}
-                <a href={`mailto:${u.email}`} className="inline-flex h-9 items-center rounded-full border border-line px-3.5 text-[13px] font-semibold">
+                <a href={`mailto:${u.email}`} className="inline-flex h-9 items-center rounded-[12px] border border-line px-3.5 text-[13px] font-semibold">
                   Email
                 </a>
               </div>

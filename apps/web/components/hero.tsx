@@ -12,7 +12,7 @@ import { Shay } from "./shay";
 import { openShay } from "./shay-chat";
 
 // Full-bleed hero. Set NEXT_PUBLIC_HERO_VIDEO to an mp4 URL to play a muted loop over the photo.
-const HERO_IMAGE = "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=2400&q=80&auto=format&fit=crop";
+const HERO_IMAGE = "/photos/living.jpg";
 const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO;
 const OWNER_TYPES: ListingType[] = ["bed_space", "partition", "room", "studio"];
 
@@ -132,7 +132,7 @@ export function Hero() {
               {popular.map((slug) => {
                 const a = AREA_BY_SLUG.get(slug);
                 return a ? (
-                  <Link key={slug} href={`/search?area=${slug}`} className="rounded-full border border-white/25 px-3 py-1 text-white/90 hover:border-white hover:text-white">
+                  <Link key={slug} href={`/search?area=${slug}`} className="rounded-[12px] border border-white/25 px-3 py-1 text-white/90 hover:border-white hover:text-white">
                     {a.name}
                   </Link>
                 ) : null;

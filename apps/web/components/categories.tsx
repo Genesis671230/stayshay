@@ -37,7 +37,7 @@ export function Categories() {
             href={`/search?type=${c.type}`}
             className={`group relative min-h-[180px] overflow-hidden rounded-[24px] bg-surface ${i === 0 ? "min-h-[260px]" : ""} ${BENTO[i]}`}
           >
-            <Image src={coverFor(LISTINGS, c.type, i) ?? ""} alt="" fill sizes={i === 0 ? "(min-width:768px) 50vw, 100vw" : "(min-width:768px) 25vw, 50vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+            <Image src={PHOTOS.categories[c.type] ?? coverFor(LISTINGS, c.type, i) ?? ""} alt="" fill sizes={i === 0 ? "(min-width:768px) 50vw, 100vw" : "(min-width:768px) 25vw, 50vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
             <span className="absolute inset-x-2 bottom-2 flex items-end justify-between gap-3 rounded-[18px] bg-white/95 p-3.5 backdrop-blur md:inset-x-3 md:bottom-3 md:p-4">
               <span className="min-w-0">
                 <span className={`block font-bold tracking-[-0.02em] text-ink ${i === 0 ? "text-[20px] md:text-[24px]" : "text-[15px] md:text-[17px]"}`}>{c.title}</span>
@@ -66,7 +66,7 @@ function Rail({ title, sub, href, items }: { title: string; sub: string; href: s
           <h3 className="font-display text-[24px] leading-tight md:text-[30px]">{title}</h3>
           <p className="mt-1 text-[14px] text-muted">{sub}</p>
         </div>
-        <Link href={href} className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line px-4 text-[14px] font-semibold text-brand hover:border-brand">
+        <Link href={href} className="flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] border border-line px-4 text-[14px] font-semibold text-brand hover:border-brand">
           See all <Icon name="arrow-right" size={14} />
         </Link>
       </div>

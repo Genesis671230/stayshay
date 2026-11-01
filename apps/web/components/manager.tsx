@@ -112,11 +112,11 @@ export function ManagerApp({ initial, ownerName }: { initial: Data; ownerName: s
             <span className="hidden rounded-full bg-mint px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-[0.1em] text-brand sm:inline">Manager</span>
           </Link>
           <div className="flex items-center gap-1 rounded-full border border-line bg-white p-1">
-            <button className="h-8 w-8 rounded-full text-[16px] text-ink-2 hover:bg-surface" onClick={() => setPeriod((p) => shiftPeriod(p, -1))} aria-label="Previous month">
+            <button className="h-8 w-8 rounded-[12px] text-[16px] text-ink-2 hover:bg-surface" onClick={() => setPeriod((p) => shiftPeriod(p, -1))} aria-label="Previous month">
               ‹
             </button>
             <span className="min-w-[118px] text-center text-[13.5px] font-semibold">{periodLabel(period)}</span>
-            <button className="h-8 w-8 rounded-full text-[16px] text-ink-2 hover:bg-surface" onClick={() => setPeriod((p) => shiftPeriod(p, 1))} aria-label="Next month">
+            <button className="h-8 w-8 rounded-[12px] text-[16px] text-ink-2 hover:bg-surface" onClick={() => setPeriod((p) => shiftPeriod(p, 1))} aria-label="Next month">
               ›
             </button>
           </div>
@@ -653,7 +653,7 @@ function Welcome({ name, onAdd }: { name: string; onAdd: () => void }) {
           </li>
         ))}
       </ol>
-      <button onClick={onAdd} className="mt-8 h-13 rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep shadow-[0_0_40px_rgb(110_231_183/0.5)]">
+      <button onClick={onAdd} className="mt-8 h-13 rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep">
         Add my first apartment
       </button>
     </section>
@@ -668,7 +668,7 @@ function SheetFrame({ title, onClose, children }: { title: string; onClose: () =
       <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-[28px] bg-white p-5 md:max-w-[640px] md:rounded-[28px] md:p-7" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={title}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[20px] font-bold">{title}</h2>
-          <button onClick={onClose} className="h-9 rounded-full px-3 text-[13.5px] font-semibold text-muted hover:bg-surface">
+          <button onClick={onClose} className="h-9 rounded-[12px] px-3 text-[13.5px] font-semibold text-muted hover:bg-surface">
             Close
           </button>
         </div>

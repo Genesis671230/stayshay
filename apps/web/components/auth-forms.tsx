@@ -15,7 +15,7 @@ const ERROR_TEXT: Record<string, string> = {
 
 function GoogleButton({ next }: { next: string }) {
   return (
-    <a href={`/api/auth/google?next=${encodeURIComponent(next)}`} className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-line-strong bg-white text-[15px] font-semibold text-ink hover:border-ink">
+    <a href={`/api/auth/google?next=${encodeURIComponent(next)}`} className="flex h-12 w-full items-center justify-center gap-3 rounded-[12px] border border-line-strong bg-white text-[15px] font-semibold text-ink hover:border-ink">
       <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden>
         <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
         <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
@@ -27,7 +27,7 @@ function GoogleButton({ next }: { next: string }) {
   );
 }
 
-export function LoginForm({ google, next, error }: { google: boolean; next: string; error?: string }) {
+export function LoginForm({ next, error }: { google: boolean; next: string; error?: string }) {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [f, setF] = useState({ name: "", email: "", phone: "", password: "" });
@@ -64,16 +64,15 @@ export function LoginForm({ google, next, error }: { google: boolean; next: stri
           <h1 className="font-display text-[34px] leading-tight">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
           <p className="mt-2 text-[15px] text-muted">{mode === "signin" ? "Sign in to save places, track your requests and hear from listers." : "Free. We use your number only to send you matches and arrange viewings."}</p>
 
-          {google && (
-            <div className="mt-7">
-              <GoogleButton next={next} />
-              <div className="my-5 flex items-center gap-3 text-[12.5px] text-muted">
-                <span className="h-px flex-1 bg-line" /> or with email <span className="h-px flex-1 bg-line" />
-              </div>
+          {/* Always offered on sign-in and sign-up; if Google isn't configured on this server the route explains it. */}
+          <div className="mt-7">
+            <GoogleButton next={next} />
+            <div className="my-5 flex items-center gap-3 text-[12.5px] text-muted">
+              <span className="h-px flex-1 bg-line" /> or with email <span className="h-px flex-1 bg-line" />
             </div>
-          )}
+          </div>
 
-          <form onSubmit={submit} noValidate className={`space-y-3.5 ${google ? "" : "mt-7"}`}>
+          <form onSubmit={submit} noValidate className="space-y-3.5">
             {mode === "signup" && (
               <label className="block">
                 <span className="mb-1.5 block text-[13px] font-semibold">Full name</span>
@@ -99,7 +98,7 @@ export function LoginForm({ google, next, error }: { google: boolean; next: stri
               {err("password")}
             </label>
             {errors.form && <p className="rounded-[12px] bg-warn-bg px-3.5 py-2.5 text-[13.5px] font-medium text-warn">{errors.form}</p>}
-            <button disabled={busy} className="h-12 w-full rounded-full bg-brand text-[15.5px] font-semibold text-white disabled:opacity-50">
+            <button disabled={busy} className="h-12 w-full rounded-[12px] bg-brand text-[15.5px] font-semibold text-white disabled:opacity-50">
               {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
           </form>
@@ -192,7 +191,7 @@ export function AccountForm({ user, complete }: { user: { name: string; email: s
           {errors.phone && <span className="mt-1 block text-[12.5px] text-warn">{errors.phone}</span>}
         </label>
         <div className="flex items-center gap-3">
-          <button className="h-11 rounded-full bg-brand px-6 text-[14.5px] font-semibold text-white">Save</button>
+          <button className="h-11 rounded-[12px] bg-brand px-6 text-[14.5px] font-semibold text-white">Save</button>
           {saved && (
             <span className="flex items-center gap-1 text-[13.5px] font-medium text-brand">
               <Icon name="check" size={15} /> Saved
@@ -206,13 +205,13 @@ export function AccountForm({ user, complete }: { user: { name: string; email: s
           ["Roommates", "/roommates"],
           ["List your place", "/list"],
         ].map(([t, h]) => (
-          <a key={h} href={h} className="flex h-12 items-center justify-center rounded-full border border-line text-[14px] font-semibold hover:border-brand hover:text-brand">
+          <a key={h} href={h} className="flex h-12 items-center justify-center rounded-[12px] border border-line text-[14px] font-semibold hover:border-brand hover:text-brand">
             {t}
           </a>
         ))}
       </div>
       {user.admin && (
-        <a href="/admin" className="mt-3 flex h-12 items-center justify-center rounded-full bg-ink text-[14px] font-semibold text-white">
+        <a href="/admin" className="mt-3 flex h-12 items-center justify-center rounded-[12px] bg-ink text-[14px] font-semibold text-white">
           Open admin
         </a>
       )}

@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { AREAS, TYPE_LABEL_PLURAL, type Area, type Listing, type ListingType } from "@stayshay/core/src/client.ts";
+import { AREAS, TYPE_LABEL_PLURAL, type Area, type Listing, type ListingType, PHOTOS } from "@stayshay/core/src/client.ts";
 import { Header } from "./header";
 import { Footer } from "./sections";
 import { MarketplaceProvider } from "./marketplace";
@@ -49,14 +50,17 @@ export function SeoLanding({
   const near = area ? nearbyAreas(area).filter((a) => all.some((l) => l.areaSlug === a.slug && (!type || l.type === type))) : [];
   const fallback = !listings.length ? all.filter((l) => (!type || l.type === type) && near.some((a) => a.slug === l.areaSlug)).slice(0, 6) : [];
 
+  const heroPhoto = (area && PHOTOS.areas[area.slug]) || (type && PHOTOS.categories[type]) || PHOTOS.hero[0];
   return (
     <MarketplaceProvider listings={slim(all)}>
       <JsonLd data={[breadcrumbLd(crumbs), itemListLd(h1, listings), ...(faq.length ? [faqLd(faq)] : [])]} />
       <Header />
       <main>
         <section className="px-2 pt-2 md:px-4 md:pt-3">
-          <div className="rounded-[28px] bg-brand px-5 py-12 md:px-10 md:py-16">
-            <div className="mx-auto max-w-[1180px]">
+          <div className="relative overflow-hidden rounded-[28px] bg-brand-deep px-5 py-12 md:px-10 md:py-16">
+            <Image src={heroPhoto} alt="" fill priority sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_44_34/0.92)_0%,rgb(9_44_34/0.78)_50%,rgb(9_44_34/0.45)_100%)]" aria-hidden />
+            <div className="relative mx-auto max-w-[1180px]">
               <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-white/70" aria-label="Breadcrumb">
                 {crumbs.map(([name, href], i) => (
                   <span key={href} className="flex items-center gap-1.5">
@@ -113,12 +117,12 @@ export function SeoLanding({
               <h2 className="font-display text-[22px]">More in {area.name}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {!!type && (
-                  <Link href={`/areas/${area.slug}`} className="rounded-full border border-line px-4 py-2 text-[14px] hover:border-brand">
+                  <Link href={`/areas/${area.slug}`} className="rounded-[12px] border border-line px-4 py-2 text-[14px] hover:border-brand">
                     Everything in {area.name}
                   </Link>
                 )}
                 {RENT_TYPES.filter((t) => t !== type).map((t) => (
-                  <Link key={t} href={rentPath(t, area.slug)} className="rounded-full border border-line px-4 py-2 text-[14px] hover:border-brand">
+                  <Link key={t} href={rentPath(t, area.slug)} className="rounded-[12px] border border-line px-4 py-2 text-[14px] hover:border-brand">
                     {TYPE_LABEL_PLURAL[t]} in {area.name}
                   </Link>
                 ))}
@@ -128,7 +132,7 @@ export function SeoLanding({
                   <h2 className="font-display mt-10 text-[22px]">{type ? TYPE_LABEL_PLURAL[type] : "Places"} near {area.name}</h2>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {near.map((a) => (
-                      <Link key={a.slug} href={type ? rentPath(type, a.slug) : `/areas/${a.slug}`} className="rounded-full border border-line px-4 py-2 text-[14px] hover:border-brand">
+                      <Link key={a.slug} href={type ? rentPath(type, a.slug) : `/areas/${a.slug}`} className="rounded-[12px] border border-line px-4 py-2 text-[14px] hover:border-brand">
                         {a.name}
                       </Link>
                     ))}
@@ -142,7 +146,7 @@ export function SeoLanding({
             <h2 className="font-display text-[22px]">Popular areas{type ? ` for ${TYPE_LABEL_PLURAL[type].toLowerCase()}` : ""}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {busiest.map(({ area: a, count }) => (
-                <Link key={a.slug} href={type ? rentPath(type, a.slug) : `/areas/${a.slug}`} className="rounded-full border border-line px-4 py-2 text-[14px] hover:border-brand">
+                <Link key={a.slug} href={type ? rentPath(type, a.slug) : `/areas/${a.slug}`} className="rounded-[12px] border border-line px-4 py-2 text-[14px] hover:border-brand">
                   {a.name} <span className="text-muted">({count})</span>
                 </Link>
               ))}

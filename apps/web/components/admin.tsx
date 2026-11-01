@@ -30,7 +30,7 @@ export function AdminLogin() {
         <p className="mt-1 text-[14px] text-muted">Create listings from details listers send on WhatsApp.</p>
         <input type="password" autoFocus className={`${field} mt-5`} placeholder="Admin password" value={pw} onChange={(e) => setPw(e.target.value)} />
         {error && <p className="mt-2 text-[13px] text-warn">{error}</p>}
-        <button className="mt-4 h-11 w-full rounded-full bg-brand text-[15px] font-semibold text-white">Sign in</button>
+        <button className="mt-4 h-11 w-full rounded-[12px] bg-brand text-[15px] font-semibold text-white">Sign in</button>
       </form>
     </main>
   );
@@ -137,7 +137,7 @@ export function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; on
             <Icon name="whatsapp" size={16} /> Paste the lister’s WhatsApp message
           </p>
           <textarea className={`${field} mt-3 min-h-[200px]`} value={paste} onChange={(e) => setPaste(e.target.value)} placeholder={"Partition available in Al Barsha 1\nAED 1,400 all bills included\nLadies only, near Mall of the Emirates metro\nCall 050 123 4567"} />
-          <button type="button" onClick={fill} disabled={!paste.trim()} className="mt-3 h-10 w-full rounded-full bg-brand text-[14px] font-semibold text-white disabled:opacity-40">
+          <button type="button" onClick={fill} disabled={!paste.trim()} className="mt-3 h-10 w-full rounded-[12px] bg-brand text-[14px] font-semibold text-white disabled:opacity-40">
             Fill the form from this message
           </button>
           <p className="mt-2 text-[12px] text-brand/80">Price, area, type, gender, bills, deposit, metro and phone are picked up. Check every field before publishing.</p>
@@ -236,7 +236,7 @@ export function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; on
               ["Partition permit seen", d.compliance?.dmPermit, () => set("compliance", { landlordConsent: !!d.compliance?.landlordConsent, dmPermit: !d.compliance?.dmPermit })],
             ] as [string, boolean | undefined, () => void][]
           ).map(([t, on, toggle]) => (
-            <button type="button" key={t} onClick={toggle} className={`flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium ${on ? "border-brand bg-brand text-white" : "border-line"}`}>
+            <button type="button" key={t} onClick={toggle} className={`flex h-9 items-center gap-1.5 rounded-[12px] border px-3.5 text-[13px] font-medium ${on ? "border-brand bg-brand text-white" : "border-line"}`}>
               {on && <Icon name="check" size={13} />} {t}
             </button>
           ))}
@@ -251,7 +251,7 @@ export function ListingForm({ initial, onSaved, onCancel }: { initial: Draft; on
             <option value="draft">Draft (hidden)</option>
             <option value="rented">Rented (hidden)</option>
           </select>
-          <button type="button" onClick={save} disabled={busy} className="h-11 rounded-full bg-brand px-6 text-[14.5px] font-semibold text-white disabled:opacity-50">
+          <button type="button" onClick={save} disabled={busy} className="h-11 rounded-[12px] bg-brand px-6 text-[14.5px] font-semibold text-white disabled:opacity-50">
             {busy ? "Saving…" : d.id ? "Save changes" : "Publish listing"}
           </button>
         </div>

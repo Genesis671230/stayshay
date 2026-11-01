@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/header";
@@ -48,8 +49,10 @@ export default async function Page() {
       <Header />
       <main>
         <section className="px-2 pt-2 md:px-4 md:pt-3">
-          <div className="glow-panel overflow-hidden rounded-[32px] px-5 pb-14 pt-14 text-white md:px-10 md:pb-20 md:pt-20">
-            <div className="mx-auto max-w-[1080px]">
+          <div className="glow-panel relative overflow-hidden rounded-[32px] px-5 pb-14 pt-14 text-white md:px-10 md:pb-20 md:pt-20">
+            <Image src="/photos/manager.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_29_21/0.94)_0%,rgb(9_29_21/0.8)_48%,rgb(9_29_21/0.35)_100%)]" aria-hidden />
+            <div className="relative mx-auto max-w-[1080px]">
               <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Stayshay Manager · for owners and operators</p>
               <h1 className="font-display mt-4 max-w-[820px] text-[40px] leading-[1.0] md:text-[66px]">
                 Your beds full. Your rent on time. <span className="glow-text">Your margin clear.</span>
@@ -58,7 +61,7 @@ export default async function Page() {
                 For everyone who rents a flat and runs bed spaces and partitions inside it. Tenants, rent, bills and the landlord's cheques, in one simple dashboard.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/login?next=/manager" className="flex items-center justify-center rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep shadow-[0_0_40px_rgb(110_231_183/0.5)]">
+                <Link href="/login?next=/manager" className="flex items-center justify-center rounded-[16px] bg-[#6ee7b7] px-7 py-3.5 text-[16px] font-bold text-brand-deep">
                   Start free
                 </Link>
                 <Link href="/list" className="flex items-center justify-center rounded-[16px] border border-white/25 px-7 py-3.5 text-[16px] font-semibold hover:bg-white/10">

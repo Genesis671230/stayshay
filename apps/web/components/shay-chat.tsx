@@ -360,10 +360,10 @@ export function ShayChat() {
                   {ai ? "Online · any language" : "Guided search · team on WhatsApp"}
                 </p>
               </div>
-              <a href={wa} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp the team" title="WhatsApp the team" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/12 hover:bg-white/20">
+              <a href={wa} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp the team" title="WhatsApp the team" className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white/12 hover:bg-white/20">
                 <Icon name="whatsapp" size={17} />
               </a>
-              <a href={`tel:+${BRAND.whatsapp}`} aria-label="Call the team" title="Call the team" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/12 hover:bg-white/20">
+              <a href={`tel:+${BRAND.whatsapp}`} aria-label="Call the team" title="Call the team" className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white/12 hover:bg-white/20">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
                 </svg>
@@ -461,16 +461,16 @@ export function ShayChat() {
                 maxLength={2000}
                 aria-label="Message"
               />
-              <button type="submit" disabled={!input.trim() || busy} aria-label="Send" className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white disabled:opacity-40">
+              <button type="submit" disabled={!input.trim() || busy} aria-label="Send" className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-brand text-white disabled:opacity-40">
                 <Icon name="arrow-right" size={18} />
               </button>
             </form>
           ) : (
             <div className="flex gap-2 border-t border-line bg-white p-3">
-              <a href={wa} target="_blank" rel="noopener noreferrer" className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-whatsapp text-[14px] font-semibold text-white">
+              <a href={wa} target="_blank" rel="noopener noreferrer" className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[12px] bg-whatsapp text-[14px] font-semibold text-white">
                 <Icon name="whatsapp" size={16} /> WhatsApp the team
               </a>
-              <a href="/find" className="flex h-11 flex-1 items-center justify-center rounded-full border border-line text-[14px] font-semibold">
+              <a href="/find" className="flex h-11 flex-1 items-center justify-center rounded-[12px] border border-line text-[14px] font-semibold">
                 Find me a room
               </a>
             </div>

@@ -218,7 +218,7 @@ export function Footer() {
             href={stayshayWhatsapp("Hi Stayshay, I have a question.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-whatsapp/10 px-4 text-[14px] font-semibold text-whatsapp"
+            className="mt-5 inline-flex h-10 items-center gap-2 rounded-[12px] bg-whatsapp/10 px-4 text-[14px] font-semibold text-whatsapp"
           >
             Talk to us on WhatsApp
           </a>

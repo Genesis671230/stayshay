@@ -30,7 +30,7 @@ export interface Post {
   published: string;
   updated: string;
   /** Cover photo comes from a live listing of this kind (and area when given). */
-  cover: { type: ListingType; area?: string; /** Use the professional area photo (when we have one) instead of a listing photo. */ stock?: boolean };
+  cover: { type: ListingType; area?: string; /** Use the professional area photo (when we have one) instead of a listing photo. */ stock?: boolean; /** A specific photo for this guide (e.g. "/photos/metro.jpg"). */ photo?: string };
   category: "Renters" | "Areas" | "Compare" | "Safety" | "Owners";
   blocks: Block[];
   faq: [string, string][];
@@ -373,7 +373,7 @@ export const POSTS: Post[] = [
     keywords: ["bed space near metro Dubai", "room near metro station Dubai", "bed space near ADCB metro", "room near Burjuman metro", "near metro Karama"],
     published: "2026-10-26",
     updated: "2026-10-26",
-    cover: { type: "bed_space", area: "al-karama" },
+    cover: { photo: "/photos/metro.jpg", type: "bed_space", area: "al-karama" },
     category: "Areas",
     blocks: [
       { p: "Without a car, the metro decides your day. Places within a 10-minute walk of a station rent quickly, so it pays to know where to look." },
@@ -571,7 +571,7 @@ export const POSTS: Post[] = [
     keywords: ["bed space near me", "bed space near metro Dubai", "bed space Al Rigga", "bed space Union metro", "bed space BurJuman", "bed space near Mashreq metro", "bed space Al Barsha metro"],
     published: "2026-11-01",
     updated: "2026-11-01",
-    cover: { type: "bed_space", area: "al-rigga" },
+    cover: { photo: "/photos/metro.jpg", type: "bed_space", area: "al-rigga" },
     category: "Areas",
     blocks: [
       { p: "If you've walked past Al Rigga or Al Barsha metro in the evening, you've seen people waiting for a broker to show them beds. You don't need to: every bed space below is live, priced and a WhatsApp message away, with no broker fee." },
@@ -811,7 +811,7 @@ export const POSTS: Post[] = [
     keywords: ["room near Etihad Rail Dubai", "Al Furjan room for rent", "JVC room monthly", "Discovery Gardens partition", "Al Yalayis station rent"],
     published: "2026-11-02",
     updated: "2026-11-02",
-    cover: { type: "room", stock: true, area: "jvc" },
+    cover: { photo: "/photos/metro.jpg", type: "room", stock: true, area: "jvc" },
     category: "Areas",
     blocks: [
       { p: "Etihad Rail's Dubai passenger station at Al Yalayis, near Jumeirah Golf Estates, links Dubai to Abu Dhabi in under an hour. If you work in Abu Dhabi or travel there often, the communities around it are worth a look, and they're already popular for good-value rooms." },
@@ -839,7 +839,7 @@ export const POSTS: Post[] = [
     keywords: ["Blue Line metro Dubai rent", "Mirdif room for rent", "Silicon Oasis studio monthly", "DSO partition", "Al Warqa room"],
     published: "2026-11-02",
     updated: "2026-11-02",
-    cover: { type: "studio", stock: true },
+    cover: { photo: "/photos/metro.jpg", type: "studio", stock: true },
     category: "Areas",
     blocks: [
       { p: "The Dubai Metro Blue Line is planned to run through Mirdif, Al Warqa, Dubai Silicon Oasis and Academic City. Areas on new metro lines tend to get more expensive as opening day nears, so renting there early can lock in a good price." },
