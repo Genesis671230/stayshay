@@ -123,9 +123,9 @@ export function ListerCta() {
             <Link href="/list" className="flex h-12 items-center justify-center gap-2 rounded-[12px] bg-brand px-6 text-[15px] font-medium text-white">
               List for free
             </Link>
-            <a href="#faq" className="flex h-12 items-center justify-center rounded-[12px] border border-line-strong px-6 text-[15px] font-medium">
-              How verification works
-            </a>
+            <Link href="/manager" className="flex h-12 items-center justify-center rounded-[12px] border border-line-strong px-6 text-[15px] font-medium">
+              Manage tenants and rent, free
+            </Link>
           </div>
           <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
             Partitions and bed spaces need landlord consent and the applicable permit. We may pause listings we can’t check.
@@ -226,7 +226,7 @@ export function Footer() {
         {(
           [
             ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
         ).map(([title, links]) => (

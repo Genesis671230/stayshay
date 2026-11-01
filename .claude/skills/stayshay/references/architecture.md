@@ -40,3 +40,6 @@ Mobile imports **subpaths** (`@stayshay/core/src/search.ts` etc. via `apps/mobil
 
 ## Client bundles
 Client components import `@stayshay/core/src/client.ts` (no catalogue; areas from `data/areas-merged.json`, written by `scripts/ensure-data.mjs` before build/typecheck/test). Browsing pages pass `slim(listings)`. `getAllListings()` runs `stripPhones` on title/description.
+
+## Stayshay Manager (owner dashboard) — `/manager`, `lib/manager.ts`, `components/manager.tsx`
+`manager.json` {properties, tenants, payments} scoped by `ownerId` = user id; `POST /api/manager` actions property.save/delete, tenant.save/delete, payment.add/delete. Reports and input cleaning in core `manager.ts` (tested). `#p=<id>` opens an apartment.

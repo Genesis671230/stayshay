@@ -97,8 +97,13 @@ export function ListFunnel() {
 
   // Hero "List your place" passes ?type=; start the owner on that card.
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("type");
+    const q = new URLSearchParams(window.location.search);
+    const t = q.get("type");
     if (t && TYPES.some((x) => x.type === t)) setType(t as ListingType);
+    // Stayshay Manager's "List on Stayshay" also passes the area and asking rent of the empty space.
+    const a = q.get("area") && AREA_BY_SLUG.get(q.get("area")!);
+    if (a) setArea(a);
+    if (/^\d{3,6}$/.test(q.get("price") ?? "")) setRent(q.get("price")!);
   }, []);
 
   // Market guidance from live listings: same type, same area first, then city-wide.

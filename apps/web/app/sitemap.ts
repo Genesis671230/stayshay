@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/ai", 0.6, "monthly"),
     page("/about", 0.4, "monthly"),
     page("/refer", 0.7, "weekly"),
+    page("/manager", 0.8, "weekly"),
     page("/partners", 0.6, "weekly"),
     ...partners.map((p) => page(`/partners/${p.code.toLowerCase()}`, 0.5, "weekly")),
     ...RENT_TYPES.map((t) => page(rentPath(t), 0.9)),

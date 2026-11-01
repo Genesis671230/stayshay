@@ -13,6 +13,7 @@ export * from "./parse-message.ts";
 export * from "./match.ts";
 export * from "./deals.ts";
 export * from "./referral.ts";
+export * from "./manager.ts";
 export { PHOTOS, similarListings, coverFor, median, type PhotoSet } from "./util.ts";
 export { stripPhones } from "./text.ts";
 

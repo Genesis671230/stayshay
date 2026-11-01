@@ -28,3 +28,11 @@ Money (estimates to validate): AED 5–10 per bed per month subscription; AED 1,
 - Two evenings at Al Rigga and Al Barsha metro: 20 conversations with people waiting for brokers. Recruit the regular "metro guides" as referral partners.
 - QR posters at metro-adjacent buildings, with permission (no fly-posting).
 - B2B: recruitment agencies and staffing firms need beds for new staff.
+
+## Stayshay Manager (built 2026-11-02) — `/manager`
+Free owner dashboard. Data in `manager.json` (properties, tenants, payments, each stamped with the owner's user id; every API lookup is owner-scoped). Pure logic + tests in `packages/core/src/manager.ts`.
+- Apartment: layout (studio to villa), area, building/unit, owned or **leased and sublet** (landlord, yearly rent, cheques, dates, deposit), permit number + expiry, spaces (bed / partition / room / whole unit with asking rent), running costs (DEWA, Wi-Fi, gas, chiller, cleaner, maintenance, service charge, other; monthly/quarterly/yearly).
+- Tenants: space, rent, deposit, due day, WhatsApp, nationality, visa expiry, move-in/out. One active tenant per space.
+- Report per month: expected vs collected, outstanding and late tenants, running costs (head-lease rent / 12 + bills spread monthly), profit if everyone pays, full-house margin, empty spaces and missed rent, alerts (late rent, permit/lease/visa expiry, missing permit, vacancies). WhatsApp rent reminder, mark paid, CSV export.
+- Empty space → "List on Stayshay" pre-fills the listing form (type, area, rent).
+Next: rent reminders sent automatically, tenant receipts, resident register export for the shared-housing permit, multi-user (partner/caretaker) access.
