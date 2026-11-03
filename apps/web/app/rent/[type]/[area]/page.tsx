@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AREA_BY_SLUG, TYPE_LABEL_PLURAL } from "@stayshay/core";
 import { SeoLanding } from "@/components/seo-landing";
 import { getAllListings } from "@/lib/store";
+import { COLLECTION_BY_SLUG, type Collection } from "@/lib/collections";
 import { TYPE_BY_SLUG, TYPE_KEYWORDS, landingFaq, priceStats, rentPath, typeTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,38 @@ async function resolve(params: Promise<{ type: string; area: string }>) {
   return type && area ? { type, area } : null;
 }
 
+/** /rent/bed-space/ladies, /rent/partitions/couples ... : the "need" pages. */
+async function resolveCollection(params: Promise<{ type: string; area: string }>) {
+  const p = await params;
+  const type = TYPE_BY_SLUG.get(p.type);
+  const c = COLLECTION_BY_SLUG.get(p.area);
+  return type && c && c.types.includes(type) ? { type, c } : null;
+}
+
+const named = (c: Collection, type: Parameters<typeof rentPath>[0]) => {
+  const t = TYPE_LABEL_PLURAL[type];
+  return c.pattern.replace("{type}", t.toLowerCase()).replace("{Type}", t);
+};
+
+const collectionListings = async (type: string, c: Collection) => (await getAllListings()).filter((l) => l.type === type && c.match(l)).sort((a, b) => a.priceAed - b.priceAed);
+
 export async function generateMetadata({ params }: { params: Promise<{ type: string; area: string }> }): Promise<Metadata> {
+  const col = await resolveCollection(params);
+  if (col) {
+    const listings = await collectionListings(col.type, col.c);
+    const s = priceStats(listings);
+    const label = TYPE_LABEL_PLURAL[col.type].toLowerCase();
+    const title = `${named(col.c, col.type)}${s ? ` from AED ${s.min.toLocaleString("en-US")}` : ""}`;
+    const path = `${rentPath(col.type)}/${col.c.slug}`;
+    return {
+      title,
+      description: s ? `${s.count} ${label}: ${col.c.description}` : col.c.description,
+      keywords: col.c.keywords,
+      alternates: { canonical: path },
+      openGraph: { title, url: path },
+      robots: s ? undefined : { index: false, follow: true },
+    };
+  }
   const r = await resolve(params);
   if (!r) return {};
   const listings = (await getAllListings()).filter((l) => l.type === r.type && l.areaSlug === r.area.slug);
@@ -35,6 +67,24 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
 }
 
 export default async function RentTypeAreaPage({ params }: { params: Promise<{ type: string; area: string }> }) {
+  const col = await resolveCollection(params);
+  if (col) {
+    const label = TYPE_LABEL_PLURAL[col.type];
+    const listings = await collectionListings(col.type, col.c);
+    return (
+      <SeoLanding
+        all={await getAllListings()}
+        listings={listings}
+        type={col.type}
+        photo={col.c.photo}
+        eyebrow={`${label} · ${col.c.slug.replace(/-/g, " ")}`}
+        h1={named(col.c, col.type)}
+        intro={col.c.intro}
+        crumbs={[["Home", "/"], [label, rentPath(col.type)], [col.c.slug.replace(/-/g, " ").replace(/^\w/, (x) => x.toUpperCase()), `${rentPath(col.type)}/${col.c.slug}`]]}
+        faq={[...col.c.faq, ...landingFaq(listings, col.type)]}
+      />
+    );
+  }
   const r = await resolve(params);
   if (!r) notFound();
   const { type, area } = r;

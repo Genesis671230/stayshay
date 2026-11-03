@@ -33,6 +33,7 @@ export function SeoLanding({
   intro,
   crumbs,
   faq,
+  photo,
 }: {
   all: Listing[];
   listings: Listing[];
@@ -43,6 +44,8 @@ export function SeoLanding({
   intro: string;
   crumbs: [string, string][];
   faq: [string, string][];
+  /** Hero photo override (metro and collection pages). */
+  photo?: string;
 }) {
   const stats = priceStats(listings);
   const billsShare = listings.length ? Math.round((listings.filter((l) => l.billsIncluded).length / listings.length) * 100) : 0;
@@ -50,7 +53,7 @@ export function SeoLanding({
   const near = area ? nearbyAreas(area).filter((a) => all.some((l) => l.areaSlug === a.slug && (!type || l.type === type))) : [];
   const fallback = !listings.length ? all.filter((l) => (!type || l.type === type) && near.some((a) => a.slug === l.areaSlug)).slice(0, 6) : [];
 
-  const heroPhoto = (area && PHOTOS.areas[area.slug]) || (type && PHOTOS.categories[type]) || PHOTOS.hero[0];
+  const heroPhoto = photo || (area && PHOTOS.areas[area.slug]) || (type && PHOTOS.categories[type]) || PHOTOS.hero[0];
   return (
     <MarketplaceProvider listings={slim(all)}>
       <JsonLd data={[breadcrumbLd(crumbs), itemListLd(h1, listings), ...(faq.length ? [faqLd(faq)] : [])]} />

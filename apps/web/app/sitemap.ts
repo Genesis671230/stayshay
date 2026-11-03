@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { POSTS } from "@/lib/blog";
 import { getAllListings } from "@/lib/store";
 import { publicPartners } from "@/lib/referrals";
+import { COLLECTIONS, STATIONS, nearStation } from "@/lib/collections";
 import { RENT_TYPES, SITE, absolute, liveAreas, listingUrl, rentPath } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/about", 0.4, "monthly"),
     page("/refer", 0.7, "weekly"),
     page("/manager", 0.8, "weekly"),
+    page("/metro", 0.8),
+    ...STATIONS.filter((st) => all.some((l) => nearStation(st, l))).map((st) => page(`/metro/${st.slug}`, 0.8)),
+    ...COLLECTIONS.flatMap((c) => c.types.filter((t) => all.some((l) => l.type === t && c.match(l))).map((t) => page(`${rentPath(t)}/${c.slug}`, 0.8))),
     page("/partners", 0.6, "weekly"),
     ...partners.map((p) => page(`/partners/${p.code.toLowerCase()}`, 0.5, "weekly")),
     ...RENT_TYPES.map((t) => page(rentPath(t), 0.9)),

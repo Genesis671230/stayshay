@@ -76,3 +76,10 @@ seo-specialist, ai-citation-strategist, agentic-search-optimizer, aeo-foundation
 
 ## Images
 Use our own listing photos (they're served from stayshay.com and appear in the image sitemap). Don't copy photos from Dubizzle, Bayut or other portals: they belong to those sites or their listers, copying them is a copyright and trust risk, and Google treats duplicate images as low value.
+
+## Added 2026-11-03
+- Favicon for Google: `/favicon.ico` (48+32), `/brand/icon-48|192|512.png`, apple-touch icon, Organization logo as a 512px PNG — all the new forest mark. The old `/brand/stayshay-mark.svg` URL now serves the new mark too. Google refreshes favicons on recrawl (can take days to weeks); request indexing of `/` in Search Console to speed it up.
+- Competitor gap (Dubizzle wins with thousands of single ads titled "near X metro", "executive", "ladies only", "all inclusive"): one live hub page per need and per station.
+  - `/rent/<type>/<need>`: ladies, bachelors, executive, all-inclusive, no-deposit, couples (`lib/collections.ts`).
+  - `/metro` and `/metro/<station>` for 22 Red/Green line stations (aliases match renamed stations in ads).
+- Daily Telegram report: `POST /api/cron/daily` (cron 09:00 Dubai, header `x-cron-secret`). Traffic (Cloudflare), leads, accounts, review queue, Manager demand, new pages and images since yesterday, and an Opus 5.5 web-search pass: keywords + who ranks, pages to double down on, new page ideas, public room-seeker posts with reply drafts. Drafts only: nothing is posted or messaged automatically.

@@ -9,6 +9,8 @@ const RENT = [
   { label: "Partitions", href: "/rent/partitions", hint: "Your own closed-off space" },
   { label: "Private rooms", href: "/rent/rooms", hint: "A whole room in a shared flat" },
   { label: "Studios", href: "/rent/studios", hint: "Your own place, monthly" },
+  { label: "Near the metro", href: "/metro", hint: "Pick your station" },
+  { label: "Ladies only", href: "/rent/bed-space/ladies", hint: "Female-only flats" },
   { label: "Best deals", href: "/deals", hint: "Below the going rate today" },
 ];
 
