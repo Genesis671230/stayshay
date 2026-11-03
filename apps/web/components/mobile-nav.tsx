@@ -7,7 +7,7 @@ const ITEMS = [
   { label: "Home", href: "/", match: (p: string) => p === "/" },
   { label: "Search", href: "/search", match: (p: string) => /^\/(search|rent|areas|deals)/.test(p) },
   { label: "Roommates", href: "/roommates", match: (p: string) => p.startsWith("/roommates") },
-  { label: "Owners", href: "/manager", match: (p: string) => p.startsWith("/manager") },
+  { label: "Swipe", href: "/swipe", match: (p: string) => p.startsWith("/swipe") || p.startsWith("/tools") },
   { label: "Account", href: "/account", match: (p: string) => /^\/(account|login|refer)/.test(p) },
 ];
 

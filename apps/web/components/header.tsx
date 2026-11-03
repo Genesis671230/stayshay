@@ -16,6 +16,7 @@ const RENT = [
 
 const NAV = [
   { label: "Roommates", href: "/roommates" },
+  { label: "Tools", href: "/tools" },
   { label: "Guides", href: "/blog" },
   { label: "For owners", href: "/manager" },
   { label: "Refer & earn", href: "/refer" },

@@ -241,7 +241,7 @@ export function Footer() {
         {(
           [
             ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Room Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
         ).map(([title, links]) => (
@@ -318,5 +318,33 @@ function PopularSearches() {
         </ul>
       </div>
     </div>
+  );
+}
+
+/** Homepage entry to the free tools: quick, playful ways in. */
+export function ToolsStrip() {
+  const tiles: [string, string, string, string][] = [
+    ["/swipe", "Room Swipe", "Right to save, left to skip. Best deals first.", "/photos/roommates.jpg"],
+    ["/tools/fair-rent", "Is that rent fair?", "Paste any ad. Get a verdict in a second.", "/photos/area-deira.jpg"],
+    ["/tools/budget", "Salary to rent", "Slide your salary, see what it rents.", "/photos/studio.jpg"],
+    ["/stayfit", "StayFit", "Rooms with a gym or pool downstairs.", "/photos/area-jvc.jpg"],
+  ];
+  return (
+    <section className="mx-auto max-w-[1240px] px-4 py-10 md:px-8 md:py-16">
+      <p className="eyebrow">Play</p>
+      <h2 className="font-display mt-2 text-[30px] leading-[1.08] md:text-[40px]">Find your place the fun way</h2>
+      <div className="mt-6 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
+        {tiles.map(([href, t, d, img]) => (
+          <Link key={href} href={href} className="group relative h-[260px] w-[78%] shrink-0 snap-start overflow-hidden rounded-[24px] bg-brand-deep text-white md:w-auto">
+            <Image src={img} alt="" fill sizes="(min-width:768px) 25vw, 80vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+            <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0)_30%,rgb(9_29_21/0.9)_100%)]" />
+            <span className="absolute inset-x-0 bottom-0 p-5">
+              <span className="block text-[19px] font-bold">{t}</span>
+              <span className="mt-1 block text-[13.5px] text-white/75">{d}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

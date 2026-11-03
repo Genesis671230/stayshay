@@ -3,7 +3,7 @@ import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { RoomFan } from "@/components/room-fan";
 import { Areas, Categories, Rails } from "@/components/categories";
-import { Faq, FinalCta, Footer, HowItWorks, ListerCta, Trust } from "@/components/sections";
+import { Faq, FinalCta, Footer, HowItWorks, ListerCta, ToolsStrip, Trust } from "@/components/sections";
 import { MarketplaceProvider } from "@/components/marketplace";
 import { getAllListings, slim } from "@/lib/store";
 
@@ -19,6 +19,7 @@ export default async function Home() {
       <main>
         <Hero />
         <Categories />
+        <ToolsStrip />
         <Rails />
         <HowItWorks />
         <Trust />

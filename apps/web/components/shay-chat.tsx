@@ -308,7 +308,8 @@ export function ShayChat() {
 
   return (
     <>
-      {!open && (
+      {/* Room Swipe needs the bottom of the screen for its buttons. */}
+      {!open && !(path ?? "").startsWith("/swipe") && (
         <div className={`fixed right-4 z-[60] flex items-end gap-2 md:bottom-6 md:right-6 ${lift}`}>
           {hello && (
             <button

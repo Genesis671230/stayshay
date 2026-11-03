@@ -141,10 +141,26 @@ export async function buildDailyReport(opts: { withResearch?: boolean } = {}): P
   return { text: lines.join("\n"), newPages, newPhotos };
 }
 
+/**
+ * Without TELEGRAM_CHAT_ID set, the report goes to the first private chat that messaged the bot
+ * (the founder sends /start once), remembered in telegram.json.
+ */
+async function telegramChat(token: string | undefined): Promise<string | null> {
+  if (!token) return null;
+  const saved = await readJson<{ chatId?: string }>("telegram.json", {});
+  if (saved.chatId) return saved.chatId;
+  const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`).catch(() => null);
+  const j = (await res?.json().catch(() => null)) as { result?: { message?: { chat?: { id: number; type: string } } }[] } | null;
+  const chat = j?.result?.map((u) => u.message?.chat).find((c) => c?.type === "private");
+  if (!chat) return null;
+  await updateJson<{ chatId?: string; savedAt?: string }>("telegram.json", {}, () => ({ chatId: String(chat.id), savedAt: new Date().toISOString() }));
+  return String(chat.id);
+}
+
 /** Telegram allows 4,096 characters per message; split on line breaks. */
 export async function sendTelegram(text: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chat = process.env.TELEGRAM_CHAT_ID;
+  const chat = process.env.TELEGRAM_CHAT_ID || (await telegramChat(token));
   if (!token || !chat) return false;
   const chunks: string[] = [];
   let cur = "";
