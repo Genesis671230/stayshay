@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { normalizePhone } from "@stayshay/core";
-import { agentEnabled, chatTurn, getChat, newChat, saveContactOnly } from "@/lib/agent";
+import { agentEnabled, chatTurn, getChat, newChat, saveContactOnly, markAgentDown } from "@/lib/agent";
 import { currentUser } from "@/lib/auth";
 
 // Per-visitor brake on cost: 30 messages per 10 minutes per IP.
@@ -67,8 +67,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, chatId: chat.id, reply, cards });
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) return NextResponse.json({ ok: false, error: "busy" }, { status: 503 });
-    if (e instanceof Anthropic.APIError) console.error("[stayshay] agent API error", e.status, e.message);
-    else console.error("[stayshay] agent error", e);
+    if (e instanceof Anthropic.APIError) {
+      console.error("[stayshay] agent API error", e.status, e.message);
+      if (e.status === 400 || e.status === 401 || e.status === 403 || (e.status ?? 0) >= 500) {
+        markAgentDown();
+        return NextResponse.json({ ok: false, error: "unavailable" }, { status: 503 });
+      }
+    } else console.error("[stayshay] agent error", e);
     return NextResponse.json({ ok: false, error: "failed" }, { status: 500 });
   }
 }

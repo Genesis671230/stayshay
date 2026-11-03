@@ -15,7 +15,13 @@ export const MODEL = "claude-opus-5-5";
 const MAX_TURNS = 40;
 const SITE = "https://stayshay.com";
 
-export const agentEnabled = () => !!process.env.ANTHROPIC_API_KEY;
+// When the API can't serve (no credit, bad key, outage) Shay steps aside for 10 minutes and the widget runs the
+// guided finder instead, so visitors never hit a broken chat.
+let downUntil = 0;
+export const markAgentDown = () => {
+  downUntil = Date.now() + 10 * 60 * 1000;
+};
+export const agentEnabled = () => !!process.env.ANTHROPIC_API_KEY && Date.now() > downUntil;
 
 const client = () => new Anthropic({ timeout: 60_000, maxRetries: 2 });
 

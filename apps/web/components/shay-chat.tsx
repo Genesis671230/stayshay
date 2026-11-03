@@ -188,6 +188,12 @@ export function ShayChat() {
           body: JSON.stringify({ chatId, message, context: { location: getSavedLocation(), listingId } }),
         });
         const j = await res.json();
+        if (j.error === "unavailable") {
+          // AI is down: switch to the guided finder so the visitor still gets real places.
+          setAi(false);
+          setMsgs((m) => [...m, { role: "assistant", text: "Let's do this the quick way: tap what you're looking for." }]);
+          return;
+        }
         if (j.chatId) {
           setChatId(j.chatId);
           try {
