@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { buildDailyReport, sendTelegram } from "@/lib/daily";
+import { actionKeyboard } from "@/lib/live";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -19,6 +20,6 @@ export async function POST(req: Request) {
   if (!allowed(req)) return NextResponse.json({ ok: false }, { status: 401 });
   const q = new URL(req.url).searchParams;
   const report = await buildDailyReport({ withResearch: q.get("research") !== "0" });
-  const sent = q.get("dry") === "1" ? false : await sendTelegram(report.text);
+  const sent = q.get("dry") === "1" ? false : await sendTelegram(report.text, { urgent: true, buttons: actionKeyboard() });
   return NextResponse.json({ ok: true, sent, newPages: report.newPages.length, newPhotos: report.newPhotos.length, text: q.get("dry") === "1" ? report.text : undefined });
 }

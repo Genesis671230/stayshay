@@ -158,6 +158,7 @@ export async function addLead(kind: LeadKind, data: Record<string, unknown> & { 
   const refCode = extra.refCode ?? (await refCodeFromRequest());
   const rec: LeadRecord = { id: randomUUID().slice(0, 8), kind, status: "new", createdAt: now, updatedAt: now, name: data.name, phone: data.phone, source: "web", data, ...extra, refCode };
   await updateJson<LeadRecord[]>("leads.json", [], (all) => [rec, ...all].slice(0, 5000));
+  void import("./lead-alert").then((m) => m.leadAlert(rec)).catch(() => {});
   return rec;
 }
 

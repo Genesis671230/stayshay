@@ -9,6 +9,7 @@ import { Analytics } from "@/components/analytics";
 import { JsonLd } from "@/components/json-ld";
 import { RefCapture } from "@/components/ref-capture";
 import { MobileNav } from "@/components/mobile-nav";
+import { LiveBeacon } from "@/components/live-beacon";
 import { activeAnnouncement } from "@/lib/store";
 import { GA_ID, SITE, organizationLd, websiteLd } from "@/lib/seo";
 
@@ -65,6 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MobileNav />
         <ShayChat />
         <ActivityToasts />
+        <LiveBeacon />
       </body>
     </html>
   );

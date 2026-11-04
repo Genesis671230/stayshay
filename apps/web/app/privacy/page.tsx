@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Privacy policy", alternates: { canon
 
 export default function Privacy() {
   return (
-    <DocPage eyebrow="Legal" title="Privacy policy" updated="25 October 2026" intro="What we collect, why, and the choices you have. We keep it short and we don’t sell your data.">
+    <DocPage eyebrow="Legal" title="Privacy policy" updated="4 November 2026" intro="What we collect, why, and the choices you have. We keep it short and we don’t sell your data.">
       <h2>What we collect</h2>
       <ul>
         <li><strong>What you send us:</strong> name, WhatsApp number, move-in date, budget, areas, and anything you write in a request or roommate profile.</li>
@@ -15,6 +15,7 @@ export default function Privacy() {
         <li><strong>Roommate profiles:</strong> the details and photo you add. If you choose to show your profile publicly, your first name, photo, age, gender, nationality, work, budget, areas, move-in date, habits and bio are visible to visitors after our team approves it. Your phone number and email are never shown.</li>
         <li><strong>Chats with Shay:</strong> what you write to our AI assistant and any contact details you share there. Messages are processed by our AI provider (Anthropic) to generate replies, and kept so our team can follow up.</li>
         <li><strong>Basic usage:</strong> pages viewed and searches, to improve the service. Saved listings stay in your browser.</li>
+        <li><strong>Visit logs:</strong> your IP address, approximate location (city and country worked out from the IP), device and browser type, the page that sent you and the pages you view. Our team uses this to understand traffic and stop abuse. Visit logs are deleted after 30 days.</li>
       </ul>
       <h2>How we use it</h2>
       <ul>
