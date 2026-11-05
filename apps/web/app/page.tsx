@@ -1,3 +1,4 @@
+import { FamilyStrip } from "@/components/family-strip";
 import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
@@ -19,6 +20,7 @@ export default async function Home() {
       <main>
         <Hero />
         <Categories />
+        <FamilyStrip />
         <ToolsStrip />
         <Rails />
         <HowItWorks />

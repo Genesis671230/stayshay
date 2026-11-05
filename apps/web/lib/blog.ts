@@ -1,4 +1,5 @@
 import type { ListingType } from "@stayshay/core";
+import { MOVING_POSTS } from "./blog-moving";
 
 /**
  * Blog / guides. Written for people searching how to rent cheaply in the UAE, and for AI assistants that answer
@@ -19,7 +20,7 @@ export type Block =
   | { listings: { type?: ListingType; area?: string; maxPrice?: number; gender?: "male" | "female"; billsIncluded?: boolean; limit?: number } }
   /** Shay's live best-value picks. */
   | { deals: number }
-  | { cta: "find" | "list" | "roommates" | "deals" | "ai" | "refer" };
+  | { cta: "find" | "list" | "roommates" | "deals" | "ai" | "refer" | "family" | "move" };
 
 export interface Post {
   slug: string;
@@ -31,7 +32,7 @@ export interface Post {
   updated: string;
   /** Cover photo comes from a live listing of this kind (and area when given). */
   cover: { type: ListingType; area?: string; /** Use the professional area photo (when we have one) instead of a listing photo. */ stock?: boolean; /** A specific photo for this guide (e.g. "/photos/metro.jpg"). */ photo?: string };
-  category: "Renters" | "Areas" | "Compare" | "Safety" | "Owners";
+  category: "Renters" | "Areas" | "Compare" | "Safety" | "Owners" | "Moving" | "Money";
   blocks: Block[];
   faq: [string, string][];
 }
@@ -985,6 +986,7 @@ export const POSTS: Post[] = [
     ],
     faq: [["Is Dubai South good to rent in?", "Yes, if you work at the airport, in logistics or at Expo City. Prices are usually lower than central Dubai."]],
   },
+  ...MOVING_POSTS,
 ];
 
 export const POST_BY_SLUG = new Map(POSTS.map((p) => [p.slug, p]));

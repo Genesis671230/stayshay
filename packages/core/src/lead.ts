@@ -48,7 +48,38 @@ export interface RoommateLead {
   about: string;
 }
 
-export type Lead = TenantRequest | OwnerLead | RoommateLead;
+/** Family / apartment request: 1–4BHK, family sharing, relocation. Served as a concierge (shortlist on WhatsApp). */
+export interface FamilyRequest {
+  kind: "family";
+  /** studio | 1bhk | 2bhk | 3bhk | 4bhk | sharing (a room for a family in a shared flat) */
+  home: FamilyHome;
+  /** Monthly budget in AED. */
+  budget: number;
+  areaSlugs: string[];
+  metro: boolean;
+  furnished: boolean;
+  moveIn: string;
+  adults: number;
+  kids: number;
+  /** Where they're moving from (city or country), free text. */
+  from: string;
+  note: string;
+  name: string;
+  phone: string;
+}
+
+export type FamilyHome = "studio" | "1bhk" | "2bhk" | "3bhk" | "4bhk" | "sharing";
+export const FAMILY_HOMES: FamilyHome[] = ["sharing", "studio", "1bhk", "2bhk", "3bhk", "4bhk"];
+export const FAMILY_HOME_LABEL: Record<FamilyHome, string> = {
+  sharing: "Family room in a shared flat",
+  studio: "Studio",
+  "1bhk": "1BHK apartment",
+  "2bhk": "2BHK apartment",
+  "3bhk": "3BHK apartment",
+  "4bhk": "4BHK / villa",
+};
+
+export type Lead = TenantRequest | OwnerLead | RoommateLead | FamilyRequest;
 export type LeadErrors = Record<string, string>;
 
 const isDate = (s: unknown) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -60,6 +91,41 @@ export function validateLead(input: Record<string, unknown>): { ok: boolean; val
   const phone = normalizePhone(String(input.phone ?? ""));
   if (name.length < 2 || name.length > 80) errors.name = "Enter your name";
   if (!phone) errors.phone = "Enter a valid WhatsApp number";
+
+  if (input.kind === "family") {
+    const home = FAMILY_HOMES.find((h) => h === input.home);
+    const budget = Number(input.budget);
+    const adults = Math.round(Number(input.adults ?? 2));
+    const kids = Math.round(Number(input.kids ?? 0));
+    if (!home) errors.home = "Pick the kind of home";
+    if (!Number.isFinite(budget) || budget < 500 || budget > 200000) errors.budget = "Set a monthly budget";
+    if (!isDate(input.moveIn)) errors.moveIn = "Pick a move-in date";
+    if (!Number.isFinite(adults) || adults < 1 || adults > 12) errors.adults = "How many adults?";
+    if (!Number.isFinite(kids) || kids < 0 || kids > 12) errors.kids = "How many children?";
+    const ok = !Object.keys(errors).length;
+    const text = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+    return {
+      ok,
+      errors,
+      value: ok
+        ? {
+            kind: "family",
+            home: home!,
+            budget,
+            areaSlugs: (Array.isArray(input.areaSlugs) ? input.areaSlugs : []).map(String).slice(0, 5),
+            metro: !!input.metro,
+            furnished: !!input.furnished,
+            moveIn: String(input.moveIn),
+            adults,
+            kids,
+            from: text(input.from, 60),
+            note: text(input.note, 400),
+            name,
+            phone: phone!,
+          }
+        : undefined,
+    };
+  }
 
   if (input.kind === "roommate") {
     const budget = Number(input.budget);
@@ -160,6 +226,21 @@ export function leadMessage(lead: Lead, areaName: (slug: string) => string): str
       lead.lifestyle.length ? `Lifestyle: ${lead.lifestyle.join(", ")}` : "",
       lead.about ? `About me: ${lead.about}` : "",
       "Please list my profile.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+  if (lead.kind === "family") {
+    return [
+      "Hi Stayshay, we're a family looking for a home.",
+      `Looking for: ${FAMILY_HOME_LABEL[lead.home]}${lead.furnished ? ", furnished" : ""}${lead.metro ? ", near the metro" : ""}`,
+      `Areas: ${lead.areaSlugs.length ? lead.areaSlugs.map(areaName).join(", ") : "flexible"}`,
+      `Budget: up to AED ${lead.budget.toLocaleString("en-US")}/month`,
+      `Family: ${lead.adults} adult${lead.adults === 1 ? "" : "s"}${lead.kids ? `, ${lead.kids} child${lead.kids === 1 ? "" : "ren"}` : ""}`,
+      `Move-in: ${lead.moveIn}${lead.from ? ` · moving from ${lead.from}` : ""}`,
+      lead.note ? `Note: ${lead.note}` : "",
+      `Name: ${lead.name}`,
+      "Please send me options.",
     ]
       .filter(Boolean)
       .join("\n");

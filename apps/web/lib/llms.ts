@@ -1,5 +1,6 @@
 import { BRAND, TYPE_LABEL, TYPE_LABEL_PLURAL } from "@stayshay/core";
 import { POSTS } from "./blog";
+import { ALL_GUIDES } from "./guides";
 import { getAllListings } from "./store";
 import { RENT_TYPES, SITE, areaName, liveAreas, listingUrl, priceStats, rentPath } from "./seo";
 
@@ -26,6 +27,10 @@ export async function llmsTxt(full: boolean): Promise<string> {
     `- [All areas](${SITE}/areas)`,
     `- [Roommates](${SITE}/roommates)`,
     `- [List a place for free](${SITE}/list)`,
+    "",
+    "## Families and relocation",
+    "- Families needing a 1BHK, 2BHK, 3BHK or family sharing room, and people moving to Dubai, can send a brief; Stayshay's team replies on WhatsApp with real options. Free for families.",
+    ...ALL_GUIDES.map((g) => `- [${g.h1}](${SITE}${g.path}): ${g.answer}`),
     "",
     "## Areas",
     ...liveAreas(all).map(({ area, count }) => `- [${area.name}, ${area.emirate}](${SITE}/areas/${area.slug}): ${count} live, from AED ${priceStats(all.filter((l) => l.areaSlug === area.slug))!.min.toLocaleString("en-US")}/month`),

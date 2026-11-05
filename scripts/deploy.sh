@@ -23,3 +23,5 @@ ssh "$HOST" 'set -e
   curl -s -o /dev/null -w "local: %{http_code}\n" http://127.0.0.1:3210/
   git log --oneline -1'
 curl -s -o /dev/null -w "https://stayshay.com: %{http_code}\n" https://stayshay.com/
+# Tell Bing/IndexNow about every page after each deploy (never fails the deploy).
+node "$ROOT/scripts/indexnow.mjs" || true

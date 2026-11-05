@@ -240,7 +240,7 @@ export function Footer() {
         </div>
         {(
           [
-            ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
+            ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Family 2BHK / 3BHK", "/family"], ["Family sharing", "/family/family-sharing-apartment-dubai"], ["Near metro (family)", "/family/family-apartment-near-metro-dubai"], ["Moving to Dubai", "/move"], ["New to Dubai guide", "/blog/new-to-dubai-guide"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
             ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Room Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]

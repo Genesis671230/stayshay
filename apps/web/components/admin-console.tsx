@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AREA_BY_SLUG, TYPE_LABEL, roommateMatch, type Listing, type ListingStatus, type RoommateLead } from "@stayshay/core/src/client.ts";
+import { AREA_BY_SLUG, TYPE_LABEL, roommateMatch, type Listing, type ListingStatus, type RoommateLead, type FamilyRequest, FAMILY_HOME_LABEL } from "@stayshay/core/src/client.ts";
 import type { Announcement, LeadRecord, LeadStatus, Tenancy } from "@/lib/store";
 import type { RoommateProfile } from "@/lib/roommates";
 import type { PublicUser } from "@/lib/auth";
@@ -22,6 +22,7 @@ const KIND: Record<LeadRecord["kind"], { label: string; tone: string }> = {
   owner: { label: "Owner listing", tone: "bg-[#fbefdc] text-[#8a5a14]" },
   roommate: { label: "Roommate", tone: "bg-[#f1e8f7] text-[#6b3d8a]" },
   chat: { label: "AI chat", tone: "bg-[#e6f4f1] text-[#0f6b5c]" },
+  family: { label: "Family home", tone: "bg-[#fde8e4] text-[#9a3412]" },
 };
 const STATUS_TONE: Record<string, string> = {
   new: "bg-fresh text-white",
@@ -69,6 +70,10 @@ function leadSummary(l: LeadRecord): string {
   if (l.kind === "chat") return `Talked to Shay${d.language ? ` (${d.language})` : ""}${d.looking_for ? ` · ${d.looking_for}` : ""}`;
   if (l.kind === "inquiry") return `${l.listingTitle ?? l.listingId ?? "A listing"} · move-in ${d.moveIn ?? "?"}${d.message ? ` · “${d.message}”` : ""}`;
   if (l.kind === "owner") return `${TYPE_LABEL[d.type as Listing["type"]] ?? "Place"} in ${areaName(String(d.areaSlug ?? ""))} · ${aed(Number(d.rent) || 0)}/mo${d.billsIncluded ? ", bills incl." : ""} · ${d.spaces ?? 1} space(s) · for ${d.household}`;
+  if (l.kind === "family") {
+    const f = d as unknown as FamilyRequest;
+    return `${FAMILY_HOME_LABEL[f.home] ?? f.home}${f.furnished ? ", furnished" : ""}${f.metro ? ", near metro" : ""} · ${f.areaSlugs.map(areaName).join(", ") || "any area"} · up to ${aed(f.budget)}/mo · ${f.adults}A+${f.kids}K · move-in ${f.moveIn}${f.from ? ` · from ${f.from}` : ""}${f.note ? ` · “${f.note}”` : ""}`;
+  }
   if (l.kind === "roommate") {
     const r = d as unknown as RoommateLead;
     return `${r.mode === "has_place" ? "Has a place" : "Looking to share"} · ${r.gender}${r.age ? `, ${r.age}` : ""}${r.profession ? ` · ${r.profession}` : ""} · ${aed(r.budget)} · ${r.areaSlugs.map(areaName).join(", ") || "any area"} · from ${r.moveIn}`;
@@ -303,7 +308,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
           ["Last 24 h", today],
           ["Viewing requests", leads.filter((l) => l.kind === "inquiry").length],
           ["Owners", leads.filter((l) => l.kind === "owner").length],
-          ["AI chats", leads.filter((l) => l.kind === "chat").length],
+          ["Family homes", leads.filter((l) => l.kind === "family").length],
         ].map(([label, n]) => (
           <div key={label as string} className="rounded-[18px] bg-white p-4">
             <p className="text-[26px] font-extrabold leading-none tracking-[-0.03em] text-brand">{n}</p>
@@ -313,7 +318,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        {(["all", "inquiry", "tenant", "owner", "roommate", "chat"] as const).map((k) => (
+        {(["all", "family", "inquiry", "tenant", "owner", "roommate", "chat"] as const).map((k) => (
           <button key={k} onClick={() => setKind(k)} className={`h-9 rounded-full border px-3.5 text-[13px] font-medium ${kind === k ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
             {k === "all" ? "Everything" : KIND[k].label}
           </button>

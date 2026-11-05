@@ -91,6 +91,8 @@ const CTAS = {
   roommates: { title: "Find a roommate", body: "Browse people already looking, or add your own profile.", href: "/roommates", label: "Open the roommate board" },
   deals: { title: "See today's best deals", body: "Shay ranks every live listing against the going rate for its area.", href: "/deals", label: "Best deals" },
   ai: { title: "Ask Shay, here or in ChatGPT and Claude", body: "Search live Stayshay listings in plain words, wherever you chat.", href: "/ai", label: "How it works" },
+  family: { title: "Looking for a 1BHK, 2BHK or 3BHK?", body: "Send your family's brief and get real options with prices on WhatsApp. Free for families.", href: "/family", label: "Find a family home" },
+  move: { title: "Moving to Dubai?", body: "Tell us your dates, family size and budget. We line up your first home before you land.", href: "/move", label: "Get relocation help" },
   refer: { title: "Know someone who's moving?", body: "Share your Stayshay link and earn a reward when they move in. Brokers get a partner profile.", href: "/refer", label: "Refer & earn" },
 } as const;
 
