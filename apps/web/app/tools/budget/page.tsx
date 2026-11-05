@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ToolShell eyebrow="Salary to Rent" title="What can your salary rent in Dubai?" intro="Slide your monthly salary. See a comfortable rent, what it gets you, and where it goes furthest." photo="/photos/studio.jpg" path="/tools/budget">
+    <ToolShell eyebrow="Salary to Rent" title="What can your salary rent in Dubai?" intro="Slide your monthly salary. See a comfortable rent, what it gets you, and where it goes furthest." photo="/photos/studio.jpg" path="/tools/budget" tool="budget">
       <BudgetTool />
     </ToolShell>
   );

@@ -20,3 +20,23 @@ test("verdicts and budgets", () => {
   assert.equal(rentVerdict(1000, 700).verdict, "overpriced");
   assert.deepEqual(rentBudget(4000), { comfortable: 1000, max: 1350 });
 });
+
+test("moveInCost: unfurnished, 4 cheques, via agent, apartment", async () => {
+  const { moveInCost } = await import("./insights.ts");
+  const r = moveInCost({ yearlyRent: 60000, cheques: 4, furnished: false, viaAgent: true, villa: false });
+  assert.equal(r.lines.find((l) => l.label === "First rent cheque")!.amount, 15000);
+  assert.equal(r.lines.find((l) => l.label === "Security deposit")!.amount, 3000);
+  assert.equal(r.lines.find((l) => l.label === "Agency fee")!.amount, 3000);
+  assert.equal(r.lines.find((l) => l.label === "VAT on agency fee")!.amount, 150);
+  assert.equal(r.total, 15000 + 3000 + 3000 + 150 + 220 + 2000);
+  assert.equal(r.refundable, 5000);
+  assert.equal(r.monthly, 5000);
+});
+
+test("moveInCost: furnished direct villa, no agency lines", async () => {
+  const { moveInCost } = await import("./insights.ts");
+  const r = moveInCost({ yearlyRent: 120000, cheques: 1, furnished: true, viaAgent: false, villa: true });
+  assert.ok(!r.lines.some((l) => l.label.startsWith("Agency")));
+  assert.equal(r.lines[1].amount, 12000);
+  assert.equal(r.total, 120000 + 12000 + 220 + 4000);
+});

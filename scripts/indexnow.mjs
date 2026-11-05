@@ -20,7 +20,7 @@ if (!urls.length) {
 const host = new URL(SITE).host;
 for (let i = 0; i < urls.length; i += 10000) {
   const batch = urls.slice(i, i + 10000);
-  const r = await fetch("https://api.indexnow.org/indexnow", {
+  const r = await fetch("https://www.bing.com/indexnow", {
     method: "POST",
     headers: { "content-type": "application/json; charset=utf-8" },
     body: JSON.stringify({ host, key, keyLocation: `${SITE}/${key}.txt`, urlList: batch }),

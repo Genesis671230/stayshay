@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ToolShell eyebrow="Fair Rent Check" title="Is that rent fair?" intro="Compare any rent with what people pay for the same kind of place in the same area today. Works with ads from anywhere." photo="/photos/area-deira.jpg" path="/tools/fair-rent">
+    <ToolShell eyebrow="Fair Rent Check" title="Is that rent fair?" intro="Compare any rent with what people pay for the same kind of place in the same area today. Works with ads from anywhere." photo="/photos/area-deira.jpg" path="/tools/fair-rent" tool="fair-rent">
       <FairRent />
     </ToolShell>
   );

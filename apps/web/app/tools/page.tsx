@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 const TOOLS = [
   { href: "/swipe", name: "Room Swipe", line: "Swipe right to save, left to skip. Best deals first.", photo: "/photos/roommates.jpg" },
   { href: "/tools/fair-rent", name: "Fair Rent Check", line: "Paste any ad and see if the rent is a steal or a rip-off.", photo: "/photos/area-deira.jpg" },
+  { href: "/tools/move-in-cost", name: "Move-in Cost", line: "Deposit, agency fee, Ejari, DEWA: your day-one total for a yearly lease.", photo: "/photos/living.jpg" },
   { href: "/tools/budget", name: "Salary to Rent", line: "Slide your salary, see what you can rent and where.", photo: "/photos/studio.jpg" },
   { href: "/stayfit", name: "StayFit", line: "Rooms in buildings with a gym or pool. Train where you live.", photo: "/photos/area-jvc.jpg" },
   { href: "/metro", name: "Metro Finder", line: "Pick your station, see places a short walk away.", photo: "/photos/metro-station.jpg" },
@@ -21,7 +22,7 @@ const TOOLS = [
 
 export default function Page() {
   return (
-    <ToolShell eyebrow="Stayshay tools" title="Little tools that save you real money" intro="Free, no sign-up. Built on live prices from real listings." photo="/photos/living.jpg" path="/tools">
+    <ToolShell eyebrow="Stayshay tools" title="Little tools that save you real money" intro="Free, no sign-up. Built on live prices from real listings." photo="/photos/living.jpg" path="/tools" tool="stayshay">
       <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-3 px-4 pb-16 sm:grid-cols-2 lg:grid-cols-3">
         {TOOLS.map((t) => (
           <Link key={t.href} href={t.href} className="card group overflow-hidden hover:border-brand">

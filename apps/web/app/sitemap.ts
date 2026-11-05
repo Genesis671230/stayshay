@@ -32,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/swipe", 0.7),
     page("/tools/fair-rent", 0.8, "weekly"),
     page("/tools/budget", 0.8, "weekly"),
+    page("/tools/move-in-cost", 0.8, "weekly"),
     page("/stayfit", 0.7),
     ...STATIONS.filter((st) => all.some((l) => nearStation(st, l))).map((st) => page(`/metro/${st.slug}`, 0.8)),
     ...COLLECTIONS.flatMap((c) => c.types.filter((t) => all.some((l) => l.type === t && c.match(l))).map((t) => page(`${rentPath(t)}/${c.slug}`, 0.8))),

@@ -327,7 +327,7 @@ export function ToolsStrip() {
     ["/swipe", "Room Swipe", "Right to save, left to skip. Best deals first.", "/photos/roommates.jpg"],
     ["/tools/fair-rent", "Is that rent fair?", "Paste any ad. Get a verdict in a second.", "/photos/area-deira.jpg"],
     ["/tools/budget", "Salary to rent", "Slide your salary, see what it rents.", "/photos/studio.jpg"],
-    ["/stayfit", "StayFit", "Rooms with a gym or pool downstairs.", "/photos/area-jvc.jpg"],
+    ["/tools/move-in-cost", "Move-in cost", "Deposit, agency, Ejari, DEWA in one total.", "/photos/living.jpg"],
   ];
   return (
     <section className="mx-auto max-w-[1240px] px-4 py-10 md:px-8 md:py-16">

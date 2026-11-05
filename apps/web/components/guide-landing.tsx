@@ -8,6 +8,7 @@ import { JsonLd } from "./json-ld";
 import { Blocks, Faq, ListingGrid } from "./seo-blocks";
 import { FamilyForm } from "./family-form";
 import { Icon } from "./ui";
+import { Testimonials } from "./testimonials";
 import { slim } from "@/lib/store";
 import { GUIDE_BY_PATH, type Guide } from "@/lib/guides";
 import { SITE, breadcrumbLd, faqLd } from "@/lib/seo";
@@ -70,6 +71,13 @@ export function GuideLanding({ g, all, crumbs, children }: { g: Guide; all: List
           <article className="doc min-w-0">
             <Blocks blocks={g.blocks} listings={all} />
             {children}
+            <Link href="/tools/move-in-cost" className="not-prose mt-8 flex items-center justify-between gap-4 rounded-[18px] border border-line p-5 hover:border-brand">
+              <span>
+                <span className="block text-[16px] font-bold text-ink">How much cash do you need on day one?</span>
+                <span className="mt-1 block text-[14px] text-ink-2">Deposit, agency fee, Ejari and DEWA for any rent: Move-in Cost Calculator.</span>
+              </span>
+              <Icon name="chevron-right" size={18} />
+            </Link>
           </article>
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <FamilyForm home={g.form.home} area={g.form.area} metro={g.form.metro} from={g.form.from} heading={g.form.heading} />
@@ -97,6 +105,7 @@ export function GuideLanding({ g, all, crumbs, children }: { g: Guide; all: List
             </div>
           </section>
         </div>
+        <Testimonials tool="family" title="What families say" />
       </main>
       <Footer />
     </MarketplaceProvider>

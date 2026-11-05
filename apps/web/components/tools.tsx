@@ -14,6 +14,7 @@ import {
   rentBudget,
   rentVerdict,
   typicalRent,
+  moveInCost,
   type Area,
   type Listing,
   type ListingType,
@@ -23,6 +24,7 @@ import { ListingCard } from "./listing-card";
 import { AreaCombobox } from "./search-bar";
 import { track } from "./analytics";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { ReviewPrompt } from "./review-prompt";
 
 const TYPES: ListingType[] = ["bed_space", "partition", "room", "studio"];
 const aed = (n: number) => `AED ${Math.round(n).toLocaleString("en-US")}`;
@@ -312,6 +314,7 @@ export function FairRent() {
                 Share my result
               </a>
             </div>
+            <ReviewPrompt tool="fair-rent" question="Was this verdict useful?" />
             {cheaper.length > 0 && (
               <div>
                 <p className="text-[15px] font-bold">Cheaper {TYPE_LABEL_PLURAL[type].toLowerCase()} right now</p>
@@ -370,6 +373,9 @@ export function BudgetTool() {
           </div>
         </div>
         {saving > 0 && <p className="mt-4 text-[14px] text-white/75">Sharing instead of a studio could save you about {aed(saving)} a month, {aed(saving * 12)} a year.</p>}
+        <div className="mt-5">
+          <ReviewPrompt tool="budget" question="Did this help you set a budget?" dark />
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -404,6 +410,103 @@ export function BudgetTool() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---------- Move-in cost (yearly lease) ---------- */
+
+const CHEQUES = [1, 2, 4, 6, 12];
+
+export function MoveInCost() {
+  const { all } = useMarketplace();
+  const [monthly, setMonthly] = useState(7000);
+  const [cheques, setCheques] = useState(4);
+  const [furnished, setFurnished] = useState(false);
+  const [viaAgent, setViaAgent] = useState(true);
+  const [villa, setVilla] = useState(false);
+  const r = moveInCost({ yearlyRent: monthly * 12, cheques, furnished, viaAgent, villa });
+  const studio = typicalRent(all, "studio");
+  const room = typicalRent(all, "room");
+  const share = `Moving in to a AED ${monthly.toLocaleString("en-US")}/month flat in Dubai (${cheques} cheques${viaAgent ? ", via agent" : ""}) needs about ${aed(r.total)} on day one. Work out yours: https://stayshay.com/tools/move-in-cost`;
+  const brief = `Hi Stayshay, I'm looking for a family home around AED ${monthly.toLocaleString("en-US")}/month (${cheques} cheques${furnished ? ", furnished" : ""}${villa ? ", villa" : ""}). Please send options.`;
+
+  return (
+    <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-6 px-4 pb-16 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="card space-y-5 self-start p-5 md:p-6">
+        <label className="block">
+          <span className="text-[13px] font-semibold">Monthly rent you're looking at</span>
+          <span className="font-figure mt-1 block text-[34px] font-bold leading-none text-brand">{aed(monthly)}</span>
+          <input type="range" min={1500} max={40000} step={250} value={monthly} onChange={(e) => setMonthly(Number(e.target.value))} className="mt-4 w-full accent-brand" aria-label="Monthly rent" />
+          <span className="mt-1 block text-[12.5px] text-muted">{aed(monthly * 12)} a year</span>
+        </label>
+        <div>
+          <p className="text-[13px] font-semibold">Cheques per year</p>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {CHEQUES.map((c) => (
+              <button key={c} className={pill(cheques === c)} onClick={() => setCheques(c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button className={pill(furnished)} onClick={() => setFurnished(!furnished)}>Furnished</button>
+          <button className={pill(viaAgent)} onClick={() => setViaAgent(!viaAgent)}>Through an agent</button>
+          <button className={pill(villa)} onClick={() => setVilla(!villa)}>Villa / townhouse</button>
+        </div>
+        <p className="text-[12.5px] leading-relaxed text-muted">Deposit and agency percentages are typical Dubai market practice. Ejari and DEWA amounts are approximate; check the current fees before you pay.</p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="glow-panel rounded-[26px] p-6 text-white">
+          <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Cash needed on day one</p>
+          <p className="font-figure mt-2 text-[42px] font-bold leading-none">{aed(r.total)}</p>
+          <p className="mt-2 text-[14px] text-white/75">
+            {aed(r.refundable)} of it comes back when you leave. After that, rent averages {aed(r.monthly)} a month.
+          </p>
+          <ul className="mt-5 divide-y divide-white/10 text-[14px]">
+            {r.lines.map((l) => (
+              <li key={l.label} className="flex items-start justify-between gap-3 py-2.5">
+                <span>
+                  {l.label}
+                  <span className="block text-[12px] text-white/50">
+                    {l.note}
+                    {l.refundable ? " · refundable" : ""}
+                  </span>
+                </span>
+                <span className="font-figure font-semibold">{aed(l.amount)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <a href={stayshayWhatsapp(brief)} target="_blank" rel="noopener noreferrer" onClick={() => track("generate_lead", { method: "move_in_cost" })} className="inline-flex h-10 items-center rounded-[12px] bg-[#d3f0b9] px-4 text-[13.5px] font-bold text-[#0f3426]">
+              Find me a home at this rent
+            </a>
+            <a href={`https://wa.me/?text=${encodeURIComponent(share)}`} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center rounded-[12px] border border-white/25 px-4 text-[13.5px] font-semibold">
+              Share
+            </a>
+          </div>
+          {!viaAgent ? null : <p className="mt-3 text-[12.5px] text-white/60">Renting direct from the owner skips the agency fee and VAT: {aed(r.lines.filter((l) => l.label.includes("gency")).reduce((s, l) => s + l.amount, 0))} saved.</p>}
+        </div>
+        {(studio || room) && (
+          <div className="card p-5">
+            <p className="text-[15px] font-bold">Not ready for all that upfront?</p>
+            <p className="mt-1 text-[14px] text-muted">
+              Monthly places on Stayshay need roughly one month&apos;s rent plus a deposit, no cheques. Typical today:
+              {room ? ` private room ${aed(room.median)}` : ""}
+              {room && studio ? "," : ""}
+              {studio ? ` studio ${aed(studio.median)}` : ""} a month.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href="/rent/studios" className="chip h-9 px-3.5 text-[13px]">Monthly studios</Link>
+              <Link href="/family/furnished-family-apartment-monthly-dubai" className="chip h-9 px-3.5 text-[13px]">Furnished family flats</Link>
+              <Link href="/family#request" className="chip h-9 px-3.5 text-[13px]">Send a family brief</Link>
+            </div>
+          </div>
+        )}
+        <ReviewPrompt tool="move-in-cost" question="Was this calculator useful?" />
+      </div>
     </div>
   );
 }

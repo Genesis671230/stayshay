@@ -37,3 +37,45 @@ export function rentBudget(monthlySalary: number): { comfortable: number; max: n
   const s = Math.max(0, monthlySalary);
   return { comfortable: Math.round((s * 0.25) / 50) * 50, max: Math.round((s / 3) / 50) * 50 };
 }
+
+/** Day-one cash for a yearly Dubai lease. Typical market percentages; government fees are approximate and flagged. */
+export interface MoveInInput {
+  yearlyRent: number;
+  cheques: number;
+  furnished: boolean;
+  viaAgent: boolean;
+  villa: boolean;
+}
+export interface MoveInLine {
+  label: string;
+  amount: number;
+  note: string;
+  refundable?: boolean;
+  approx?: boolean;
+}
+export const EJARI_FEE_APPROX = 220;
+export const DEWA_DEPOSIT_APPROX = { apartment: 2000, villa: 4000 } as const;
+
+export function moveInCost(i: MoveInInput): { lines: MoveInLine[]; total: number; refundable: number; monthly: number } {
+  const rent = Math.max(0, i.yearlyRent);
+  const cheques = Math.min(12, Math.max(1, Math.round(i.cheques)));
+  const lines: MoveInLine[] = [
+    { label: "First rent cheque", amount: rent / cheques, note: `${cheques} cheque${cheques > 1 ? "s" : ""} a year` },
+    { label: "Security deposit", amount: rent * (i.furnished ? 0.1 : 0.05), note: `about ${i.furnished ? "10" : "5"}% of yearly rent`, refundable: true },
+  ];
+  if (i.viaAgent) {
+    lines.push({ label: "Agency fee", amount: rent * 0.05, note: "about 5% of yearly rent" }, { label: "VAT on agency fee", amount: rent * 0.05 * 0.05, note: "5% VAT" });
+  }
+  lines.push(
+    { label: "Ejari registration", amount: EJARI_FEE_APPROX, note: "approx., check the current fee", approx: true },
+    { label: "DEWA connection deposit", amount: i.villa ? DEWA_DEPOSIT_APPROX.villa : DEWA_DEPOSIT_APPROX.apartment, note: "approx., paid when you open the account", refundable: true, approx: true },
+  );
+  const round = (n: number) => Math.round(n);
+  for (const l of lines) l.amount = round(l.amount);
+  return {
+    lines,
+    total: lines.reduce((s, l) => s + l.amount, 0),
+    refundable: lines.filter((l) => l.refundable).reduce((s, l) => s + l.amount, 0),
+    monthly: round(rent / 12),
+  };
+}

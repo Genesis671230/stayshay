@@ -1,3 +1,4 @@
+import { Testimonials } from "@/components/testimonials";
 import { FamilyStrip } from "@/components/family-strip";
 import type { Metadata } from "next";
 import { Header } from "@/components/header";
@@ -25,6 +26,7 @@ export default async function Home() {
         <Rails />
         <HowItWorks />
         <Trust />
+        <Testimonials />
         <ListerCta />
         <Areas />
         <Faq />

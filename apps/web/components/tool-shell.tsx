@@ -5,9 +5,11 @@ import { MarketplaceProvider } from "./marketplace";
 import { JsonLd } from "./json-ld";
 import { getAllListings, slim } from "@/lib/store";
 import { SITE } from "@/lib/seo";
+import { Testimonials } from "./testimonials";
+import type { ToolKey } from "@/lib/reviews";
 
 /** Page frame for the free tools: photo hero, the tool, footer. */
-export async function ToolShell({ eyebrow, title, intro, photo, path, children }: { eyebrow: string; title: string; intro: string; photo: string; path: string; children: React.ReactNode }) {
+export async function ToolShell({ eyebrow, title, intro, photo, path, children, tool }: { eyebrow: string; title: string; intro: string; photo: string; path: string; children: React.ReactNode; /** Shows testimonials for this tool (and the review prompt) under it. */ tool?: ToolKey }) {
   return (
     <MarketplaceProvider listings={slim(await getAllListings())}>
       <JsonLd data={[{ "@context": "https://schema.org", "@type": "WebApplication", name: title, url: `${SITE}${path}`, applicationCategory: "LifestyleApplication", operatingSystem: "Any", offers: { "@type": "Offer", price: 0, priceCurrency: "AED" }, publisher: { "@type": "Organization", name: "Stayshay", url: SITE } }]} />
@@ -25,6 +27,7 @@ export async function ToolShell({ eyebrow, title, intro, photo, path, children }
           </div>
         </section>
         <div className="pt-6">{children}</div>
+        {tool && <Testimonials tool={tool} title="People who used this" />}
       </main>
       <Footer />
     </MarketplaceProvider>

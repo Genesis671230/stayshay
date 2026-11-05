@@ -1,8 +1,9 @@
+import { setReviewStatus } from "@/lib/reviews";
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { readLeads } from "@/lib/store";
 import { actionKeyboard, liveSessions, liveText, todayText } from "@/lib/live";
-import { answerCallback, muteFor, ownerChat, sendTelegram, webhookSecret, type Keyboard } from "@/lib/telegram";
+import { answerCallback, esc, muteFor, ownerChat, sendTelegram, webhookSecret, type Keyboard } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,13 @@ export async function POST(req: Request) {
   const cmd = (u.message?.text ?? u.callback_query?.data ?? "").trim().split(/[\s@]/)[0].replace(/^\//, "").toLowerCase();
   if (u.callback_query) await answerCallback(u.callback_query.id, cmd === "mute60" ? "Muted for 1 hour" : undefined);
   const say = (text: string, buttons?: Keyboard) => sendTelegram(text, { urgent: true, buttons, chatId: owner });
+
+  const rv = cmd.match(/^rv(ok|no):([\w-]{4,12})$/);
+  if (rv) {
+    const r = await setReviewStatus(rv[2], rv[1] === "ok" ? "approved" : "rejected");
+    await say(r ? (rv[1] === "ok" ? `Review by ${esc(r.name)} is live on the site.` : `Review by ${esc(r.name)} rejected.`) : "Review not found.");
+    return ok();
+  }
 
   switch (cmd) {
     case "live":
