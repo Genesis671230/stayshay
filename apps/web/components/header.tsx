@@ -128,6 +128,8 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Link href="/community" className="flex h-9 items-center whitespace-nowrap rounded-full px-3 text-[14px] font-medium text-ink-2 hover:text-ink">Community</Link>
+          <Link href="/work" className="flex h-9 items-center whitespace-nowrap rounded-full px-3 text-[14px] font-medium text-ink-2 hover:text-ink">Our work</Link>
           <Link href="/win" className="ml-1 flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-lime px-3.5 text-[13.5px] font-bold text-brand-deep hover:brightness-95">
             🏆 Win AED 5,000
           </Link>
@@ -169,6 +171,8 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Link href="/community" onClick={() => setOpen(false)} className="mt-4 block rounded-[14px] border border-line px-4 py-3 text-[15px] font-semibold">🏘️ Communities</Link>
+          <Link href="/work" onClick={() => setOpen(false)} className="mt-2 block rounded-[14px] border border-line px-4 py-3 text-[15px] font-semibold">✨ Our work</Link>
           <Link href="/win" onClick={() => setOpen(false)} className="mt-4 flex items-center justify-between rounded-[14px] bg-lime px-4 py-3 text-[15px] font-bold text-brand-deep">
             🏆 Win AED 500 to 5,000 <span aria-hidden>→</span>
           </Link>

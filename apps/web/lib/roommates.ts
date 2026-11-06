@@ -109,3 +109,22 @@ export async function setRoommateStatus(id: string, status: RoommateProfile["sta
     return { all, result: all[i] };
   });
 }
+
+/** A profile behind the pass: only what's needed to show there's someone there (no name, photo, text or profession). */
+export interface LockedRoommate {
+  id: string;
+  locked: true;
+  mode: PublicRoommate["mode"];
+  gender: PublicRoommate["gender"];
+  budget: number;
+  areaSlugs: string[];
+}
+
+/** The first `free` profiles are open to everyone; the rest need a Stayshay Pass. */
+export function gateRoommates(all: PublicRoommate[], unlocked: boolean, free: number): { open: PublicRoommate[]; locked: LockedRoommate[] } {
+  if (unlocked) return { open: all, locked: [] };
+  return {
+    open: all.slice(0, free),
+    locked: all.slice(free).map((p) => ({ id: p.id, locked: true, mode: p.mode, gender: p.gender, budget: Math.round(p.budget / 100) * 100, areaSlugs: p.areaSlugs })),
+  };
+}

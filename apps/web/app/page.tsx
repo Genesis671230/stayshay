@@ -3,6 +3,7 @@ import { Testimonials } from "@/components/testimonials";
 import { FamilyStrip } from "@/components/family-strip";
 import { ServicesShowcase } from "@/components/services-showcase";
 import { CampaignBand } from "@/components/campaign-band";
+import { WorkShowcase } from "@/components/work-showcase";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { RoomFan } from "@/components/room-fan";
@@ -26,6 +27,7 @@ export default async function Home() {
         <Testimonials />
         <FamilyStrip />
         <ServicesShowcase />
+        <WorkShowcase compact className="py-12" />
         <Rails />
         <CampaignBand />
         <ToolsStrip />

@@ -6,13 +6,15 @@ import { AREAS, BRAND, TYPE_LABEL, filterListings, type Listing, type ListingTyp
 import { Shay, type ShayMood } from "./shay";
 import { Icon, aed } from "./ui";
 import { hidesMobileNav } from "./mobile-nav";
+import { pingWa } from "./wa-button";
+import { track } from "./analytics";
+import { stayshayWhatsapp } from "@/lib/contact";
 
 type Card = { id: string; title: string; type: string; area: string; priceAed: number; photo: string | null; billsIncluded: boolean };
-type Msg = { role: "user" | "assistant"; text: string; cards?: Card[]; chips?: { label: string; value: string }[] };
+type Msg = { role: "user" | "assistant"; text: string; cards?: Card[]; chips?: { label: string; value: string }[]; wa?: string };
 
 const CHAT_KEY = "stayshay:chat";
 export const LOC_KEY = "stayshay:loc";
-const STARTERS = ["Bed space under AED 1,000 in Karama", "Female partition near the metro", "Find me a roommate", "مرحبا، أبحث عن غرفة قريبة من المترو", "Kailangan ko ng bed space sa Deira"];
 
 /** Open the assistant from anywhere (hero, buttons), optionally with a first message. */
 export function openShay(message?: string) {
@@ -94,37 +96,84 @@ function Text({ text }: { text: string }) {
   );
 }
 
-/* ---------------- guided finder (works without the AI) ---------------- */
+/* ---------------- guided concierge (works with or without the AI) ---------------- */
 
-type Guide = { step: "type" | "budget" | "area" | "done"; type?: ListingType; max?: number };
-const BUDGETS = [800, 1200, 1800, 3000, 5000];
+type Kind = ListingType | "apartment";
+type Guide = { step: "type" | "area" | "metro" | "budget" | "move" | "done"; type?: Kind; area?: string; areaSlugs?: string[]; place?: string; station?: string | null; metro?: "walk" | "ride" | "any"; max?: number; move?: string };
+
+const KIND_LABEL: Record<string, string> = { bed_space: "a bed space", partition: "a partition", room: "a private room", studio: "a studio", apartment: "a family apartment (1–3BHK)" };
+const BUDGETS: Record<string, number[]> = {
+  bed_space: [600, 800, 1000, 1300],
+  partition: [1000, 1300, 1600, 2000],
+  room: [1800, 2500, 3500, 4500],
+  studio: [3500, 4500, 6000, 8000],
+  apartment: [6000, 9000, 12000, 16000],
+};
+const FALLBACK_AREAS = ["al-barsha-1", "al-karama", "deira", "jlt", "bur-dubai", "al-nahda-sharjah"];
 
 function toCard(l: Listing): Card {
   const area = AREAS.find((a) => a.slug === l.areaSlug)?.name ?? l.areaName ?? "";
   return { id: l.id, title: l.title, type: TYPE_LABEL[l.type], area, priceAed: l.priceAed, photo: l.photos[0] ?? null, billsIncluded: l.billsIncluded };
 }
 
-function guideAsk(g: Guide): Msg {
+/** Areas that actually have this kind of place live, busiest first, with the lowest price. */
+function areaChips(type: Kind | undefined, all: Listing[]): { label: string; value: string }[] {
+  const by = new Map<string, { n: number; min: number }>();
+  for (const l of all) {
+    if (type && type !== "apartment" && l.type !== type) continue;
+    const cur = by.get(l.areaSlug) ?? { n: 0, min: Infinity };
+    by.set(l.areaSlug, { n: cur.n + 1, min: Math.min(cur.min, l.priceAed) });
+  }
+  const top = [...by.entries()].filter(([s]) => AREAS.some((a) => a.slug === s)).sort((a, b) => b[1].n - a[1].n).slice(0, 6);
+  const chips = top.length && type !== "apartment"
+    ? top.map(([s, v]) => ({ label: `${AREAS.find((a) => a.slug === s)!.name} · from ${v.min.toLocaleString("en-US")}`, value: s }))
+    : FALLBACK_AREAS.filter((s) => AREAS.some((a) => a.slug === s)).map((s) => ({ label: AREAS.find((a) => a.slug === s)!.name, value: s }));
+  return [{ label: "📍 Near me", value: "near-me" }, ...chips, { label: "Not sure, suggest", value: "any" }];
+}
+
+function guideAsk(g: Guide, all: Listing[]): Msg {
   if (g.step === "type")
     return {
       role: "assistant",
-      text: "Hi! I’m Shay Let’s find your place in three taps. What are you looking for?",
+      text: "Hi, I’m Shay 👋 What are you looking for today?",
       chips: [
-        { label: "Bed space", value: "bed_space" },
-        { label: "Partition", value: "partition" },
-        { label: "Private room", value: "room" },
-        { label: "Studio", value: "studio" },
-        { label: "Roommate", value: "roommate" },
+        { label: "🛏️ Bed space", value: "bed_space" },
+        { label: "🚪 Partition", value: "partition" },
+        { label: "🔑 Private room", value: "room" },
+        { label: "🏠 Studio", value: "studio" },
+        { label: "👨‍👩‍👧 Family apartment", value: "apartment" },
+        { label: "🤝 Sharing / roommate", value: "roommate" },
       ],
     };
-  if (g.step === "budget") return { role: "assistant", text: "Nice. What’s your monthly budget?", chips: BUDGETS.map((b) => ({ label: `Up to ${b.toLocaleString("en-US")}`, value: String(b) })) };
-  const popular = ["al-barsha-1", "al-karama", "deira", "jlt", "al-nahda-sharjah", "bur-dubai"].filter((s) => AREAS.some((a) => a.slug === s));
+  if (g.step === "area") return { role: "assistant", text: `Great, ${KIND_LABEL[g.type ?? ""] ?? "a place"}. Where would you like to live? These areas have the most right now:`, chips: areaChips(g.type, all) };
+  if (g.step === "metro")
+    return {
+      role: "assistant",
+      text: g.station ? `The nearest metro to ${g.place} is ${g.station}. How close do you want to be?` : `How important is the metro for you${g.place ? ` around ${g.place}` : ""}?`,
+      chips: [
+        { label: g.station ? `🚇 Walk to ${g.station}` : "🚇 Walking distance", value: "walk" },
+        { label: "🚌 A short ride is fine", value: "ride" },
+        { label: "Doesn’t matter", value: "any" },
+      ],
+    };
+  if (g.step === "budget")
+    return { role: "assistant", text: "And your monthly budget?", chips: [...(BUDGETS[g.type ?? ""] ?? BUDGETS.room).map((b) => ({ label: `Up to AED ${b.toLocaleString("en-US")}`, value: String(b) })), { label: "More than that", value: "0" }] };
   return {
     role: "assistant",
-    text: "And where would you like to live?",
-    chips: [{ label: "Near me", value: "near-me" }, ...popular.map((s) => ({ label: AREAS.find((a) => a.slug === s)!.name, value: s })), { label: "Anywhere", value: "any" }],
+    text: "Last one: when do you want to move in?",
+    chips: [
+      { label: "Right away", value: "Right away" },
+      { label: "Within 2 weeks", value: "Within 2 weeks" },
+      { label: "This month", value: "This month" },
+      { label: "Next month", value: "Next month" },
+      { label: "Just exploring", value: "Just exploring" },
+    ],
   };
 }
+
+/** Pages where the first-visit concierge should not jump in (people are mid-task there). */
+const NO_AUTO = /^\/(admin|login|account|listing|list|find|swipe|community|manager|win|work|services|tools)\b/;
+const SEEN_KEY = "stayshay:concierge";
 
 /* ---------------- widget ---------------- */
 
@@ -138,6 +187,7 @@ export function ShayChat() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [guide, setGuide] = useState<Guide>({ step: "type" });
+  const [auto, setAuto] = useState(false);
   const listings = useRef<Listing[] | null>(null);
   const end = useRef<HTMLDivElement>(null);
 
@@ -211,63 +261,131 @@ export function ShayChat() {
     [chatId, listingId],
   );
 
+  const loadListings = async () => {
+    if (!listings.current) listings.current = ((await fetch("/api/listings").then((r) => r.json()).catch(() => ({ listings: [] }))) as { listings: Listing[] }).listings ?? [];
+    return listings.current;
+  };
+
+  /** Shay "types" for a moment before each question, so it feels like a conversation, not a form. */
+  const say = async (msg: Msg, ms = 650) => {
+    setBusy(true);
+    await new Promise((r) => setTimeout(r, ms));
+    setBusy(false);
+    setMsgs((m) => [...m, msg]);
+  };
+
+  const startGuide = async () => {
+    const g: Guide = { step: "type" };
+    setGuide(g);
+    void loadListings();
+    await say(guideAsk(g, []), 900);
+  };
+
   const guideAnswer = async (label: string, value: string) => {
-    setMsgs((m) => [...m.map((x) => ({ ...x, chips: undefined })), { role: "user", text: label }]);
+    setMsgs((m) => [...m.map((x) => ({ ...x, chips: undefined })), { role: "user", text: label.replace(/^[^\x00-\x7F]+\s*/u, "") }]);
+    const all = await loadListings();
+    track("concierge_step", { step: guide.step, value });
+
     if (guide.step === "type") {
       if (value === "roommate") {
-        setMsgs((m) => [...m, { role: "assistant", text: "Lovely! Our roommate board shows people already looking, and you can add your own profile with a photo.", chips: [{ label: "Open roommates", value: "go:/roommates" }] }]);
+        setGuide({ step: "done" });
+        await say({
+          role: "assistant",
+          text: "Sharing is the smartest way to save. You can see people already looking for a flatmate, or join your area’s community to meet them and ask about the building first.",
+          chips: [
+            { label: "Browse roommates", value: "go:/roommates" },
+            { label: "Neighbourhood communities", value: "go:/community" },
+            { label: "Start again", value: "restart" },
+          ],
+        });
         return;
       }
-      const g: Guide = { step: "budget", type: value as ListingType };
+      const g: Guide = { step: "area", type: value as Kind };
       setGuide(g);
-      setMsgs((m) => [...m, guideAsk(g)]);
+      await say(guideAsk(g, all));
       return;
     }
-    if (guide.step === "budget") {
-      const g: Guide = { ...guide, step: "area", max: Number(value) };
-      setGuide(g);
-      setMsgs((m) => [...m, guideAsk(g)]);
-      return;
-    }
-    setBusy(true);
-    if (!listings.current) listings.current = ((await fetch("/api/listings").then((r) => r.json()).catch(() => ({ listings: [] }))) as { listings: Listing[] }).listings;
-    let areaSlugs: string[] | undefined;
-    let near = "";
-    if (value === "near-me") {
-      const loc = getSavedLocation() ?? (await askLocation());
-      if (loc) {
-        const closest = [...AREAS].sort((a, b) => km(loc, a) - km(loc, b)).slice(0, 4);
-        areaSlugs = closest.map((a) => a.slug);
-        near = closest[0]?.name ?? "";
+
+    if (guide.step === "area") {
+      let areaSlugs: string[] | undefined;
+      let place = "";
+      let station: string | null = null;
+      if (value === "near-me") {
+        const loc = getSavedLocation() ?? (await askLocation());
+        if (loc) {
+          const closest = [...AREAS].sort((a, b) => km(loc, a) - km(loc, b)).slice(0, 4);
+          areaSlugs = closest.map((a) => a.slug);
+          place = closest[0]?.name ?? "";
+          station = closest.find((a) => a.nearMetro)?.nearMetro ?? null;
+        }
+      } else if (value !== "any") {
+        const a = AREAS.find((x) => x.slug === value);
+        areaSlugs = [value];
+        place = a?.name ?? "";
+        station = a?.nearMetro ?? null;
       }
-    } else if (value !== "any") areaSlugs = [value];
-    const found = filterListings(listings.current, AREAS, { types: guide.type ? [guide.type] : undefined, maxPrice: guide.max, areaSlugs });
-    setBusy(false);
-    setGuide({ step: "done" });
-    const q = new URLSearchParams({ ...(guide.type ? { type: guide.type } : {}), ...(guide.max ? { max: String(guide.max) } : {}), ...(areaSlugs ? { area: areaSlugs.join(",") } : {}) });
-    setMsgs((m) => [
-      ...m,
+      const g: Guide = { ...guide, step: "metro", area: value, areaSlugs, place, station };
+      setGuide(g);
+      await say(guideAsk(g, all));
+      return;
+    }
+
+    if (guide.step === "metro") {
+      const g: Guide = { ...guide, step: "budget", metro: value as Guide["metro"] };
+      setGuide(g);
+      await say(guideAsk(g, all));
+      return;
+    }
+
+    if (guide.step === "budget") {
+      const g: Guide = { ...guide, step: "move", max: Number(value) || undefined };
+      setGuide(g);
+      await say(guideAsk(g, all));
+      return;
+    }
+
+    // Move-in answered: show what fits and hand over to WhatsApp for the viewing.
+    const g: Guide = { ...guide, step: "done", move: value };
+    setGuide(g);
+    const apartment = g.type === "apartment";
+    const found = apartment
+      ? []
+      : filterListings(all, AREAS, { types: g.type ? [g.type as ListingType] : undefined, maxPrice: g.max, areaSlugs: g.areaSlugs, nearMetro: g.metro === "walk" || undefined });
+    const what = KIND_LABEL[g.type ?? ""] ?? "a place";
+    const summary = [
+      `Hi Stayshay, I'm looking for ${what}.`,
+      g.place ? `Area: ${g.place}` : "Area: open to suggestions",
+      g.metro === "walk" ? `Walking distance to the metro${g.station ? ` (${g.station})` : ""}` : g.metro === "ride" ? "Near the metro is fine" : "",
+      g.max ? `Budget: up to AED ${g.max.toLocaleString("en-US")}/month` : "Budget: flexible",
+      `Move-in: ${value}`,
+      "Can I book a viewing?",
+    ].filter(Boolean).join("\n");
+    const q = new URLSearchParams({ ...(g.type && !apartment ? { type: g.type } : {}), ...(g.max ? { max: String(g.max) } : {}), ...(g.areaSlugs ? { area: g.areaSlugs.join(",") } : {}), ...(g.metro === "walk" ? { metro: "1" } : {}) });
+    await say(
       found.length
         ? {
             role: "assistant",
-            text: `Found ${found.length} ${found.length === 1 ? "place" : "places"}${near ? ` around ${near}` : ""}. Here are the best ones. Tap one to see photos and book a viewing.`,
-            cards: found.slice(0, 5).map(toCard),
+            text: `Found ${found.length} ${found.length === 1 ? "place" : "places"} that fit${g.place ? ` around ${g.place}` : ""}. Tap one for photos, or send me your brief on WhatsApp and the team will line up viewings today.`,
+            cards: found.slice(0, 6).map(toCard),
+            wa: summary,
             chips: [
               { label: `See all ${found.length}`, value: `go:/search?${q}` },
               { label: "Start again", value: "restart" },
-              { label: "Talk to a person", value: "whatsapp" },
             ],
           }
         : {
             role: "assistant",
-            text: "Nothing fits exactly right now. Try a higher budget or another area, or let the team find one for you.",
+            text: apartment
+              ? `Family apartments go fast, so the team matches them by hand. Send this on WhatsApp and you’ll get options${g.place ? ` in ${g.place}` : ""} with viewing times.`
+              : "Nothing listed matches all of that right now, but the team often has places that aren’t online yet. Send your brief on WhatsApp and they’ll find one for you.",
+            wa: summary,
             chips: [
+              ...(apartment ? [{ label: "Family homes guide", value: "go:/family" }] : [{ label: "Widen the search", value: `go:/search?${q}` }]),
               { label: "Start again", value: "restart" },
-              { label: "Find me a room", value: "go:/find" },
-              { label: "Talk to a person", value: "whatsapp" },
             ],
           },
-    ]);
+      900,
+    );
   };
 
   const onChip = (label: string, value: string) => {
@@ -275,14 +393,9 @@ export function ShayChat() {
       window.location.href = value.slice(3);
       return;
     }
-    if (value === "whatsapp") {
-      window.open(`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent("Hi Stayshay, I need help finding a place.")}`, "_blank");
-      return;
-    }
     if (value === "restart") {
-      const g: Guide = { step: "type" };
-      setGuide(g);
-      setMsgs((m) => [...m.map((x) => ({ ...x, chips: undefined })), guideAsk(g)]);
+      setMsgs((m) => m.map((x) => ({ ...x, chips: undefined })));
+      void startGuide();
       return;
     }
     void guideAnswer(label, value);
@@ -300,10 +413,32 @@ export function ShayChat() {
     return () => window.removeEventListener("shay:open", onOpen);
   }, [ai, sendAi]);
 
-  // Guided mode greets by itself the first time the panel opens.
+  // First visit: Shay opens by itself and asks what they're looking for. Once per browser.
   useEffect(() => {
-    if (open && ai === false && !msgs.length) setMsgs([guideAsk({ step: "type" })]);
-  }, [open, ai, msgs.length]);
+    if (NO_AUTO.test(path ?? "")) return;
+    try {
+      if (localStorage.getItem(SEEN_KEY) || localStorage.getItem(CHAT_KEY)) return;
+    } catch {
+      return;
+    }
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(SEEN_KEY, "1");
+      } catch {}
+      setAuto(true);
+      setOpen(true);
+      setHello(false);
+      track("concierge_auto_open", { path: path ?? "/" });
+    }, 1800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Every fresh conversation starts with the guided question; typing to the AI still works any time.
+  useEffect(() => {
+    if (open && !msgs.length && !busy && ai !== null) void startGuide();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, ai]);
 
   if (path?.startsWith("/admin")) return null;
 
@@ -357,7 +492,9 @@ export function ShayChat() {
       )}
 
       {open && (
-        <div className="shay-pop fixed inset-0 z-[70] flex flex-col bg-white md:inset-auto md:bottom-6 md:right-6 md:h-[660px] md:max-h-[calc(100vh-48px)] md:w-[410px] md:overflow-hidden md:rounded-[30px] md:shadow-[0_28px_80px_rgb(0_0_0/0.24)] md:ring-1 md:ring-line" role="dialog" aria-label="Chat with Shay">
+        <div
+          className={`shay-pop fixed z-[70] flex flex-col bg-white md:inset-auto md:bottom-6 md:right-6 md:h-[660px] md:max-h-[calc(100vh-48px)] md:w-[410px] md:overflow-hidden md:rounded-[30px] md:shadow-[0_28px_80px_rgb(0_0_0/0.24)] md:ring-1 md:ring-line ${auto ? "inset-x-0 bottom-0 top-[16%] overflow-hidden rounded-t-[28px] shadow-[0_-20px_60px_rgb(0_0_0/0.25)]" : "inset-0"}`}
+          role="dialog" aria-label="Chat with Shay">
           <div className="relative overflow-hidden bg-[linear-gradient(135deg,#0b2a1f,#123d2e_55%,#1a5440)] px-4 pb-4 pt-3 text-white">
             <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-[#6ee7b7]/20 blur-2xl" />
             <div className="relative flex items-center gap-3">
@@ -384,14 +521,6 @@ export function ShayChat() {
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto bg-surface/60 px-4 py-4">
-            {ai && (
-              <div className="flex items-end gap-2">
-                <Shay size={28} glow={false} />
-                <div className="max-w-[86%] rounded-[18px] rounded-bl-[6px] bg-white px-3.5 py-2.5 text-[14px] leading-relaxed text-ink shadow-sm">
-                  Hi! I’m Shay Tell me where you’d like to live and your monthly budget. I’ll find places that fit, in any language.
-                </div>
-              </div>
-            )}
             {msgs.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
@@ -407,6 +536,20 @@ export function ShayChat() {
                       <Text text={m.text} />
                     </div>
                     {!!m.cards?.length && <Cards cards={m.cards} />}
+                    {m.wa && (
+                      <a
+                        href={stayshayWhatsapp(m.wa)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          pingWa("concierge", m.wa!.split("\n")[0].slice(0, 80));
+                          track("generate_lead", { method: "concierge_whatsapp" });
+                        }}
+                        className="mt-2.5 flex h-12 items-center justify-center gap-2 rounded-[14px] bg-whatsapp px-4 text-[15px] font-bold text-white shadow-[0_10px_24px_rgb(37_211_102/0.35)] hover:brightness-95"
+                      >
+                        <Icon name="whatsapp" size={18} /> Book a viewing on WhatsApp
+                      </a>
+                    )}
                     {!!m.chips?.length && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {m.chips.map((c) => (
@@ -428,24 +571,6 @@ export function ShayChat() {
                     <span key={d} className="shay-dot h-2 w-2 rounded-full bg-brand" style={{ animationDelay: `${d * 0.15}s` }} />
                   ))}
                 </div>
-              </div>
-            )}
-            {ai && !msgs.length && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {STARTERS.map((s) => (
-                  <button key={s} onClick={() => sendAi(s)} dir="auto" className="rounded-full border border-line bg-white px-3 py-1.5 text-[12.5px] font-medium text-ink-2 hover:border-brand hover:text-brand">
-                    {s}
-                  </button>
-                ))}
-                <button
-                  onClick={async () => {
-                    const loc = await askLocation();
-                    void sendAi(loc ? "Show me places near me" : "Show me popular places");
-                  }}
-                  className="rounded-full border border-brand/30 bg-mint px-3 py-1.5 text-[12.5px] font-semibold text-brand"
-                >
-                  Places near me
-                </button>
               </div>
             )}
             <div ref={end} />

@@ -8,6 +8,7 @@ import { ServiceCard } from "@/components/service-card";
 import { WaButton } from "@/components/wa-button";
 import { Icon } from "@/components/ui";
 import { Faq } from "@/components/seo-blocks";
+import { ExpertiseBand, WorkShowcase } from "@/components/work-showcase";
 import { GROUP_LABEL, SERVICES, type ServiceGroup } from "@/lib/services";
 import { SITE, breadcrumbLd, faqLd } from "@/lib/seo";
 
@@ -34,7 +35,7 @@ export default function Page() {
       <main>
         <section className="px-2 pt-2 md:px-4 md:pt-3">
           <div className="relative overflow-hidden rounded-[32px] bg-brand-deep px-5 py-14 md:px-10 md:py-20">
-            <Image src="/photos/svc-interiors-hero.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
+            <Image src="/work/villa-pinea/living.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(9_29_21/0.93)_0%,rgb(9_29_21/0.75)_50%,rgb(9_29_21/0.3)_100%)]" aria-hidden />
             <div className="relative mx-auto max-w-[1180px] text-white">
               <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Maintenance & interiors</p>
@@ -59,6 +60,11 @@ export default function Page() {
             </div>
           </section>
         ))}
+
+        <WorkShowcase className="pt-16 md:pt-24" />
+        <section className="mx-auto max-w-[1240px] px-4 pt-14 md:px-8">
+          <ExpertiseBand />
+        </section>
 
         <div className="mx-auto max-w-[820px] px-4 py-14 md:px-8">
           <Faq faq={FAQ} />

@@ -10,6 +10,7 @@ import { ServiceCard } from "@/components/service-card";
 import { WaButton } from "@/components/wa-button";
 import { Icon } from "@/components/ui";
 import { Faq } from "@/components/seo-blocks";
+import { ExpertiseBand, WorkShowcase } from "@/components/work-showcase";
 import { SERVICES, SERVICE_BY_SLUG, serviceMessage } from "@/lib/services";
 import { SITE, breadcrumbLd, faqLd } from "@/lib/seo";
 
@@ -85,6 +86,15 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           </div>
         </section>
 
+        {s.group === "interiors" && (
+          <>
+            <WorkShowcase service={s.slug} className="mt-16" />
+            <section className="mx-auto mt-14 max-w-[1240px] px-4 md:px-8">
+              <ExpertiseBand dark={false} />
+            </section>
+          </>
+        )}
+
         <section className="mx-auto mt-14 max-w-[1240px] px-4 md:px-8">
           <div className="grid grid-cols-1 gap-8 rounded-[30px] bg-brand-deep p-6 text-white md:p-10 lg:grid-cols-2">
             <div>
@@ -118,6 +128,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         <div className="mx-auto max-w-[820px] px-4 pt-6 md:px-8">
           <Faq faq={s.faq} />
         </div>
+
+        {s.group === "maintenance" && <WorkShowcase service={s.slug} compact eyebrow="Same team, bigger projects" title="Design & build work by our team" className="mt-14" />}
 
         <section className="mx-auto max-w-[1240px] px-4 py-14 md:px-8">
           <div className="flex items-end justify-between gap-4">

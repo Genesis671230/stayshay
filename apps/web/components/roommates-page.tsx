@@ -4,7 +4,8 @@ import Image from "next/image";
 
 import { useMemo, useRef, useState } from "react";
 import { AREA_BY_SLUG, BRAND, LIFESTYLE_LABEL, leadMessage, validateLead, type Area, type RoommateLead } from "@stayshay/core/src/client.ts";
-import type { PublicRoommate } from "@/lib/roommates";
+import type { LockedRoommate, PublicRoommate } from "@/lib/roommates";
+import { LockedCard, UnlockBanner } from "./community-lock";
 import { AreaCombobox } from "./search-bar";
 import { Shay } from "./shay";
 import { Icon, aed } from "./ui";
@@ -25,7 +26,7 @@ const when = (iso: string) => {
 
 type CardData = Pick<PublicRoommate, "firstName" | "age" | "gender" | "nationality" | "profession" | "budget" | "areaSlugs" | "moveIn" | "lifestyle" | "about" | "mode"> & { photo: string | null };
 
-function RoommateCard({ p, action, preview = false }: { p: CardData; action?: React.ReactNode; preview?: boolean }) {
+export function RoommateCard({ p, action, preview = false }: { p: CardData; action?: React.ReactNode; preview?: boolean }) {
   return (
     <article className={`flex h-full flex-col overflow-hidden rounded-[24px] border border-line bg-white ${preview ? "shadow-[0_20px_50px_rgb(20_92_70/0.14)]" : "transition-shadow hover:shadow-[0_14px_40px_rgb(20_92_70/0.10)]"}`}>
       <div className="relative aspect-[4/3] bg-mint">
@@ -72,12 +73,15 @@ function RoommateCard({ p, action, preview = false }: { p: CardData; action?: Re
 
 /* ---------------- board ---------------- */
 
-function Board({ profiles }: { profiles: PublicRoommate[] }) {
+function Board({ profiles, locked = [] }: { profiles: PublicRoommate[]; locked?: LockedRoommate[] }) {
   const [mode, setMode] = useState<"all" | "looking" | "has_place">("all");
   const [gender, setGender] = useState<"all" | "female" | "male">("all");
   const [max, setMax] = useState<number | null>(null);
   const [area, setArea] = useState<Area | null>(null);
   const shown = profiles.filter(
+    (p) => (mode === "all" || p.mode === mode) && (gender === "all" || p.gender === gender) && (!max || p.budget <= max) && (!area || p.areaSlugs.includes(area.slug) || !p.areaSlugs.length),
+  );
+  const lockedShown = locked.filter(
     (p) => (mode === "all" || p.mode === mode) && (gender === "all" || p.gender === gender) && (!max || p.budget <= max) && (!area || p.areaSlugs.includes(area.slug) || !p.areaSlugs.length),
   );
   const chip = (on: boolean) => `h-9 rounded-full border px-4 text-[13.5px] font-medium ${on ? "border-brand bg-brand text-white" : "border-line bg-white text-ink-2 hover:border-brand"}`;
@@ -90,7 +94,7 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
           <h2 className="font-display mt-2 text-[30px] leading-tight md:text-[40px]">Find someone to share with</h2>
         </div>
         <p className="text-[14px] text-muted">
-          {profiles.length} profile{profiles.length === 1 ? "" : "s"} · checked by our team · numbers stay private
+          {profiles.length + locked.length} profile{profiles.length + locked.length === 1 ? "" : "s"} · checked by our team · numbers stay private
         </p>
       </div>
 
@@ -129,7 +133,8 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
         </div>
       </div>
 
-      {shown.length ? (
+      {!!locked.length && <UnlockBanner count={locked.length} area={area?.slug} className="mt-6" />}
+      {shown.length || lockedShown.length ? (
         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {shown.map((p) => (
             <RoommateCard
@@ -146,6 +151,9 @@ function Board({ profiles }: { profiles: PublicRoommate[] }) {
                 </a>
               }
             />
+          ))}
+          {lockedShown.map((p) => (
+            <LockedCard key={p.id} p={p} area={area?.slug ?? p.areaSlugs[0]} />
           ))}
         </div>
       ) : (
@@ -537,7 +545,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
 
 /* ---------------- page ---------------- */
 
-export function RoommatesPage({ profiles, me }: { profiles: PublicRoommate[]; me: { name: string; phone: string | null; email: string } | null }) {
+export function RoommatesPage({ profiles, locked = [], me }: { profiles: PublicRoommate[]; locked?: LockedRoommate[]; me: { name: string; phone: string | null; email: string } | null }) {
   return (
     <main>
       <section className="px-2 pt-2 md:px-4 md:pt-3">
@@ -547,7 +555,7 @@ export function RoommatesPage({ profiles, me }: { profiles: PublicRoommate[]; me
           <div className="relative mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-6 px-5 py-12 md:grid-cols-[1fr_auto] md:px-10 md:py-16">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-mint px-3.5 py-1.5 text-[12.5px] font-semibold text-brand">
-                Roommate matching · free
+                Roommate matching
               </span>
               <h1 className="font-display mt-5 max-w-[720px] text-[38px] leading-[1.04] text-white md:text-[58px]">Find a roommate you’d actually live with.</h1>
               <p className="mt-4 max-w-[560px] text-[16.5px] leading-relaxed text-white/85">Browse people already looking, or add your own profile with a photo. We match budgets, areas and routines, and introduce you on WhatsApp.</p>
@@ -564,7 +572,7 @@ export function RoommatesPage({ profiles, me }: { profiles: PublicRoommate[]; me
         </div>
       </section>
 
-      <Board profiles={profiles} />
+      <Board profiles={profiles} locked={locked} />
 
       <section id="profile" className="bg-surface">
         <div className="mx-auto max-w-[1240px] px-4 py-14 md:px-8">

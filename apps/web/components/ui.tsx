@@ -13,6 +13,8 @@ export function availability(iso: string, today = new Date().toISOString().slice
 }
 
 type IconName =
+  | "lock"
+  | "chat"
   | "search"
   | "pin"
   | "calendar"
@@ -60,6 +62,8 @@ const PATHS: Record<Exclude<IconName, "whatsapp">, string> = {
   key: "M15.5 8.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-3 3L4 20m3-3 2 2m-4-4 2 2",
   bed: "M3 18V7m0 7h18v4m0-4v-2a3 3 0 0 0-3-3h-7v5M7 11.5a1.5 1.5 0 1 0 0-.01",
   "arrow-right": "M5 12h14m-6-6 6 6-6 6",
+  lock: "M7 11V8a5 5 0 0 1 10 0v3M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Zm6 4v2",
+  chat: "M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1Zm4 5h8m-8 3h5",
 };
 
 export function Icon({ name, size = 18, ...rest }: { name: IconName; size?: number } & SVGProps<SVGSVGElement>) {

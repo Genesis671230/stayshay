@@ -4,7 +4,8 @@ import { Footer } from "@/components/sections";
 import { MarketplaceProvider } from "@/components/marketplace";
 import { RoommatesPage } from "@/components/roommates-page";
 import { getAllListings, slim } from "@/lib/store";
-import { publicRoommates } from "@/lib/roommates";
+import { gateRoommates, publicRoommates } from "@/lib/roommates";
+import { FREE_PROFILES, accessFor } from "@/lib/community";
 import { currentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +13,12 @@ export const metadata: Metadata = { title: "Find a roommate in Dubai and the UAE
 
 export default async function Page() {
   const [listings, profiles, me] = await Promise.all([getAllListings(), publicRoommates(), currentUser()]);
+  const access = await accessFor(me);
+  const { open, locked } = gateRoommates(profiles, access.anyPass, FREE_PROFILES);
   return (
     <MarketplaceProvider listings={slim(listings)}>
       <Header />
-      <RoommatesPage profiles={profiles} me={me && { name: me.name, phone: me.phone, email: me.email }} />
+      <RoommatesPage profiles={open} locked={locked} me={me && { name: me.name, phone: me.phone, email: me.email }} />
       <Footer />
     </MarketplaceProvider>
   );
