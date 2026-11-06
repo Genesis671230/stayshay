@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { validateInquiry, whatsappMessage, type InquiryErrors, type Listing } from "@stayshay/core/src/client.ts";
 import { Icon, aed } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { pingWa } from "./wa-button";
 import { RefField } from "./ref-field";
 import { track } from "./analytics";
 import { QuickSignIn, useMe } from "./quick-signin";
@@ -130,6 +131,7 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
   const [errors, setErrors] = useState<InquiryErrors>({});
   const [busy, setBusy] = useState(false);
   const [editContact, setEditContact] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const { me, google } = useMe();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -138,6 +140,7 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
     if (r && /^\d{4}-\d{2}-\d{2}$/.test(r.moveIn)) {
       setF((x) => ({ ...x, moveIn: r.moveIn, people: r.people }));
       setStep(2);
+      setShowForm(true);
     }
   }, []);
 
@@ -193,6 +196,25 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
         </div>
       </div>
 
+      <a
+        href={stayshayWhatsapp(whatsappMessage(listing, {}))}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          pingWa("listing", `${listing.id} · ${listing.title}`);
+          track("generate_lead", { method: "whatsapp_direct", listing_id: listing.id, value: listing.priceAed, currency: "AED" });
+        }}
+        className="mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-[#25d366] py-3.5 text-[16px] font-semibold text-white hover:brightness-95"
+      >
+        <Icon name="whatsapp" size={20} /> WhatsApp about this place
+      </a>
+      <p className="mt-2 text-center text-[12.5px] text-muted">One tap. No forms. We reply with photos, availability and a viewing time.</p>
+      {!showForm && (
+        <button onClick={() => setShowForm(true)} className="mt-3 w-full text-[13.5px] font-medium text-ink-2 underline underline-offset-4">
+          Or pick a viewing time
+        </button>
+      )}
+      {showForm && (<>
       <ol className="mt-5 flex items-center gap-2 text-[12px]" aria-label="Steps">
         {["When", "You", "Viewing"].map((label, i) => (
           <li key={label} className="flex flex-1 items-center gap-2">
@@ -296,6 +318,8 @@ export function ViewingFunnel({ listing }: { listing: Listing }) {
         </div>
       )}
 
+      </>)}
+
       <p className="mt-4 flex items-start gap-2 text-[12px] leading-relaxed text-muted">
         <Icon name="shield" size={14} className="mt-0.5 shrink-0" /> Free to ask. No booking fee. Your number goes only to this lister.
       </p>
@@ -324,9 +348,20 @@ export function MobileBookingBar({ listing }: { listing: Listing }) {
           <span className="text-[13px] text-muted"> / month</span>
           <span className="block text-[12px] text-muted">{listing.availability ?? "Monthly"}</span>
         </p>
-        <button onClick={() => setOpen(true)} className="h-11 rounded-[12px] bg-brand px-5 text-[14.5px] font-medium text-white">
-          Request viewing
-        </button>
+        <span className="flex items-center gap-2">
+          <button onClick={() => setOpen(true)} className="h-11 rounded-[12px] border border-line px-3.5 text-[13.5px] font-medium text-ink">
+            Viewing
+          </button>
+          <a
+            href={stayshayWhatsapp(whatsappMessage(listing, {}))}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => pingWa("listing", `${listing.id} · ${listing.title}`)}
+            className="inline-flex h-11 items-center gap-1.5 rounded-[12px] bg-[#25d366] px-4 text-[14.5px] font-semibold text-white"
+          >
+            <Icon name="whatsapp" size={17} /> WhatsApp
+          </a>
+        </span>
       </div>
       {open &&
         createPortal(

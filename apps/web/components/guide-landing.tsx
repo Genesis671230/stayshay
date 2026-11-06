@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AREAS, AREA_BY_SLUG, BRAND, filterListings, type Listing } from "@stayshay/core/src/client.ts";
+import { AREAS, AREA_BY_SLUG, filterListings, type Listing } from "@stayshay/core/src/client.ts";
 import { Header } from "./header";
 import { Footer } from "./sections";
 import { MarketplaceProvider } from "./marketplace";
@@ -8,7 +8,8 @@ import { JsonLd } from "./json-ld";
 import { Blocks, Faq, ListingGrid } from "./seo-blocks";
 import { FamilyForm } from "./family-form";
 import { Icon } from "./ui";
-import { Testimonials } from "./testimonials";
+import { QuickAsk } from "./quick-ask";
+import { WaButton } from "./wa-button";
 import { slim } from "@/lib/store";
 import { GUIDE_BY_PATH, type Guide } from "@/lib/guides";
 import { SITE, breadcrumbLd, faqLd } from "@/lib/seo";
@@ -56,12 +57,15 @@ export function GuideLanding({ g, all, crumbs, children }: { g: Guide; all: List
               <h1 className="font-display mt-3 max-w-[900px] text-[34px] leading-[1.05] text-white md:text-[52px]">{g.h1}</h1>
               <p className="mt-5 max-w-[760px] text-[15.5px] leading-relaxed text-white/90 md:text-[17px]">{g.answer}</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <a href="#request" className="inline-flex h-12 items-center rounded-[12px] bg-white px-6 text-[15px] font-semibold text-brand-deep hover:bg-mint">
-                  Send my brief, free
+                <WaButton text={`Hi Stayshay, I found you on "${g.h1}". I'm looking for a home. Type: … Area: … Budget: … Move-in: …`} kind="family" label={g.h1} className="inline-flex h-12 items-center gap-2 rounded-[12px] bg-[#25d366] px-6 text-[15px] font-semibold text-white hover:brightness-95">
+                  <Icon name="whatsapp" size={18} /> WhatsApp us now
+                </WaButton>
+                <a href="#request" className="inline-flex h-12 items-center rounded-[12px] border border-white/40 px-6 text-[15px] font-semibold text-white hover:bg-white/10">
+                  Send a detailed brief
                 </a>
-                <a href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(`Hi Stayshay, I found you on ${g.h1}. I'm looking for a home.`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center rounded-[12px] border border-white/40 px-6 text-[15px] font-semibold text-white hover:bg-white/10">
-                  WhatsApp {BRAND.whatsappDisplay}
-                </a>
+              </div>
+              <div className="mt-6">
+                <QuickAsk title="Or tap your home type" only={["Studio", "1BHK", "2BHK", "3BHK", "Family sharing"]} />
               </div>
             </div>
           </div>
@@ -105,7 +109,6 @@ export function GuideLanding({ g, all, crumbs, children }: { g: Guide; all: List
             </div>
           </section>
         </div>
-        <Testimonials tool="family" title="What families say" />
       </main>
       <Footer />
     </MarketplaceProvider>

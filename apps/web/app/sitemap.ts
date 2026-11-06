@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { POSTS } from "@/lib/blog";
 import { ALL_GUIDES } from "@/lib/guides";
+import { SERVICES } from "@/lib/services";
 import { getAllListings } from "@/lib/store";
 import { publicPartners } from "@/lib/referrals";
 import { COLLECTIONS, STATIONS, nearStation } from "@/lib/collections";
@@ -34,6 +35,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/tools/budget", 0.8, "weekly"),
     page("/tools/move-in-cost", 0.8, "weekly"),
     page("/stayfit", 0.7),
+    page("/services", 0.8, "weekly"),
+    ...SERVICES.map((s) => page(`/services/${s.slug}`, 0.7, "monthly")),
+    page("/win", 0.7, "weekly"),
     ...STATIONS.filter((st) => all.some((l) => nearStation(st, l))).map((st) => page(`/metro/${st.slug}`, 0.8)),
     ...COLLECTIONS.flatMap((c) => c.types.filter((t) => all.some((l) => l.type === t && c.match(l))).map((t) => page(`${rentPath(t)}/${c.slug}`, 0.8))),
     page("/partners", 0.6, "weekly"),

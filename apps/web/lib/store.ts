@@ -127,7 +127,7 @@ export async function refCodeFromRequest(): Promise<string | null> {
 
 /* ---------- leads: viewing inquiries + tenant / owner / roommate requests ---------- */
 
-export type LeadKind = "inquiry" | "tenant" | "owner" | "roommate" | "chat" | "family";
+export type LeadKind = "inquiry" | "tenant" | "owner" | "roommate" | "chat" | "family" | "campaign";
 export type LeadStatus = "new" | "contacted" | "matched" | "closed";
 
 export interface LeadRecord {

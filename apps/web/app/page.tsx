@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { Testimonials } from "@/components/testimonials";
 import { FamilyStrip } from "@/components/family-strip";
-import type { Metadata } from "next";
+import { ServicesShowcase } from "@/components/services-showcase";
+import { CampaignBand } from "@/components/campaign-band";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { RoomFan } from "@/components/room-fan";
@@ -21,12 +23,14 @@ export default async function Home() {
       <main>
         <Hero />
         <Categories />
+        <Testimonials />
         <FamilyStrip />
-        <ToolsStrip />
+        <ServicesShowcase />
         <Rails />
+        <CampaignBand />
+        <ToolsStrip />
         <HowItWorks />
         <Trust />
-        <Testimonials />
         <ListerCta />
         <Areas />
         <Faq />

@@ -7,6 +7,7 @@ import { AREA_BY_SLUG, TYPE_LABEL, isVerifiedCompliant, whatsappMessage, type Li
 import { Badge, Icon, aed, availability } from "./ui";
 import { useMarketplace } from "./marketplace";
 import { stayshayWhatsapp } from "@/lib/contact";
+import { pingWa } from "./wa-button";
 
 const GENDER_LABEL = { male: "Male only", female: "Female only", any: "Mixed" } as const;
 
@@ -169,6 +170,7 @@ export function ListingCard({ listing, onHover }: { listing: Listing; onHover?: 
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              pingWa("listing", `${listing.id} · ${listing.title}`);
               window.open(stayshayWhatsapp(whatsappMessage(listing, {})), "_blank", "noopener,noreferrer");
             }}
             className="inline-flex h-9 items-center gap-1.5 rounded-full bg-whatsapp/10 px-3.5 text-[13px] font-semibold text-whatsapp hover:bg-whatsapp hover:text-white"

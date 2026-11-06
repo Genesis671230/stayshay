@@ -23,6 +23,7 @@ const KIND: Record<LeadRecord["kind"], { label: string; tone: string }> = {
   roommate: { label: "Roommate", tone: "bg-[#f1e8f7] text-[#6b3d8a]" },
   chat: { label: "AI chat", tone: "bg-[#e6f4f1] text-[#0f6b5c]" },
   family: { label: "Family home", tone: "bg-[#fde8e4] text-[#9a3412]" },
+  campaign: { label: "Challenge", tone: "bg-lime text-brand-deep" },
 };
 const STATUS_TONE: Record<string, string> = {
   new: "bg-fresh text-white",
@@ -74,6 +75,7 @@ function leadSummary(l: LeadRecord): string {
     const f = d as unknown as FamilyRequest;
     return `${FAMILY_HOME_LABEL[f.home] ?? f.home}${f.furnished ? ", furnished" : ""}${f.metro ? ", near metro" : ""} · ${f.areaSlugs.map(areaName).join(", ") || "any area"} · up to ${aed(f.budget)}/mo · ${f.adults}A+${f.kids}K · move-in ${f.moveIn}${f.from ? ` · from ${f.from}` : ""}${f.note ? ` · “${f.note}”` : ""}`;
   }
+  if (l.kind === "campaign") return `${String(d.track ?? "")} · ${String(d.role ?? "")}${d.reach ? ` · can bring ${d.reach}` : ""}${d.note ? ` · “${d.note}”` : ""}`;
   if (l.kind === "roommate") {
     const r = d as unknown as RoommateLead;
     return `${r.mode === "has_place" ? "Has a place" : "Looking to share"} · ${r.gender}${r.age ? `, ${r.age}` : ""}${r.profession ? ` · ${r.profession}` : ""} · ${aed(r.budget)} · ${r.areaSlugs.map(areaName).join(", ") || "any area"} · from ${r.moveIn}`;
@@ -318,7 +320,7 @@ function Inbox({ leads, listings, onPatch, onCreateListing, onMatch }: { leads: 
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        {(["all", "family", "inquiry", "tenant", "owner", "roommate", "chat"] as const).map((k) => (
+        {(["all", "family", "campaign", "inquiry", "tenant", "owner", "roommate", "chat"] as const).map((k) => (
           <button key={k} onClick={() => setKind(k)} className={`h-9 rounded-full border px-3.5 text-[13px] font-medium ${kind === k ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>
             {k === "all" ? "Everything" : KIND[k].label}
           </button>

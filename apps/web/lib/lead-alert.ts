@@ -2,7 +2,7 @@ import type { LeadRecord } from "./store";
 import { esc, notify } from "./telegram";
 import { SITE } from "./seo";
 
-const KIND: Record<string, string> = { inquiry: "Viewing request", tenant: "Find-me-a-room request", owner: "Owner wants to list", roommate: "Roommate profile", chat: "Shay chat lead", family: "FAMILY home request (apartment)" };
+const KIND: Record<string, string> = { inquiry: "Viewing request", tenant: "Find-me-a-room request", owner: "Owner wants to list", roommate: "Roommate profile", chat: "Shay chat lead", family: "FAMILY home request (apartment)", campaign: "🏆 CHALLENGE application (AED 500–5,000)" };
 
 /** Instant Telegram alert for every new lead, with one-tap WhatsApp back to them. Never muted. */
 export function leadAlert(l: LeadRecord) {

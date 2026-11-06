@@ -210,8 +210,8 @@ export function Faq() {
 export function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-10 px-4 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-8">
-        <div>
+      <div className="mx-auto grid max-w-[1240px] grid-cols-2 gap-10 px-4 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] md:px-8">
+        <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="mt-4 max-w-[300px] text-[14px] leading-relaxed text-muted">{BRAND.tagline}</p>
           <a
@@ -241,7 +241,8 @@ export function Footer() {
         {(
           [
             ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Family 2BHK / 3BHK", "/family"], ["Family sharing", "/family/family-sharing-apartment-dubai"], ["Near metro (family)", "/family/family-apartment-near-metro-dubai"], ["Moving to Dubai", "/move"], ["New to Dubai guide", "/blog/new-to-dubai-guide"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Room Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Room Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Win AED 5,000", "/win"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Home services", [["All services", "/services"], ["AC service & repair", "/services/ac-maintenance"], ["Plumbing", "/services/plumbing"], ["Electrical", "/services/electrical"], ["Painting", "/services/painting"], ["Deep cleaning", "/services/deep-cleaning"], ["Pest control", "/services/pest-control"], ["Movers", "/services/movers"], ["Interior design", "/services/interior-design"], ["Renovation & fit-out", "/services/renovation"], ["Furnishing packages", "/services/furnishing"], ["Holiday home setup", "/services/holiday-home-setup"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
         ).map(([title, links]) => (

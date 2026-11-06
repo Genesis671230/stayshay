@@ -4,6 +4,8 @@ import { useState } from "react";
 import { AREAS, AREA_BY_SLUG, FAMILY_HOMES, FAMILY_HOME_LABEL, leadMessage, validateLead, type FamilyHome } from "@stayshay/core/src/client.ts";
 import { stayshayWhatsapp } from "@/lib/contact";
 import { track } from "./analytics";
+import { pingWa } from "./wa-button";
+import { Icon } from "./ui";
 
 const field = "w-full rounded-[12px] border border-line bg-white px-3.5 py-3 text-[15px] focus:border-brand focus:outline-none";
 const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[14px] font-medium transition ${on ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand"}`;
@@ -36,6 +38,7 @@ export function FamilyForm({ home: initialHome = "2bhk", area, metro: initialMet
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
+  const [more, setMore] = useState(false);
 
   const areaName = (s: string) => AREA_BY_SLUG.get(s)?.name ?? s;
   const toggleArea = (s: string) => setAreas((a) => (a.includes(s) ? a.filter((x) => x !== s) : [...a, s].slice(-5)));
@@ -51,6 +54,18 @@ export function FamilyForm({ home: initialHome = "2bhk", area, metro: initialMet
     setBusy(false);
     setSent(leadMessage(check.value, areaName));
   };
+
+  const quickText = () =>
+    [
+      `Hi Stayshay, I'm looking for a ${FAMILY_HOME_LABEL[home]}.`,
+      `Budget: up to AED ${budget.toLocaleString("en-US")}/month.`,
+      areas.length ? `Areas: ${areas.map(areaName).join(", ")}.` : "Area: open.",
+      metro ? "Walk to metro, please." : "",
+      furnished ? "Furnished." : "",
+      `Move-in: ${moveIn}.`,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   if (sent)
     return (
@@ -124,44 +139,63 @@ export function FamilyForm({ home: initialHome = "2bhk", area, metro: initialMet
         <button type="button" onClick={() => setFurnished(!furnished)} className={chip(furnished)}>Furnished</button>
       </div>
 
+      <a
+        href={stayshayWhatsapp(quickText())}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => pingWa("family", `${SHORT[home]} up to AED ${budget}`)}
+        className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[#25d366] px-6 text-[15.5px] font-semibold text-white hover:brightness-95"
+      >
+        <Icon name="whatsapp" size={18} /> Send on WhatsApp now
+      </a>
+      <p className="mt-2 text-center text-[12.5px] text-muted">No forms. WhatsApp opens with your request typed out.</p>
+
+      {!more ? (
+        <button type="button" onClick={() => setMore(true)} className="mt-4 w-full text-[13.5px] font-medium text-ink-2 underline underline-offset-4">
+          Prefer we call you? Add your details
+        </button>
+      ) : (
+        <>
       <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <label className="block">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Adults</span>
-          <input type="number" min={1} max={12} className={`${field} mt-2`} value={adults} onChange={(e) => setAdults(Number(e.target.value))} />
-          {err("adults")}
-        </label>
-        <label className="block">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Children</span>
-          <input type="number" min={0} max={12} className={`${field} mt-2`} value={kids} onChange={(e) => setKids(Number(e.target.value))} />
-          {err("kids")}
-        </label>
-        <label className="col-span-2 block">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Moving from</span>
-          <input className={`${field} mt-2`} value={from} onChange={(e) => setFrom(e.target.value)} placeholder="e.g. London, Abu Dhabi, already in Dubai" maxLength={60} />
-        </label>
-      </div>
+          <label className="block">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Adults</span>
+            <input type="number" min={1} max={12} className={`${field} mt-2`} value={adults} onChange={(e) => setAdults(Number(e.target.value))} />
+            {err("adults")}
+          </label>
+          <label className="block">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Children</span>
+            <input type="number" min={0} max={12} className={`${field} mt-2`} value={kids} onChange={(e) => setKids(Number(e.target.value))} />
+            {err("kids")}
+          </label>
+          <label className="col-span-2 block">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Moving from</span>
+            <input className={`${field} mt-2`} value={from} onChange={(e) => setFrom(e.target.value)} placeholder="e.g. London, Abu Dhabi, already in Dubai" maxLength={60} />
+          </label>
+        </div>
 
-      <label className="mt-5 block">
-        <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Anything else (optional)</span>
-        <input className={`${field} mt-2`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="School nearby, work in Business Bay, 12 cheques, parking…" maxLength={400} />
-      </label>
-
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Your name</span>
-          <input className={`${field} mt-2`} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-          {err("name")}
+        <label className="mt-5 block">
+          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Anything else (optional)</span>
+          <input className={`${field} mt-2`} value={note} onChange={(e) => setNote(e.target.value)} placeholder="School nearby, work in Business Bay, 12 cheques, parking…" maxLength={400} />
         </label>
-        <label className="block">
-          <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">WhatsApp number</span>
-          <input className={`${field} mt-2`} value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="+971 or your home number" />
-          {err("phone")}
-        </label>
-      </div>
 
-      <button disabled={busy} className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-brand px-6 text-[15.5px] font-semibold text-white hover:bg-brand-deep disabled:opacity-60 sm:w-auto">
-        {busy ? "Sending…" : "Send my brief"}
-      </button>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">Your name</span>
+            <input className={`${field} mt-2`} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+            {err("name")}
+          </label>
+          <label className="block">
+            <span className="text-[13px] font-semibold uppercase tracking-wide text-muted">WhatsApp number</span>
+            <input className={`${field} mt-2`} value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="+971 or your home number" />
+            {err("phone")}
+          </label>
+        </div>
+
+        <button disabled={busy} className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-brand px-6 text-[15.5px] font-semibold text-white hover:bg-brand-deep disabled:opacity-60 sm:w-auto">
+          {busy ? "Sending…" : "Send my brief"}
+        </button>
+        </>
+      )}
     </form>
   );
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { QuickAsk } from "./quick-ask";
 import Link from "next/link";
 import { AREAS, TYPE_LABEL_PLURAL, type Area, type Listing, type ListingType, PHOTOS } from "@stayshay/core/src/client.ts";
 import { Header } from "./header";
@@ -75,6 +76,9 @@ export function SeoLanding({
               <p className="mt-6 text-[12px] font-bold uppercase tracking-[0.12em] text-[#8fe3bd]">{eyebrow}</p>
               <h1 className="font-display mt-3 max-w-[900px] text-[34px] leading-[1.05] text-white md:text-[52px]">{h1}</h1>
               <p className="m-short mt-4 max-w-[720px] text-[15px] leading-relaxed text-white/85 md:text-[16.5px]">{intro}</p>
+              <div className="mt-6">
+                <QuickAsk title="Tap and WhatsApp us, we reply with real options" />
+              </div>
               {stats && (
                 <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4 text-white">
                   <div><dt className="text-[12px] text-white/60">Live now</dt><dd className="font-figure text-[26px] font-bold">{stats.count}</dd></div>

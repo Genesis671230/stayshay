@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AREA_BY_SLUG, TYPE_LABEL, type ListingType } from "@stayshay/core/src/client.ts";
 import { SearchBar } from "./search-bar";
+import { QuickAsk } from "./quick-ask";
 import { aed } from "./ui";
 import { useMarketplace } from "./marketplace";
 import { Shay } from "./shay";
@@ -141,6 +142,10 @@ export function Hero() {
                 <Shay size={16} glow={false} /> Ask Shay
               </button>
             </div>
+          </div>
+
+          <div className="mt-6 max-w-[1060px]">
+            <QuickAsk title="In a hurry? Tap what you need and WhatsApp us" />
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-2 md:mt-12 md:grid-cols-3 md:gap-3">
