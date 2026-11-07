@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { roommateMatch, stripPhones, type RoommateLead } from "@stayshay/core";
 import { readJson, updateJson } from "./store";
-import { readRoommates, type PublicRoommate, type RoommateProfile } from "./roommates";
+import { readRoommates, type PublicRoommate, type RoommatePrefs, type RoommateProfile } from "./roommates";
 import type { User } from "./auth";
 
 /**
@@ -44,7 +44,7 @@ const asLead = (p: Pick<RoommateProfile, "firstName" | "mode" | "age" | "gender"
   about: p.about,
 });
 
-export const toCard = ({ leadId: _l, userId: _u, status: _s, ...pub }: RoommateProfile): PublicRoommate => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) });
+export const toCard = ({ leadId: _l, userId: _u, status: _s, prefs: _p, ...pub }: RoommateProfile): PublicRoommate => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) });
 
 export type SwipeCard = PublicRoommate & { score: number; reasons: string[]; likedYou: boolean };
 
@@ -76,7 +76,49 @@ async function candidates(me: RoommateProfile, f: Filters) {
   return all
     .filter((r) => r.gender === me.gender && (f.mode === "all" || r.mode === f.mode) && (!f.max || r.budget <= f.max) && (!f.area || !r.areaSlugs.length || r.areaSlugs.includes(f.area)))
     .map((r) => ({ r, m: roommateMatch(mine, asLead(r)) }))
-    .sort((a, b) => b.m.score - a.m.score || b.r.createdAt.localeCompare(a.r.createdAt));
+    .map((c) => ({ ...c, rank: c.m.score + prefFit(me, c.r) }))
+    .sort((a, b) => b.rank - a.rank || b.r.createdAt.localeCompare(a.r.createdAt));
+}
+
+/** Nudges the order by what this person said they're looking for. Never hides anyone; filters do that. */
+function prefFit(me: RoommateProfile, r: RoommateProfile): number {
+  const p = me.prefs;
+  if (!p) return 0;
+  let n = 0;
+  if (p.seeking !== "any") n += r.mode === p.seeking ? 10 : -20;
+  if (r.age != null && (p.ageMin || p.ageMax)) n += (!p.ageMin || r.age >= p.ageMin) && (!p.ageMax || r.age <= p.ageMax) ? 8 : -15;
+  const theirs = new Set(r.lifestyle.map((x) => x.toLowerCase()));
+  for (const m of p.mustHave) n += theirs.has(m.toLowerCase()) ? 5 : -3;
+  return n;
+}
+
+/**
+ * Live hints while someone builds their profile: how many people fit so far, the typical budget and the
+ * popular areas among people like them. Counts only, never anyone's details.
+ */
+export async function suggest(q: { gender: "male" | "female"; budget: number; areas: string[]; seeking: RoommatePrefs["seeking"]; ageMin: number | null; ageMax: number | null }, excludeUserId: string) {
+  const pool = (await readRoommates()).filter((r) => r.status === "approved" && r.gender === q.gender && r.userId !== excludeUserId);
+  const inAreas = (r: RoommateProfile) => !q.areas.length || !r.areaSlugs.length || r.areaSlugs.some((a) => q.areas.includes(a));
+  const fits = pool.filter(
+    (r) =>
+      inAreas(r) &&
+      (!q.budget || Math.abs(r.budget - q.budget) / Math.max(r.budget, q.budget) <= 0.35) &&
+      (q.seeking === "any" || r.mode === q.seeking) &&
+      (r.age == null || ((!q.ageMin || r.age >= q.ageMin) && (!q.ageMax || r.age <= q.ageMax))),
+  );
+  const local = pool.filter(inAreas).map((r) => r.budget).sort((a, b) => a - b);
+  const areaCount = new Map<string, number>();
+  for (const r of pool) for (const a of r.areaSlugs) areaCount.set(a, (areaCount.get(a) ?? 0) + 1);
+  const tagCount = new Map<string, number>();
+  for (const r of pool) for (const t of r.lifestyle) tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+  const top = (m: Map<string, number>, n: number) => [...m.entries()].filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]).slice(0, n).map(([k]) => k);
+  return {
+    fit: fits.length,
+    total: pool.length,
+    typicalBudget: local.length >= 3 ? Math.round(local[local.length >> 1] / 50) * 50 : null,
+    popularAreas: top(areaCount, 5),
+    popularHabits: top(tagCount, 4),
+  };
 }
 
 /** Profile ids whose owners sent me a request to connect (liked my profile). */

@@ -4,8 +4,8 @@ import { RoomieApp } from "./app";
 export function RoomieStage({ people, returnTo, title, intro }: { people: number; returnTo: "/roommates" | "/swipe"; title: string; intro: string }) {
   const steps = [
     ["Make your profile", "Photo, budget, areas and how you live. Two minutes, and our team checks every profile."],
-    ["Swipe and request to connect", "People who fit your budget, area and routine come first. Swipe right to ask to connect."],
-    ["Connect, then message", "When they accept, you’re connected. Message with the Stayshay Pass and meet before you agree anything."],
+    ["Swipe right or left", "People who fit your budget, area and routine come first. Right to like, left to pass."],
+    ["Match, then message", "When you both swipe right, it’s a match. Message with the Stayshay Pass and meet before you agree anything."],
   ];
   return (
     <section className="bg-[#0b100e] md:px-4 md:py-10">

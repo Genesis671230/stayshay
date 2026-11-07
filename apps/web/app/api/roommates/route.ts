@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateLead, type RoommateLead } from "@stayshay/core";
 import { addLead } from "@/lib/store";
-import { addRoommate, publicRoommates, updateRoommate } from "@/lib/roommates";
+import { addRoommate, cleanPrefs, publicRoommates, updateRoommate } from "@/lib/roommates";
 import { myProfile } from "@/lib/swipe";
 import { esc, notify } from "@/lib/telegram";
 import { currentUser } from "@/lib/auth";
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   // Signed in with a profile already: edit it rather than making a second one.
   const existing = user && body.public === true ? await myProfile(user.id) : null;
   if (existing) {
-    const p = await updateRoommate(existing.id, lead, photoFile, body.removePhoto === true);
+    const p = await updateRoommate(existing.id, lead, photoFile, body.removePhoto === true, cleanPrefs(body.prefs));
     notify(`✏️ <b>Roommate profile edited</b> · needs approval\n${esc(lead.name)} (${esc(user!.email)}) · profile ${existing.id}\nApprove in /admin`);
     return NextResponse.json({ ok: true, leadId: existing.leadId, profileId: p?.id ?? existing.id, updated: true });
   }
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   });
   let profileId: string | null = null;
   if (body.public === true) {
-    const p = await addRoommate(lead, rec.id, user?.id ?? null, photoFile);
+    const p = await addRoommate(lead, rec.id, user?.id ?? null, photoFile, cleanPrefs(body.prefs));
     profileId = p.id;
   }
   return NextResponse.json({ ok: true, leadId: rec.id, profileId });

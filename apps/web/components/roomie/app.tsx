@@ -113,7 +113,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
     if (!r?.ok) return say("Couldn’t send that. Try again.");
     track(from === "request" ? "roomie_accept" : "roomie_connect", { profile_id: c.id });
     if (r.match) setMatch(c);
-    else say(`Request sent to ${c.firstName}`);
+    else say(`You liked ${c.firstName}`);
   };
   const pass_ = async (c: SwipeCard) => {
     await post({ id: c.id, action: "skip" });
@@ -128,7 +128,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
     if (r?.state === "card") {
       setDetails(r.card);
       load("explore");
-    } else openUpgrade(`You’ve opened your ${grid?.free ?? 6} free profiles`, "Get the Stayshay Pass to see every profile, connect and message.");
+    } else openUpgrade(`You’ve opened your ${grid?.free ?? 6} free profiles`, "Get the Stayshay Pass to see every profile and message your matches.");
   };
 
   /* ---------- gates ---------- */
@@ -174,7 +174,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
             [
               ["foryou", "For You"],
               ["explore", "Explore"],
-              ["requests", "Requests"],
+              ["requests", "Likes"],
             ] as const
           ).map(([t, label]) => (
             <button key={t} onClick={() => setTab(t)} className={`relative h-9 whitespace-nowrap rounded-full px-3 transition sm:h-10 sm:px-4 ${tab === t ? "bg-white/[0.14] text-white" : "text-white/55"}`}>
@@ -229,7 +229,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
               <span>
                 <b className="text-white">{left}</b> of {free} free profiles left
               </span>
-              <button onClick={() => openUpgrade("See everyone", "The Stayshay Pass opens every profile and lets you message your connections.")} className="font-semibold text-lime">
+              <button onClick={() => openUpgrade("See everyone", "The Stayshay Pass opens every profile and lets you message your matches.")} className="font-semibold text-lime">
                 Upgrade
               </button>
             </>
@@ -246,7 +246,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
             pass={pass}
             onOpen={setDetails}
             onAccept={async (c) => { await connect(c, "request"); load("requests"); }}
-            onDecline={async (c) => { await pass_(c); say(`Declined ${c.firstName}`); load("requests"); }}
+            onDecline={async (c) => { await pass_(c); say(`Passed on ${c.firstName}`); load("requests"); }}
             onMessage={message}
             goSwipe={() => setTab("foryou")}
           />
@@ -268,7 +268,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
                 }}
                 className="flex h-13 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#ff6fa5,#e94b8a)] py-3.5 text-[15.5px] font-bold"
               >
-                <HeartFill size={18} /> {details.likedYou ? "Accept and connect" : "Request to connect"}
+                <HeartFill size={18} /> {details.likedYou ? "Like back" : "Like"}
               </button>
               <button onClick={() => { const c = details; setDetails(null); message(c); }} aria-label="Message" className="flex h-13 w-13 items-center justify-center rounded-full bg-white/10 px-4 text-lime">
                 {!pass && <Icon name="lock" size={13} />} <Icon name="chat" size={19} />
@@ -291,8 +291,8 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
               <span className="h-28 w-28 overflow-hidden rounded-full ring-4 ring-[#0b0f0d]"><Portrait p={base.me} /></span>
               <span className="h-28 w-28 overflow-hidden rounded-full ring-4 ring-[#0b0f0d]"><Portrait p={match} /></span>
             </div>
-            <p className="mt-6 text-[40px] font-bold leading-none tracking-[-0.03em]">You’re connected</p>
-            <p className="mt-3 text-[16px] text-white/70">You and {match.firstName} both want to connect.</p>
+            <p className="mt-6 text-[40px] font-bold leading-none tracking-[-0.03em]">It’s a match!</p>
+            <p className="mt-3 text-[16px] text-white/70">You and {match.firstName} like each other.</p>
             <div className="mt-7 flex flex-col gap-3">
               <button onClick={() => { const c = match; setMatch(null); message(c); }} className="roomie-pulse h-14 rounded-full bg-[linear-gradient(135deg,#ff6fa5,#e94b8a)] px-8 text-[16px] font-bold">
                 {pass ? `Message ${match.firstName}` : `Message · AED ${PASS_PRICE}/month`}
@@ -338,7 +338,7 @@ function SignInGate({ google, people, next }: { google: boolean; people: number;
           <h2 className="mt-5 text-[44px] font-extrabold uppercase leading-[0.92] tracking-[-0.04em]">
             Find the one you’d share a kitchen with.
           </h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">Real people, checked by our team, matched on budget, area and routine. Make your profile, swipe, and request to connect.</p>
+          <p className="mt-4 text-[15.5px] leading-relaxed text-white/75">Real people, checked by our team, matched on budget, area and routine. Make your profile, swipe right on people you like, and match.</p>
           <div className="mt-6 space-y-3 [&_p]:text-white/55 [&_span.h-px]:bg-white/15">
             <QuickSignIn next={next} google={google} note="Takes a minute. Your number is never shown." />
             <Link href={`/login?next=${encodeURIComponent(next)}`} className="flex h-13 items-center justify-center rounded-full bg-lime py-3.5 text-[16px] font-bold text-brand-deep">
@@ -417,7 +417,7 @@ function ForYou({
             </span>
           </span>
         </div>
-        <Upgrade area={area} title={`You’ve seen your ${deck.free} free profiles`} line={`${deck.remaining} more ${deck.remaining === 1 ? "person fits" : "people fit"} what you’re looking for. Upgrade to keep going and message your connections.`} />
+        <Upgrade area={area} title={`You’ve seen your ${deck.free} free profiles`} line={`${deck.remaining} more ${deck.remaining === 1 ? "person fits" : "people fit"} what you’re looking for. Upgrade to keep going and message your matches.`} />
       </div>
     );
 
@@ -460,10 +460,10 @@ function ForYou({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0.25)_0%,rgb(0_0_0/0)_22%,rgb(0_0_0/0)_48%,rgb(8_14_12/0.94)_100%)]" />
           <div className="absolute inset-x-4 top-4 flex items-start justify-between">
             <span className={`rounded-full px-3 py-1.5 text-[12.5px] font-bold backdrop-blur ${cur.mode === "has_place" ? "bg-lime text-brand-deep" : "bg-black/35 text-white"}`}>{cur.mode === "has_place" ? "Has a place" : "Looking to share"}</span>
-            {cur.likedYou && <span className="roomie-pulse rounded-full bg-[#e94b8a] px-3 py-1.5 text-[12.5px] font-bold">Wants to connect</span>}
+            {cur.likedYou && <span className="roomie-pulse rounded-full bg-[#e94b8a] px-3 py-1.5 text-[12.5px] font-bold">Likes you</span>}
           </div>
-          {x > 40 && <span className="absolute left-6 top-20 -rotate-12 rounded-[14px] border-[3px] border-[#ff6fa5] px-3 py-1 text-[22px] font-extrabold text-[#ff6fa5]">CONNECT</span>}
-          {x < -40 && <span className="absolute right-6 top-20 rotate-12 rounded-[14px] border-[3px] border-white/80 px-3 py-1 text-[22px] font-extrabold">PASS</span>}
+          {x > 40 && <span className="absolute left-6 top-20 -rotate-12 rounded-[14px] border-[3px] border-[#ff6fa5] px-3 py-1 text-[22px] font-extrabold text-[#ff6fa5]">LIKE</span>}
+          {x < -40 && <span className="absolute right-6 top-20 rotate-12 rounded-[14px] border-[3px] border-white/80 px-3 py-1 text-[22px] font-extrabold">NOPE</span>}
           <div className="absolute inset-x-0 bottom-0 p-5">
             <p className="flex items-center gap-2 text-[32px] font-bold leading-none tracking-[-0.02em]">
               {cur.firstName}
@@ -496,15 +496,15 @@ function ForYou({
         </div>
       </div>
       <div className="mt-4 flex items-center justify-center gap-5">
-        <RoundButton kind="pass" label="Pass" onClick={() => decide("left")} />
-        <RoundButton kind="connect" label={cur.likedYou ? "Accept and connect" : "Request to connect"} onClick={() => decide("right")} />
+        <RoundButton kind="pass" label="Nope" onClick={() => decide("left")} />
+        <RoundButton kind="connect" label={cur.likedYou ? "Like back" : "Like"} onClick={() => decide("right")} />
         <RoundButton kind="message" label="Message" onClick={() => onMessage(cur)} />
       </div>
       <p className="mt-3 text-center text-[12px] text-white/40">
-        Swipe right to request to connect · tap for details{!pass && " · messaging needs the Pass"}
+        Swipe right to like, left to pass · tap for details
       </p>
       {!pass && deck.state === "card" && deck.used >= deck.free - 1 && (
-        <button onClick={() => onUpgrade("Keep swiping without limits", "This is your last free profile. The Stayshay Pass opens everyone and lets you message your connections.")} className="mx-auto mt-3 block text-[13px] font-semibold text-lime">
+        <button onClick={() => onUpgrade("Keep swiping without limits", "This is your last free profile. The Stayshay Pass opens everyone and lets you message your matches.")} className="mx-auto mt-3 block text-[13px] font-semibold text-lime">
           Last free profile · Upgrade
         </button>
       )}
@@ -551,7 +551,7 @@ function Explore({ grid, onOpen, onReveal, onConnect }: { grid: { items: Explore
               {it.likedYou && !it.liked && <span className="pointer-events-none absolute right-3 top-3 h-3 w-3 rounded-full bg-[#e94b8a] ring-2 ring-black/30" />}
               <button
                 onClick={() => !it.liked && onConnect(it)}
-                aria-label={it.liked ? "Request sent" : "Request to connect"}
+                aria-label={it.liked ? "Liked" : "Like"}
                 className={`absolute bottom-3 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full backdrop-blur transition active:scale-90 ${it.liked ? "bg-[#e94b8a] text-white" : "bg-black/40 text-white hover:bg-white/25"}`}
               >
                 <HeartFill size={21} />
@@ -591,8 +591,8 @@ function Requests({
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.07] text-[#ff6fa5]">
           <HeartFill size={28} />
         </span>
-        <p className="mt-5 text-[22px] font-bold">No requests yet</p>
-        <p className="mx-auto mt-2 max-w-[300px] text-[14.5px] text-white/60">Request to connect with people you like. When someone asks to connect with you, it shows up here.</p>
+        <p className="mt-5 text-[22px] font-bold">No likes yet</p>
+        <p className="mx-auto mt-2 max-w-[300px] text-[14.5px] text-white/60">Swipe right on people you like. When someone likes you back, it’s a match and shows up here.</p>
         <button onClick={goSwipe} className="mt-6 h-12 rounded-full bg-white px-6 text-[15px] font-bold text-brand-deep">
           Start swiping
         </button>
@@ -619,15 +619,15 @@ function Requests({
     <div className="space-y-7">
       {conn.incoming.length > 0 && (
         <section>
-          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-[#ff8fb8]">Want to connect with you · {conn.incoming.length}</h3>
+          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-[#ff8fb8]">Liked you · {conn.incoming.length}</h3>
           <ul className="space-y-2.5">
             {conn.incoming.map((c) => (
               <Row key={c.id} c={c}>
-                <button onClick={() => onDecline(c)} aria-label={`Decline ${c.firstName}`} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08]">
+                <button onClick={() => onDecline(c)} aria-label={`Pass on ${c.firstName}`} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08]">
                   <Icon name="close" size={17} />
                 </button>
                 <button onClick={() => onAccept(c)} className="h-11 rounded-full bg-[linear-gradient(135deg,#ff6fa5,#e94b8a)] px-4 text-[14px] font-bold">
-                  Accept
+                  Like back
                 </button>
               </Row>
             ))}
@@ -636,7 +636,7 @@ function Requests({
       )}
       {conn.matches.length > 0 && (
         <section>
-          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-lime">Connected · {conn.matches.length}</h3>
+          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-lime">Matches · {conn.matches.length}</h3>
           <ul className="space-y-2.5">
             {conn.matches.map((c) => (
               <Row key={c.id} c={c}>
@@ -650,7 +650,7 @@ function Requests({
       )}
       {conn.sent.length > 0 && (
         <section>
-          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-white/45">Requests you sent · {conn.sent.length}</h3>
+          <h3 className="mb-3 text-[13px] font-bold uppercase tracking-[0.1em] text-white/45">You liked · {conn.sent.length}</h3>
           <ul className="space-y-2.5">
             {conn.sent.map((c) => (
               <Row key={c.id} c={c}>
@@ -747,7 +747,9 @@ function FilterSheet({ f, onClose, onApply }: { f: Filters; onClose: () => void;
             {areaName(v.area)} <Icon name="close" size={14} />
           </button>
         ) : (
-          <AreaCombobox value={null} onChange={(a: Area | null) => a && AREA_BY_SLUG.has(a.slug) && setV({ ...v, area: a.slug })} />
+          <div className="rounded-[18px] bg-white px-4 py-3 text-ink">
+            <AreaCombobox value={null} onChange={(a: Area | null) => a && AREA_BY_SLUG.has(a.slug) && setV({ ...v, area: a.slug })} />
+          </div>
         )}
         <div className="mt-8 grid grid-cols-[auto_1fr] gap-2">
           <button onClick={() => setV({ mode: "all", max: 0, area: null })} className="h-13 rounded-full px-5 text-[15px] font-semibold text-white/70">

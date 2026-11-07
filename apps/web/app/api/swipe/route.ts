@@ -30,7 +30,7 @@ export async function GET(req: Request) {
   const access = await accessFor(user);
   const f = filtersFrom(sp);
   const [unread, incoming] = await Promise.all([unreadCount(user.id, me.id), incomingCount(user.id, me.id)]);
-  const base = { ok: true, pass: access.anyPass, unread, incoming, me: { ...toCard(me), status: me.status } };
+  const base = { ok: true, pass: access.anyPass, unread, incoming, me: { ...toCard(me), status: me.status, prefs: me.prefs ?? null } };
   if (view === "explore") return NextResponse.json({ ...base, explore: await explore(user, me, access.anyPass, f) }, noStore);
   if (view === "connections") return NextResponse.json({ ...base, connections: await connections(user, me) }, noStore);
   return NextResponse.json({ ...base, deck: await nextCard(user, me, access.anyPass, f) }, noStore);

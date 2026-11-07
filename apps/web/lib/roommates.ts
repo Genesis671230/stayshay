@@ -28,9 +28,34 @@ export interface RoommateProfile {
   lifestyle: string[];
   about: string;
   photo: string | null;
+  /** Who they'd like to live with. Private: shapes their own deck, never shown to others. */
+  prefs?: RoommatePrefs;
 }
 
-export type PublicRoommate = Omit<RoommateProfile, "leadId" | "userId" | "status">;
+export interface RoommatePrefs {
+  seeking: "any" | "has_place" | "looking";
+  ageMin: number | null;
+  ageMax: number | null;
+  mustHave: string[];
+}
+
+/** Cleans whatever the form sent into valid preferences (or undefined). */
+export function cleanPrefs(v: unknown): RoommatePrefs | undefined {
+  if (!v || typeof v !== "object") return undefined;
+  const o = v as Record<string, unknown>;
+  const age = (x: unknown) => (Number.isInteger(Number(x)) && Number(x) >= 18 && Number(x) <= 99 ? Number(x) : null);
+  let ageMin = o.ageMin == null ? null : age(o.ageMin);
+  let ageMax = o.ageMax == null ? null : age(o.ageMax);
+  if (ageMin && ageMax && ageMin > ageMax) [ageMin, ageMax] = [ageMax, ageMin];
+  return {
+    seeking: o.seeking === "has_place" || o.seeking === "looking" ? o.seeking : "any",
+    ageMin,
+    ageMax,
+    mustHave: (Array.isArray(o.mustHave) ? o.mustHave : []).map((x) => String(x).slice(0, 30)).slice(0, 6),
+  };
+}
+
+export type PublicRoommate = Omit<RoommateProfile, "leadId" | "userId" | "status" | "prefs">;
 
 const FILE = () => join(DATA_DIR, "roommates.json");
 let queue: Promise<unknown> = Promise.resolve();
@@ -59,7 +84,7 @@ export async function publicRoommates(): Promise<PublicRoommate[]> {
   return (await readRoommates())
     .filter((r) => r.status === "approved")
     // Contact goes through Stayshay: numbers typed into the text are removed from the public card.
-    .map(({ leadId: _l, userId: _u, status: _s, ...pub }) => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) }));
+    .map(({ leadId: _l, userId: _u, status: _s, prefs: _p, ...pub }) => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) }));
 }
 
 /** Square-crops and shrinks an uploaded photo (strips EXIF/location data too). Returns its public URL. */
@@ -77,7 +102,7 @@ export async function savePhoto(id: string, file: File): Promise<string | null> 
   return `/api/media/roommates/${name}`;
 }
 
-export async function addRoommate(lead: RoommateLead, leadId: string, userId: string | null, photo: File | null): Promise<RoommateProfile> {
+export async function addRoommate(lead: RoommateLead, leadId: string, userId: string | null, photo: File | null, prefs?: RoommatePrefs): Promise<RoommateProfile> {
   const id = randomUUID().slice(0, 8);
   const photoUrl = photo ? await savePhoto(id, photo).catch(() => null) : null;
   const profile: RoommateProfile = {
@@ -98,12 +123,13 @@ export async function addRoommate(lead: RoommateLead, leadId: string, userId: st
     lifestyle: lead.lifestyle,
     about: lead.about,
     photo: photoUrl,
+    ...(prefs && { prefs }),
   };
   return update((all) => ({ all: [profile, ...all], result: profile }));
 }
 
 /** Edits a profile in place (likes and messages keep pointing at it). Edits go back to the team for approval. */
-export async function updateRoommate(id: string, lead: RoommateLead, photo: File | null, removePhoto = false): Promise<RoommateProfile | undefined> {
+export async function updateRoommate(id: string, lead: RoommateLead, photo: File | null, removePhoto = false, prefs?: RoommatePrefs): Promise<RoommateProfile | undefined> {
   const photoUrl = photo ? await savePhoto(id, photo).catch(() => null) : null;
   return update((all) => {
     const i = all.findIndex((r) => r.id === id);
@@ -124,6 +150,7 @@ export async function updateRoommate(id: string, lead: RoommateLead, photo: File
       lifestyle: lead.lifestyle,
       about: lead.about,
       photo: photoUrl ?? (removePhoto ? null : cur.photo),
+      prefs: prefs ?? cur.prefs,
     };
     return { all, result: all[i] };
   });

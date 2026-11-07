@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LIFESTYLE_LABEL, validateLead, type Area } from "@stayshay/core/src/client.ts";
 import { AREA_BY_SLUG } from "@stayshay/core/src/client.ts";
-import type { PublicRoommate } from "@/lib/roommates";
+import type { PublicRoommate, RoommatePrefs } from "@/lib/roommates";
 import { AreaCombobox } from "../search-bar";
 import { Icon, aed } from "../ui";
 import { track } from "../analytics";
@@ -31,6 +31,17 @@ interface Draft {
   lifestyle: string[];
   about: string;
   phone: string;
+  seeking: RoommatePrefs["seeking"];
+  ages: string[];
+  mustHave: string[];
+}
+
+interface Hints {
+  fit: number;
+  total: number;
+  typicalBudget: number | null;
+  popularAreas: string[];
+  popularHabits: string[];
 }
 
 const DRAFT_KEY = "stayshay:roomie-draft:v2";
@@ -43,10 +54,25 @@ const LIFESTYLE_GROUPS: { title: string; options: string[] }[] = [
 const ABOUT_PROMPTS = ["On a weekday I usually…", "I’m looking for someone who…", "At home I’m the one who…", "Weekends are for…"];
 const MAX_LIFESTYLE = 8;
 
-const STEPS = ["intent", "you", "photo", "budget", "areas", "lifestyle", "about", "contact", "preview"] as const;
+const AGE_BANDS: [string, number, number][] = [
+  ["18–24", 18, 24],
+  ["25–34", 25, 34],
+  ["35–44", 35, 44],
+  ["45+", 45, 99],
+];
+const MUST_HAVES = [LIFESTYLE_LABEL.non_smoker, LIFESTYLE_LABEL.quiet, "Very tidy", LIFESTYLE_LABEL.early_riser, LIFESTYLE_LABEL.pet_friendly, "Works from home", "Cooks daily", LIFESTYLE_LABEL.social];
+const agesToRange = (bands: string[]) => {
+  const sel = AGE_BANDS.filter(([l]) => bands.includes(l));
+  return sel.length ? { ageMin: Math.min(...sel.map((b) => b[1])), ageMax: Math.max(...sel.map((b) => b[2])) } : { ageMin: null, ageMax: null };
+};
+const rangeToAges = (min: number | null, max: number | null) => (min || max ? AGE_BANDS.filter(([, a, b]) => b >= (min ?? 18) && a <= (max ?? 99)).map(([l]) => l) : []);
+
+const STEPS = ["intent", "you", "photo", "budget", "areas", "lifestyle", "prefs", "about", "contact", "preview"] as const;
 type Step = (typeof STEPS)[number];
 
-function blank(me: { name: string; phone: string | null } | null, existing: (PublicRoommate & { status?: string }) | null): Draft {
+type Existing = PublicRoommate & { status?: string; prefs?: RoommatePrefs | null };
+
+function blank(me: { name: string; phone: string | null } | null, existing: Existing | null): Draft {
   if (existing)
     return {
       mode: existing.mode,
@@ -62,8 +88,11 @@ function blank(me: { name: string; phone: string | null } | null, existing: (Pub
       lifestyle: existing.lifestyle,
       about: existing.about,
       phone: me?.phone ? `+${me.phone}` : "",
+      seeking: existing.prefs?.seeking ?? "any",
+      ages: rangeToAges(existing.prefs?.ageMin ?? null, existing.prefs?.ageMax ?? null),
+      mustHave: existing.prefs?.mustHave ?? [],
     };
-  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "" };
+  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "", seeking: "any", ages: [], mustHave: [] };
 }
 
 export function RoomieOnboarding({
@@ -73,7 +102,7 @@ export function RoomieOnboarding({
   onCancel,
 }: {
   me: { name: string; phone: string | null; email: string } | null;
-  existing?: (PublicRoommate & { status?: string }) | null;
+  existing?: Existing | null;
   onDone: (r: { updated: boolean }) => void;
   onCancel?: () => void;
 }) {
@@ -89,6 +118,22 @@ export function RoomieOnboarding({
   const preview = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo]);
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
   const step: Step = STEPS[i];
+
+  // Live hints from people already on Stayshay (counts and typical numbers only), refreshed as answers change.
+  const [hints, setHints] = useState<Hints | null>(null);
+  const hintKey = `${d.gender}|${d.budget}|${d.anywhere ? "" : d.areas.join(",")}|${d.seeking}|${d.ages.join(",")}`;
+  useEffect(() => {
+    if (!d.gender) return;
+    const t = setTimeout(() => {
+      const r = agesToRange(d.ages);
+      const q = new URLSearchParams({ gender: d.gender, budget: String(d.budget), areas: d.anywhere ? "" : d.areas.join(","), seeking: d.seeking, ...(r.ageMin && { ageMin: String(r.ageMin) }), ...(r.ageMax && { ageMax: String(r.ageMax) }) });
+      fetch(`/api/swipe/suggest?${q}`, { cache: "no-store" })
+        .then((x) => x.json())
+        .then((j) => j.ok && setHints(j))
+        .catch(() => {});
+    }, 350);
+    return () => clearTimeout(t);
+  }, [hintKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The account can load after this screen opens: fill in the name and number once it does, never over what was typed.
   useEffect(() => {
@@ -205,7 +250,7 @@ export function RoomieOnboarding({
     }
     setBusy(true);
     const body = new FormData();
-    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto }));
+    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto, prefs: { seeking: d.mode === "has_place" ? "looking" : d.seeking, ...agesToRange(d.ages), mustHave: d.mustHave } }));
     if (photo) body.set("photo", photo);
     const res = await fetch("/api/roommates", { method: "POST", body }).catch(() => null);
     const j = await res?.json().catch(() => null);
@@ -415,6 +460,11 @@ export function RoomieOnboarding({
                 ))}
               </div>
               {err("budget")}
+              {hints?.typicalBudget && (
+                <button onClick={() => set("budget", hints.typicalBudget!)} className="mt-4 text-[13.5px] text-white/60">
+                  People like you budget about <b className="text-lime">{aed(hints.typicalBudget)}</b>. Tap to use it
+                </button>
+              )}
             </div>
             <div className="mt-9">
               <L>{d.mode === "has_place" ? "Available from" : "Move-in"}</L>
@@ -442,7 +492,7 @@ export function RoomieOnboarding({
           <>
             <H>{d.mode === "has_place" ? "Where’s your place?" : "Where would you like to live?"}</H>
             <P>Up to 5 areas. Near your work or a metro line works well.</P>
-            <div className="roomie-light mt-6 rounded-[18px] [&_input]:h-14 [&_input]:rounded-[18px]">
+            <div className="mt-6 rounded-[18px] bg-white px-4 py-3 text-ink">
               <AreaCombobox
                 value={null}
                 onChange={(a: Area | null) => {
@@ -452,6 +502,27 @@ export function RoomieOnboarding({
                 }}
               />
             </div>
+            {!!hints?.popularAreas.filter((a) => !d.areas.includes(a)).length && d.areas.length < 5 && (
+              <div className="mt-4">
+                <p className="mb-2 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-white/45">Popular with roommates</p>
+                <div className="flex flex-wrap gap-2">
+                  {hints.popularAreas
+                    .filter((a) => !d.areas.includes(a))
+                    .map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => {
+                          set("anywhere", false);
+                          set("areas", [...d.areas, a].slice(0, 5));
+                        }}
+                        className="h-10 rounded-full border border-dashed border-white/25 px-3.5 text-[13.5px] text-white/80"
+                      >
+                        + {AREA_BY_SLUG.get(a)?.name ?? a}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
             {d.areas.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {d.areas.map((s) => (
@@ -505,6 +576,64 @@ export function RoomieOnboarding({
                   </div>
                 </div>
               ))}
+            </div>
+          </>
+        )}
+
+        {step === "prefs" && (
+          <>
+            <H>Who would you like to live with?</H>
+            <P>We show you these people first. Only you see this.</P>
+            {d.mode !== "has_place" && (
+              <div className="mt-6">
+                <L>Looking for</L>
+                <div className="grid gap-2">
+                  {(
+                    [
+                      ["has_place", "Someone with a room", "They have the flat, you move in"],
+                      ["looking", "Someone to search with", "Find a place together"],
+                      ["any", "Either is fine", ""],
+                    ] as const
+                  ).map(([v, t, sub]) => (
+                    <button key={v} onClick={() => set("seeking", v)} className={`flex items-center justify-between rounded-[18px] border px-4 py-3.5 text-left transition ${d.seeking === v ? "border-lime bg-lime/10" : "border-white/12 bg-white/[0.04]"}`}>
+                      <span>
+                        <span className="block text-[15.5px] font-semibold">{t}</span>
+                        {sub && <span className="text-[13px] text-white/55">{sub}</span>}
+                      </span>
+                      <span className={`flex h-6 w-6 items-center justify-center rounded-full ${d.seeking === v ? "bg-lime text-brand-deep" : "border border-white/30"}`}>{d.seeking === v && <Icon name="check" size={14} />}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="mt-6">
+              <L>Age</L>
+              <div className="flex flex-wrap gap-2">
+                {AGE_BANDS.map(([l]) => {
+                  const on = d.ages.includes(l);
+                  return (
+                    <button key={l} onClick={() => set("ages", on ? d.ages.filter((x) => x !== l) : [...d.ages, l])} className={chip(on)} aria-pressed={on}>
+                      {l}
+                    </button>
+                  );
+                })}
+                <button onClick={() => set("ages", [])} className={chip(!d.ages.length)}>
+                  Any age
+                </button>
+              </div>
+            </div>
+            <div className="mt-6">
+              <L>Must-haves</L>
+              <div className="flex flex-wrap gap-2">
+                {MUST_HAVES.map((t) => {
+                  const on = d.mustHave.includes(t);
+                  return (
+                    <button key={t} onClick={() => set("mustHave", on ? d.mustHave.filter((x) => x !== t) : [...d.mustHave, t].slice(0, 6))} className={chip(on)} aria-pressed={on}>
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </>
         )}
@@ -598,6 +727,19 @@ export function RoomieOnboarding({
               </div>
             </div>
           </>
+        )}
+
+        {hints && hints.total > 0 && (step === "budget" || step === "areas" || step === "prefs") && (
+          <p className="roomie-in mt-7 flex items-center gap-2 rounded-full bg-white/[0.06] px-4 py-2.5 text-[13.5px] text-white/75">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[#5ee08c]" />
+            {hints.fit > 0 ? (
+              <span>
+                <b className="text-white">{hints.fit}</b> {hints.fit === 1 ? "person fits" : "people fit"} so far
+              </span>
+            ) : (
+              <span>No exact fits yet. Widen the budget or areas to see more people.</span>
+            )}
+          </p>
         )}
 
         {errors.form && <p className="roomie-in mt-5 rounded-[16px] bg-[#ff6fa5]/15 p-3.5 text-[14px] font-medium text-[#ffc2d6]">{errors.form}</p>}
