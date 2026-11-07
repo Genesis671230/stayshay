@@ -83,7 +83,9 @@ export default async function Page({ params, searchParams }: { params: Promise<{
                   [people.length, "looking for roommates"],
                   [st.members, "members"],
                   [st.questions, "questions asked"],
-                ].map(([n, l]) => (
+                ]
+                  .filter(([n]) => Number(n) > 0)
+                  .map(([n, l]) => (
                   <div key={String(l)}>
                     <p className="font-display text-[34px] leading-none">{n}</p>
                     <p className="mt-1 text-[13px] text-white/70">{l}</p>

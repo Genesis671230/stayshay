@@ -181,6 +181,9 @@ export function AdminConsole(props: {
             <a href="/admin/manager" className="-mb-px flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] text-muted hover:text-ink">
               Owners
             </a>
+            <a href="/admin/community" className="-mb-px flex h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-[14px] text-muted hover:text-ink">
+              Community & passes
+            </a>
           </nav>
         </header>
 
