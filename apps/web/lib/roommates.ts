@@ -102,6 +102,33 @@ export async function addRoommate(lead: RoommateLead, leadId: string, userId: st
   return update((all) => ({ all: [profile, ...all], result: profile }));
 }
 
+/** Edits a profile in place (likes and messages keep pointing at it). Edits go back to the team for approval. */
+export async function updateRoommate(id: string, lead: RoommateLead, photo: File | null, removePhoto = false): Promise<RoommateProfile | undefined> {
+  const photoUrl = photo ? await savePhoto(id, photo).catch(() => null) : null;
+  return update((all) => {
+    const i = all.findIndex((r) => r.id === id);
+    if (i < 0) return { all, result: undefined };
+    const cur = all[i];
+    all[i] = {
+      ...cur,
+      status: cur.status === "hidden" ? "hidden" : "pending",
+      mode: lead.mode,
+      firstName: lead.name.trim().split(/\s+/)[0] ?? lead.name,
+      age: lead.age,
+      gender: lead.gender,
+      nationality: lead.nationality,
+      profession: lead.profession,
+      budget: lead.budget,
+      areaSlugs: lead.areaSlugs,
+      moveIn: lead.moveIn,
+      lifestyle: lead.lifestyle,
+      about: lead.about,
+      photo: photoUrl ?? (removePhoto ? null : cur.photo),
+    };
+    return { all, result: all[i] };
+  });
+}
+
 export async function setRoommateStatus(id: string, status: RoommateProfile["status"]) {
   return update((all) => {
     const i = all.findIndex((r) => r.id === id);

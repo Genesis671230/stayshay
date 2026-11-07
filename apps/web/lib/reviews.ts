@@ -25,7 +25,7 @@ export const TOOLS = {
   "fair-rent": { name: "Fair Rent Check", href: "/tools/fair-rent" },
   budget: { name: "Salary to Rent", href: "/tools/budget" },
   "move-in-cost": { name: "Move-in Cost Calculator", href: "/tools/move-in-cost" },
-  swipe: { name: "Room Swipe", href: "/swipe" },
+  swipe: { name: "Roommate Swipe", href: "/swipe" },
   family: { name: "Family home search", href: "/family" },
   find: { name: "Find me a room", href: "/find" },
   shay: { name: "Shay, the AI assistant", href: "/ai" },

@@ -423,3 +423,15 @@ label {
   from { transform: translateY(100%); }
   to { transform: none; }
 }
+
+/* Roommate app (/roommates, /swipe) */
+@keyframes roomie-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes roomie-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes roomie-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes roomie-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(233 75 138 / 0.45); } 50% { box-shadow: 0 0 0 14px rgb(233 75 138 / 0); } }
+.roomie-rise { animation: roomie-rise .32s cubic-bezier(.2,.8,.2,1) both; }
+.roomie-in { animation: roomie-in .28s ease-out both; }
+.roomie-pulse { animation: roomie-pulse 2.2s ease-in-out infinite; }
+.roomie-scroll { scrollbar-width: none; }
+.roomie-scroll::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .roomie-rise, .roomie-in, .roomie-pulse { animation: none; } }

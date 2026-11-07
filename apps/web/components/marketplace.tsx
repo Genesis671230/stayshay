@@ -86,7 +86,8 @@ function UrlSync({ onChange }: { onChange: (qs: string) => void }) {
 
 const SAVED_KEY = "stayshay:saved";
 
-export function MarketplaceProvider({ children, listings = [] }: { children: React.ReactNode; listings?: Listing[] }) {
+/** syncUrl=false keeps search filters out of the address bar, for pages with their own query params (e.g. /messages?with=). */
+export function MarketplaceProvider({ children, listings = [], syncUrl = true }: { children: React.ReactNode; listings?: Listing[]; syncUrl?: boolean }) {
   const [filters, setFiltersState] = useState<ListingFilters>({});
   const lastWritten = useRef<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
@@ -110,12 +111,12 @@ export function MarketplaceProvider({ children, listings = [] }: { children: Rea
 
   // Filters → URL, so every search stays shareable.
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !syncUrl) return;
     const qs = filtersToQuery(filters);
     lastWritten.current = qs;
     const current = window.location.search.replace(/^\?/, "");
     if (current !== qs) window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`);
-  }, [filters, hydrated]);
+  }, [filters, hydrated, syncUrl]);
 
   const setFilters = useCallback((patch: Partial<ListingFilters>) => {
     setFiltersState((cur) => {

@@ -174,7 +174,7 @@ function Board({ profiles, locked = [] }: { profiles: PublicRoommate[]; locked?:
 
 const STEPS = ["You", "Budget & area", "How you live", "Contact"];
 
-function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string | null; email: string } | null }) {
+export function ProfileWizard({ signedIn, next: signInNext = "/roommates#profile", onDone, requirePublic = false }: { signedIn: { name: string; phone: string | null; email: string } | null; next?: string; onDone?: () => void; requirePublic?: boolean }) {
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<RoommateLead["mode"]>("looking");
   const [f, setF] = useState({
@@ -273,6 +273,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
       setErrors({ form: "We couldn't save that. Check your connection and try again." });
       return;
     }
+    if (onDone) return onDone();
     setDone({ lead: check.value as RoommateLead, listed: isPublic });
   };
 
@@ -489,7 +490,7 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
           {step === 3 && (
             <div className="space-y-5">
               <h3 className="text-[24px] font-extrabold tracking-[-0.03em]">Where can we reach you?</h3>
-              {!signedIn && <QuickSignIn next="/roommates#profile" google={google} onBeforeLeave={saveDraft} note="Fills in your name and email. You can still choose what’s public." />}
+              {!signedIn && <QuickSignIn next={signInNext} google={google} onBeforeLeave={saveDraft} note="Fills in your name and email. You can still choose what’s public." />}
               <label className="block">
                 <span className="mb-1.5 block text-[13px] font-semibold">WhatsApp number</span>
                 <input className={field} type="tel" inputMode="tel" value={f.phone} onChange={set("phone")} placeholder="050 123 4567" autoComplete="tel" />
@@ -499,12 +500,18 @@ function ProfileWizard({ signedIn }: { signedIn: { name: string; phone: string |
                 <span className="mb-1.5 block text-[13px] font-semibold">Email <span className="font-normal text-muted">(optional)</span></span>
                 <input className={field} type="email" value={f.email} onChange={set("email")} autoComplete="email" />
               </label>
+              {requirePublic ? (
+                <p className="rounded-[18px] bg-surface p-4 text-[14px] leading-relaxed">
+                  <span className="font-semibold">Your profile is what others swipe on.</span> First name, photo, age, budget, areas and habits. <span className="font-semibold">Never your number.</span> Our team checks every profile before others see it; you can start swiping straight away.
+                </p>
+              ) : (
               <label className="flex cursor-pointer items-start gap-3 rounded-[18px] bg-surface p-4">
                 <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="mt-0.5 h-5 w-5 accent-[var(--brand)]" />
                 <span className="text-[14px] leading-relaxed">
                   <span className="font-semibold">Show my profile on the public board.</span> Your first name, photo, age, budget, areas and habits. <span className="font-semibold">Never your number.</span> Our team checks every profile first, and you can ask us to remove it any time.
                 </span>
               </label>
+              )}
               {errors.form && <p className="rounded-[12px] bg-warn-bg px-3.5 py-2.5 text-[13.5px] font-medium text-warn">{errors.form}</p>}
             </div>
           )}

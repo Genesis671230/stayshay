@@ -241,7 +241,7 @@ export function Footer() {
         {(
           [
             ["Renters", [["Bed spaces", "/rent/bed-space"], ["Partitions", "/rent/partitions"], ["Rooms", "/rent/rooms"], ["Studios", "/rent/studios"], ["Family 2BHK / 3BHK", "/family"], ["Family sharing", "/family/family-sharing-apartment-dubai"], ["Near metro (family)", "/family/family-apartment-near-metro-dubai"], ["Moving to Dubai", "/move"], ["New to Dubai guide", "/blog/new-to-dubai-guide"], ["Best deals", "/deals"], ["Find me a room", "/find"]]],
-            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Room Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Win AED 5,000", "/win"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
+            ["Community", [["Roommates", "/roommates"], ["List your place", "/list"], ["Owner manager", "/manager"], ["Free tools", "/tools"], ["Roommate Swipe", "/swipe"], ["Is my rent fair?", "/tools/fair-rent"], ["StayFit", "/stayfit"], ["Win AED 5,000", "/win"], ["Refer & earn", "/refer"], ["Partner brokers", "/partners"], ["All areas", "/areas"], ["Guides", "/blog"], ["Map", "/search?view=map"]]],
             ["Home services", [["All services", "/services"], ["AC service & repair", "/services/ac-maintenance"], ["Plumbing", "/services/plumbing"], ["Electrical", "/services/electrical"], ["Painting", "/services/painting"], ["Deep cleaning", "/services/deep-cleaning"], ["Pest control", "/services/pest-control"], ["Movers", "/services/movers"], ["Interior design", "/services/interior-design"], ["Renovation & fit-out", "/services/renovation"], ["Furnishing packages", "/services/furnishing"], ["Holiday home setup", "/services/holiday-home-setup"]]],
             ["Company", [["About", "/about"], ["Shay in ChatGPT & Claude", "/ai"], ["Terms", "/terms"], ["Privacy", "/privacy"], [BRAND.whatsappDisplay, `https://wa.me/${BRAND.whatsapp}`], [BRAND.supportEmail, `mailto:${BRAND.supportEmail}`]]],
           ] as [string, [string, string][]][]
@@ -325,7 +325,7 @@ function PopularSearches() {
 /** Homepage entry to the free tools: quick, playful ways in. */
 export function ToolsStrip() {
   const tiles: [string, string, string, string][] = [
-    ["/swipe", "Room Swipe", "Right to save, left to skip. Best deals first.", "/photos/roommates.jpg"],
+    ["/swipe", "Roommate Swipe", "Like, match and message your future flatmate.", "/photos/roommates.jpg"],
     ["/tools/fair-rent", "Is that rent fair?", "Paste any ad. Get a verdict in a second.", "/photos/area-deira.jpg"],
     ["/tools/budget", "Salary to rent", "Slide your salary, see what it rents.", "/photos/studio.jpg"],
     ["/tools/move-in-cost", "Move-in cost", "Deposit, agency, Ejari, DEWA in one total.", "/photos/living.jpg"],

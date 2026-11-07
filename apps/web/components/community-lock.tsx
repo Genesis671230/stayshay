@@ -10,11 +10,11 @@ import { track } from "./analytics";
 export const PASS_PRICE = 25;
 
 /** Starts Stripe Checkout for this community. Not signed in → sign in first, then come straight back to pay. */
-export function useJoin(area: string | undefined) {
+export function useJoin(area: string | undefined, returnTo?: "/swipe" | "/messages" | "/roommates") {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const join = async () => {
-    if (!area) {
+    if (!area && !returnTo) {
       window.location.href = "/community";
       return;
     }
@@ -22,7 +22,7 @@ export function useJoin(area: string | undefined) {
     setError(null);
     track("begin_checkout", { item: "stayshay_pass", area, value: PASS_PRICE, currency: "AED" });
     try {
-      const res = await fetch("/api/pass/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ area }) });
+      const res = await fetch("/api/pass/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ area, returnTo }) });
       const j = await res.json();
       if (j.url) return void (window.location.href = j.url);
       if (j.error === "signin") return void (window.location.href = `/login?next=${encodeURIComponent(j.next)}`);

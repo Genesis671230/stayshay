@@ -22,7 +22,8 @@ export async function GET(req: Request) {
     if (pass && pass.createdAt === pass.checkedAt) {
       notify(`💳 <b>New Stayshay Pass</b> · AED ${pass.amountAed}\n${esc(owner.name)} joined the <b>${esc(area?.name ?? pass.area)}</b> community`, { urgent: true });
     }
-    return NextResponse.redirect(`${base}/community/${s.metadata.area}?welcome=${pass ? 1 : 0}`);
+    const back = ["/swipe", "/messages", "/roommates"].includes(s.metadata.returnTo) ? s.metadata.returnTo : `/community/${s.metadata.area}`;
+    return NextResponse.redirect(`${base}${back}?welcome=${pass ? 1 : 0}`);
   } catch (e) {
     console.error("[pass] confirm", e);
     return NextResponse.redirect(`${base}/community?error=payment`);

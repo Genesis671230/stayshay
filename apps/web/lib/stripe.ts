@@ -65,7 +65,7 @@ export interface CheckoutSession {
 /** Newer API versions moved the period end onto the subscription item. */
 export const periodEnd = (s: StripeSubscription) => (s.current_period_end ?? s.items?.data[0]?.current_period_end ?? 0) * 1000;
 
-export function createPassCheckout(o: { userId: string; email: string; area: string; areaName: string; origin: string }) {
+export function createPassCheckout(o: { userId: string; email: string; area: string; areaName: string; origin: string; returnTo?: "/swipe" | "/messages" | "/roommates" }) {
   const price = process.env.STAYSHAY_PASS_PRICE_ID;
   return call<CheckoutSession>("POST", "checkout/sessions", {
     mode: "subscription",
@@ -84,11 +84,11 @@ export function createPassCheckout(o: { userId: string; email: string; area: str
     ],
     customer_email: o.email,
     client_reference_id: o.userId,
-    metadata: { userId: o.userId, area: o.area, product: "stayshay_pass" },
+    metadata: { userId: o.userId, area: o.area, product: "stayshay_pass", ...(o.returnTo && { returnTo: o.returnTo }) },
     subscription_data: { metadata: { userId: o.userId, area: o.area, product: "stayshay_pass" } },
     allow_promotion_codes: true,
     success_url: `${o.origin}/api/pass/confirm?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${o.origin}/community/${o.area}?canceled=1`,
+    cancel_url: o.returnTo ? `${o.origin}${o.returnTo}?canceled=1` : `${o.origin}/community/${o.area}?canceled=1`,
   });
 }
 

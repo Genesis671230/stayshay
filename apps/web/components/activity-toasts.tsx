@@ -48,7 +48,7 @@ export function ActivityToasts() {
   }, []);
 
   useEffect(() => {
-    if (path?.startsWith("/admin") || path?.startsWith("/login")) return;
+    if (path?.startsWith("/admin") || path?.startsWith("/login") || /^\/(roommates|swipe|messages)\b/.test(path ?? "")) return;
     const next = () => {
       if (stopped.current || count.current >= MAX_PER_VISIT || document.hidden) return;
       // Never over the home page's search: wait until the visitor scrolls past the hero.

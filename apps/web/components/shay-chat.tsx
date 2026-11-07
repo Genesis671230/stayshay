@@ -172,7 +172,7 @@ function guideAsk(g: Guide, all: Listing[]): Msg {
 }
 
 /** Pages where the first-visit concierge should not jump in (people are mid-task there). */
-const NO_AUTO = /^\/(admin|login|account|listing|list|find|swipe|community|manager|win|work|services|tools)\b/;
+const NO_AUTO = /^\/(admin|login|account|listing|list|find|swipe|community|manager|win|work|services|tools|messages|roommates)\b/;
 const SEEN_KEY = "stayshay:concierge";
 
 /* ---------------- widget ---------------- */
@@ -449,8 +449,8 @@ export function ShayChat() {
 
   return (
     <>
-      {/* Room Swipe needs the bottom of the screen for its buttons. */}
-      {!open && !(path ?? "").startsWith("/swipe") && (
+      {/* Roommate Swipe and Messages need the bottom of the screen for their buttons. */}
+      {!open && !/^\/(swipe|messages|roommates)\b/.test(path ?? "") && (
         <div className={`fixed right-4 z-[60] flex items-end gap-2 md:bottom-6 md:right-6 ${lift}`}>
           {hello && (
             <button

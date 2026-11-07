@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { validateLead, type RoommateLead } from "@stayshay/core";
 import { addLead } from "@/lib/store";
-import { addRoommate, publicRoommates } from "@/lib/roommates";
+import { addRoommate, publicRoommates, updateRoommate } from "@/lib/roommates";
+import { myProfile } from "@/lib/swipe";
+import { esc, notify } from "@/lib/telegram";
 import { currentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -28,14 +30,22 @@ export async function POST(req: Request) {
   if (!check.ok || !check.value) return NextResponse.json({ ok: false, errors: check.errors }, { status: 422 });
   const lead = check.value as RoommateLead;
   const user = await currentUser();
+  const photo = form.get("photo");
+  const photoFile = photo instanceof File && photo.size ? photo : null;
+  // Signed in with a profile already: edit it rather than making a second one.
+  const existing = user && body.public === true ? await myProfile(user.id) : null;
+  if (existing) {
+    const p = await updateRoommate(existing.id, lead, photoFile, body.removePhoto === true);
+    notify(`✏️ <b>Roommate profile edited</b> · needs approval\n${esc(lead.name)} (${esc(user!.email)}) · profile ${existing.id}\nApprove in /admin`);
+    return NextResponse.json({ ok: true, leadId: existing.leadId, profileId: p?.id ?? existing.id, updated: true });
+  }
   const rec = await addLead("roommate", lead as unknown as Record<string, unknown> & { name: string; phone: string }, {
     source: body.source === "app" ? "app" : "web",
     ...(user && { userId: user.id, email: user.email }),
   });
-  const photo = form.get("photo");
   let profileId: string | null = null;
   if (body.public === true) {
-    const p = await addRoommate(lead, rec.id, user?.id ?? null, photo instanceof File && photo.size ? photo : null);
+    const p = await addRoommate(lead, rec.id, user?.id ?? null, photoFile);
     profileId = p.id;
   }
   return NextResponse.json({ ok: true, leadId: rec.id, profileId });

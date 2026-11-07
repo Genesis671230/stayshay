@@ -5,13 +5,13 @@ import { ToolShell } from "@/components/tool-shell";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Free tools for renting in Dubai: rent checker, budget, Room Swipe, StayFit",
-  description: "Free tools for finding a room in Dubai: check if a rent is fair, work out your budget from your salary, swipe through rooms, and find places with a gym.",
+  title: "Free tools for renting in Dubai: rent checker, budget, Roommate Swipe, StayFit",
+  description: "Free tools for finding a room in Dubai: check if a rent is fair, work out your budget from your salary, swipe through roommates, and find places with a gym.",
   alternates: { canonical: "/tools" },
 };
 
 const TOOLS = [
-  { href: "/swipe", name: "Room Swipe", line: "Swipe right to save, left to skip. Best deals first.", photo: "/photos/roommates.jpg" },
+  { href: "/swipe", name: "Roommate Swipe", line: "Swipe through people looking for a flatmate. Like, match, message.", photo: "/photos/roommates.jpg" },
   { href: "/tools/fair-rent", name: "Fair Rent Check", line: "Paste any ad and see if the rent is a steal or a rip-off.", photo: "/photos/area-deira.jpg" },
   { href: "/tools/move-in-cost", name: "Move-in Cost", line: "Deposit, agency fee, Ejari, DEWA: your day-one total for a yearly lease.", photo: "/photos/living.jpg" },
   { href: "/tools/budget", name: "Salary to Rent", line: "Slide your salary, see what you can rent and where.", photo: "/photos/studio.jpg" },

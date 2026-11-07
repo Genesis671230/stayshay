@@ -18,7 +18,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     <MarketplaceProvider>
       <Header />
       <AccountForm user={toPublic(u)} complete={complete === "1"} />
-      <div className="mx-auto max-w-[560px] px-4 pb-16">
+      <div className="mx-auto grid max-w-[560px] gap-3 px-4 pb-16">
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/swipe" className="card block p-4 text-[15px] font-bold">Roommate Swipe</Link>
+          <Link href="/messages" className="card block p-4 text-[15px] font-bold">Messages</Link>
+        </div>
         <Link href="/account/referrals" className="glow-panel block rounded-[22px] p-5 text-white">
           <span className="block text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Refer & earn</span>
           <span className="mt-1 block text-[18px] font-bold">Your link, the people you brought in, and your rewards</span>

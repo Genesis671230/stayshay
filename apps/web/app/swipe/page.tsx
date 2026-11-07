@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
-import { ToolShell } from "@/components/tool-shell";
-import { RoomSwipe } from "@/components/tools";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/sections";
+import { MarketplaceProvider } from "@/components/marketplace";
+import { RoomieStage } from "@/components/roomie/section";
+import { getAllListings, slim } from "@/lib/store";
+import { publicRoommates } from "@/lib/roommates";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Room Swipe: swipe through rooms and bed spaces in Dubai",
-  description: "Swipe right to save, left to skip. The fastest way to browse real bed spaces, partitions, rooms and studios in Dubai, best deals first. Book all your favourites in one message.",
+  title: "Roommate Swipe: find a flatmate in Dubai",
+  description: "Swipe through real people looking for roommates in Dubai, best fit first by budget, area, move-in date and routine. Request to connect and message your future flatmate.",
   alternates: { canonical: "/swipe" },
 };
 
-export default function Page() {
+export default async function Page() {
+  const [listings, profiles] = await Promise.all([getAllListings(), publicRoommates()]);
   return (
-    <ToolShell eyebrow="Room Swipe" title="Swipe your way to a room" intro="Best deals first. Right to save, left to skip. When you're done, book all your favourites in one message." photo="/photos/roommates.jpg" path="/swipe">
-      <RoomSwipe />
-    </ToolShell>
+    <MarketplaceProvider listings={slim(listings)}>
+      <Header />
+      <main>
+        <RoomieStage people={profiles.length} returnTo="/swipe" title="Swipe to find your flatmate." intro="Real people, best fit first by budget, area and routine. Swipe right to request to connect." />
+      </main>
+      <Footer />
+    </MarketplaceProvider>
   );
 }
