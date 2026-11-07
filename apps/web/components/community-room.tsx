@@ -7,7 +7,7 @@ import type { PublicPost } from "@/lib/community";
 import { RoommateCard } from "./roommates-page";
 import { JoinButton, LockedCard, PASS_PRICE, useJoin } from "./community-lock";
 import { ListingCard } from "./listing-card";
-import { Icon } from "./ui";
+import { Icon, type IconName } from "./ui";
 import { stayshayWhatsapp } from "@/lib/contact";
 import { track } from "./analytics";
 
@@ -221,7 +221,7 @@ function Chat({ area, initial, me }: { area: { slug: string; name: string }; ini
         </div>
       </div>
       <div ref={box} className="flex-1 space-y-3 overflow-y-auto bg-surface/60 px-4 py-4">
-        {!msgs.length && <p className="pt-16 text-center text-[14px] text-muted">Say hi to the neighbourhood 👋</p>}
+        {!msgs.length && <p className="pt-16 text-center text-[14px] text-muted">Say hi to the neighbourhood</p>}
         {msgs.map((m) => (
           <div key={m.id} className={`flex items-end gap-2 ${m.mine ? "flex-row-reverse" : ""}`}>
             {!m.mine && <Avatar name={m.name} />}
@@ -263,7 +263,7 @@ export function CommunityRoom(props: {
   feed: Feed;
   members: { id: string; name: string; since: string }[];
   counts: { members: number; questions: number; messages: number };
-  perks: { icon: string; t: string; d: string }[];
+  perks: { icon: IconName; t: string; d: string }[];
   places: Listing[];
   flags: { welcome: boolean; join: boolean; canceled: boolean; payments: boolean; billing: boolean };
 }) {
@@ -299,7 +299,7 @@ export function CommunityRoom(props: {
       {welcome && (
         <div className="mb-6 flex items-start justify-between gap-4 rounded-[24px] bg-lime p-5 text-brand-deep md:p-6">
           <div>
-            <p className="text-[20px] font-bold">🎉 Welcome to the {area.name} community!</p>
+            <p className="text-[20px] font-bold">Welcome to the {area.name} community!</p>
             <p className="mt-1 text-[14.5px]">Say hi in the group chat, ask about any building, and see every roommate profile on Stayshay.</p>
           </div>
           <button onClick={() => setWelcome(false)} aria-label="Close" className="shrink-0">
@@ -418,7 +418,7 @@ export function CommunityRoom(props: {
               <ul className="mt-4 space-y-2.5 text-[14px] text-white/85">
                 {props.perks.slice(0, 4).map((p) => (
                   <li key={p.t} className="flex gap-2">
-                    <span>{p.icon}</span>
+                    <Icon name={p.icon} size={16} className="mt-0.5 shrink-0 text-lime" />
                     {p.t}
                   </li>
                 ))}
@@ -450,7 +450,7 @@ export function CommunityRoom(props: {
               <ul className="space-y-3.5 p-6">
                 {props.perks.map((p) => (
                   <li key={p.t} className="flex gap-3">
-                    <span className="text-[18px] leading-none">{p.icon}</span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[#ecf8ee] text-brand-deep"><Icon name={p.icon} size={15} /></span>
                     <span>
                       <span className="block text-[14.5px] font-bold">{p.t}</span>
                       <span className="text-[13px] text-ink-2">{p.d}</span>

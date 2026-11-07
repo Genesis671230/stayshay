@@ -12,7 +12,7 @@ import { CommunityRoom } from "@/components/community-room";
 import { getAllListings, slim } from "@/lib/store";
 import { gateRoommates, publicRoommates } from "@/lib/roommates";
 import { FREE_PROFILES, accessFor, communityFeed, communityMembers, communityStats, readPasses } from "@/lib/community";
-import { PASS_PERKS, areaPhoto } from "@/lib/community-meta";
+import { AREA_CREDITS, PASS_PERKS, areaPhoto } from "@/lib/community-meta";
 import { currentUser } from "@/lib/auth";
 import { stripeEnabled } from "@/lib/stripe";
 import { breadcrumbLd } from "@/lib/seo";
@@ -101,6 +101,16 @@ export default async function Page({ params, searchParams }: { params: Promise<{
             </div>
           </div>
         </section>
+
+        {AREA_CREDITS[slug] && (
+          <p className="mx-auto max-w-[1240px] px-6 pt-2 text-right text-[11px] text-muted md:px-10">
+            Photo:{" "}
+            <a href={AREA_CREDITS[slug].page} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-2">
+              {AREA_CREDITS[slug].artist}
+            </a>
+            , {AREA_CREDITS[slug].license}, via Wikimedia Commons
+          </p>
+        )}
 
         <CommunityRoom
           area={{ slug, name: a.name, metro: a.nearMetro }}

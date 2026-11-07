@@ -9,7 +9,8 @@ import { JsonLd } from "@/components/json-ld";
 import { WaButton } from "@/components/wa-button";
 import { Icon } from "@/components/ui";
 import { ExpertiseBand, ProjectCard } from "@/components/work-showcase";
-import { PROJECTS, PROJECT_BY_SLUG, workMessage } from "@/lib/portfolio";
+import { PROJECTS, PROJECT_BY_SLUG, allImages, imgSize, workMessage } from "@/lib/portfolio";
+import { ProjectGallery, ViewerTrigger, type Pattern } from "@/components/project-gallery";
 import { SERVICE_BY_SLUG } from "@/lib/services";
 import { SITE, breadcrumbLd } from "@/lib/seo";
 
@@ -31,6 +32,14 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const next = PROJECTS[(i + 1) % PROJECTS.length];
   const more = PROJECTS.filter((p) => p.slug !== x.slug && p.slug !== next.slug).slice(0, 3);
   const crumbs: [string, string][] = [["Home", "/"], ["Our work", "/work"], [x.name, `/work/${x.slug}`]];
+  const photos = allImages(x).map((p) => {
+    const [w, h] = imgSize(p.src);
+    return { ...p, w, h };
+  });
+  const at = (src: string) => photos.findIndex((p) => p.src === src);
+  // Each project gets its own gallery layout, stable per project.
+  const PATTERNS: Pattern[] = ["justified", "editorial", "cascade", "filmstrip"];
+  const pattern = PATTERNS[[...x.slug].reduce((a, c) => a + c.charCodeAt(0), 0) % PATTERNS.length];
   const ld = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
@@ -106,7 +115,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             {x.story.map((s) => (
               <p key={s.slice(0, 20)}>{s}</p>
             ))}
-            <div className="grid grid-cols-1 gap-3 pt-3">
+            <div className={x.highlights.length ? "grid grid-cols-1 gap-3 pt-3" : "hidden"}>
               {x.highlights.map((h) => (
                 <div key={h.t} className="rounded-[18px] bg-[#ecf8ee] p-5">
                   <p className="text-[16px] font-bold text-ink">{h.t}</p>
@@ -121,9 +130,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         <section className="mx-auto max-w-[1240px] space-y-16 px-4 pt-20 md:px-8 md:space-y-24">
           {x.chapters.map((c, k) => (
             <article key={c.img} className={`grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-14 ${k % 2 ? "lg:[&>*:first-child]:order-2 lg:grid-cols-[1fr_1.4fr]" : ""}`}>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-surface">
-                <Image src={c.img} alt={c.title} fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover" />
-              </div>
+              <ViewerTrigger index={at(c.img)}>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-surface">
+                  <Image src={c.img} alt={c.title} fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+                </div>
+              </ViewerTrigger>
               <div>
                 <p className="text-[12.5px] font-bold uppercase tracking-[0.14em] text-brand">{c.eyebrow}</p>
                 <h2 className="font-display mt-3 text-[32px] leading-[1.04] md:text-[46px]">{c.title}</h2>
@@ -136,14 +147,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         {/* Gallery */}
         <section className="mx-auto max-w-[1240px] px-4 pt-20 md:px-8">
           <p className="eyebrow">Gallery</p>
-          <h2 className="font-display mt-2 text-[32px] md:text-[46px]">More of {x.name}</h2>
-          <div className="mt-8 columns-1 gap-4 sm:columns-2 lg:columns-3 [&>figure]:mb-4">
-            {x.gallery.map((g) => (
-              <figure key={g.img} className="group relative break-inside-avoid overflow-hidden rounded-[22px] bg-surface">
-                <Image src={g.img} alt={g.caption} width={1280} height={854} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="h-auto w-full transition-transform duration-700 group-hover:scale-[1.03]" />
-                <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[12.5px] font-semibold text-ink backdrop-blur">{g.caption}</figcaption>
-              </figure>
-            ))}
+          <h2 className="font-display mt-2 text-[32px] md:text-[46px]">Every room of {x.name}</h2>
+          <p className="mt-2 text-[14.5px] text-ink-2">{photos.length} photos. Tap any photo to view it full screen.</p>
+          <div className="mt-8">
+            <ProjectGallery images={photos} pattern={pattern} name={x.name} />
           </div>
         </section>
 

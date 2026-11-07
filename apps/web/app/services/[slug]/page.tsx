@@ -102,7 +102,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
               <ul className="mt-5 space-y-3">
                 {s.includes.map((x) => (
                   <li key={x} className="flex items-start gap-3 text-[15.5px] text-white/90">
-                    <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lime text-[11px] font-bold text-brand-deep">✓</span>
+                    <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lime text-brand-deep"><Icon name="check" size={12} /></span>
                     {x}
                   </li>
                 ))}

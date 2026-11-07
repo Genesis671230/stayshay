@@ -3,7 +3,22 @@
  * service pages and the homepage. Photos live in /public/work/<slug>/.
  */
 
-export type WorkCategory = "Villa" | "Penthouse" | "Office";
+import extra from "./portfolio-extra.json";
+import dims from "./work-dims.json";
+
+export type WorkCategory = "Villa" | "Penthouse" | "Apartment" | "Office" | "Restaurant" | "Clinic";
+
+/** Category groups for the filter on /work. */
+export const WORK_FILTERS: { key: string; label: string; match: WorkCategory[] }[] = [
+  { key: "all", label: "All work", match: [] },
+  { key: "villas", label: "Villas", match: ["Villa"] },
+  { key: "penthouses", label: "Penthouses", match: ["Penthouse"] },
+  { key: "apartments", label: "Apartments", match: ["Apartment"] },
+  { key: "commercial", label: "Commercial", match: ["Office", "Restaurant", "Clinic"] },
+];
+
+/** Natural size of a /work image (for full-size layouts). Falls back to 3:2. */
+export const imgSize = (src: string): [number, number] => (((dims as unknown as Record<string, [number, number]>)[src]) ?? [1600, 1067]);
 
 export interface Chapter {
   img: string;
@@ -42,7 +57,7 @@ export const TEAM = {
   disciplines: ["Interior design", "Project management", "Authority approvals", "MEP", "Joinery", "Stone & masonry", "Glazing", "Home automation", "Landscaping"],
 };
 
-export const PROJECTS: Project[] = [
+const BASE: Project[] = [
   {
     slug: "penthouse-the-greens",
     name: "Penthouse Panorama",
@@ -264,6 +279,47 @@ export const PROJECTS: Project[] = [
     services: ["commercial-fit-out", "interior-design", "electrical", "ac-maintenance"],
   },
 ];
+
+type Extra = { slug: string; name: string; category: WorkCategory; location: string; year: string; tagline: string; summary: string; story: string[]; chapters: { title: string; text: string; img: number }[]; images: { src: string }[]; palette: string[] };
+
+const SERVICES_FOR: Record<WorkCategory, string[]> = {
+  Villa: ["villa-renovation", "interior-design", "renovation", "furnishing"],
+  Penthouse: ["interior-design", "renovation", "furnishing", "villa-renovation"],
+  Apartment: ["renovation", "interior-design", "furnishing", "holiday-home-setup"],
+  Office: ["commercial-fit-out", "interior-design", "electrical", "painting"],
+  Restaurant: ["commercial-fit-out", "interior-design", "electrical", "ac-maintenance"],
+  Clinic: ["commercial-fit-out", "interior-design", "electrical", "ac-maintenance"],
+};
+
+const fromExtra = (x: Extra): Project => {
+  const used = new Set([0, ...x.chapters.map((c) => c.img)]);
+  return {
+    slug: x.slug,
+    name: x.name,
+    category: x.category,
+    location: x.location,
+    scope: x.category === "Villa" ? "Villa design & build" : x.category === "Apartment" || x.category === "Penthouse" ? "Interior design & fit-out" : "Turnkey fit-out",
+    year: x.year,
+    tagline: x.tagline,
+    cover: x.images[0].src,
+    summary: x.summary,
+    story: x.story,
+    facts: [["Type", x.category], ["Location", x.location], ["Completed", x.year], ["Delivery", "Design, build, handover"]],
+    highlights: [],
+    palette: x.palette,
+    chapters: x.chapters.map((c, i) => ({ img: x.images[c.img].src, eyebrow: `${String(i + 1).padStart(2, "0")} · ${x.name}`, title: c.title, text: c.text })),
+    gallery: x.images.filter((_, i) => !used.has(i)).map((im) => ({ img: im.src, caption: x.name })),
+    services: SERVICES_FOR[x.category],
+  };
+};
+
+export const PROJECTS: Project[] = [...BASE, ...(extra as Extra[]).map(fromExtra)];
+
+/** Every photo of a project, in reading order (cover, chapters, gallery), for the gallery and the lightbox. */
+export function allImages(x: Project): { src: string; caption: string }[] {
+  const seen = new Set<string>();
+  return [{ src: x.cover, caption: x.tagline }, ...x.chapters.map((c) => ({ src: c.img, caption: c.title })), ...x.gallery.map((g) => ({ src: g.img, caption: g.caption }))].filter((i) => (seen.has(i.src) ? false : (seen.add(i.src), true)));
+}
 
 export const PROJECT_BY_SLUG = new Map(PROJECTS.map((x) => [x.slug, x]));
 

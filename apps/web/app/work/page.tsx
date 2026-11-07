@@ -6,9 +6,10 @@ import { MarketplaceProvider } from "@/components/marketplace";
 import { JsonLd } from "@/components/json-ld";
 import { WaButton } from "@/components/wa-button";
 import { Icon } from "@/components/ui";
-import { ExpertiseBand, ProjectCard } from "@/components/work-showcase";
+import { ExpertiseBand } from "@/components/work-showcase";
+import { WorkBrowser, WorkVideos } from "@/components/work-browser";
 import { ServiceCard } from "@/components/service-card";
-import { PROJECTS } from "@/lib/portfolio";
+import { PROJECTS, PROJECT_BY_SLUG, WORK_FILTERS, allImages } from "@/lib/portfolio";
 import { SERVICE_BY_SLUG } from "@/lib/services";
 import { SITE, breadcrumbLd } from "@/lib/seo";
 
@@ -26,8 +27,15 @@ const STEPS = [
   ["Handover", "Styled, snag-free and ready to live or work in, with aftercare."],
 ];
 
+/** Video tours, each trimmed to the walkthrough itself. */
+const VIDEOS = [
+  { id: "A9Pd4GnezuY", title: "A fully renovated villa", place: "Jumeirah Islands", start: 28, end: 118, poster: PROJECT_BY_SLUG.get("villa-velora")!.cover },
+  { id: "TAQG-OuKboE", title: "Four-bedroom villa renovation", place: "Jumeirah Islands", start: 11, end: 94, poster: PROJECT_BY_SLUG.get("villa-pinea")!.cover },
+];
+
 export default function Page() {
-  const [hero, ...rest] = [PROJECTS[1], ...PROJECTS.filter((_, i) => i !== 1)];
+  const hero = PROJECTS[1];
+  const cards = PROJECTS.map((x) => ({ slug: x.slug, name: x.name, category: x.category, location: x.location, year: x.year, tagline: x.tagline, cover: x.cover, photos: allImages(x).length }));
   const crumbs: [string, string][] = [["Home", "/"], ["Our work", "/work"]];
   const list = {
     "@context": "https://schema.org",
@@ -63,7 +71,7 @@ export default function Page() {
         <section className="mx-auto grid max-w-[1240px] grid-cols-2 gap-px overflow-hidden px-4 pt-10 md:grid-cols-4 md:px-8">
           {[
             ["15+", "years of experience"],
-            ["9", "disciplines in-house"],
+            [String(PROJECTS.length), "projects shown here"],
             ["7", "sectors: villas to hotels"],
             ["1", "team, sketch to handover"],
           ].map(([n, l]) => (
@@ -76,14 +84,17 @@ export default function Page() {
 
         <section id="projects" className="mx-auto max-w-[1240px] scroll-mt-24 px-4 pt-14 md:px-8">
           <p className="eyebrow">Selected work</p>
-          <h2 className="font-display mt-2 text-[32px] md:text-[48px]">Projects</h2>
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <ProjectCard x={hero} big />
-            </div>
-            {rest.map((x) => (
-              <ProjectCard key={x.slug} x={x} />
-            ))}
+          <h2 className="font-display mt-2 text-[32px] md:text-[48px]">{PROJECTS.length} projects across Dubai</h2>
+          <div className="mt-6">
+            <WorkBrowser cards={cards} filters={WORK_FILTERS} />
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1240px] px-4 pt-16 md:px-8">
+          <p className="eyebrow">Walk through</p>
+          <h2 className="font-display mt-2 text-[32px] md:text-[46px]">See it in motion</h2>
+          <div className="mt-8">
+            <WorkVideos videos={VIDEOS} />
           </div>
         </section>
 

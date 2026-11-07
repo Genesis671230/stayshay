@@ -56,7 +56,7 @@ export default async function Page() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {PASS_PERKS.slice(0, 4).map((p) => (
                   <div key={p.t} className="rounded-[20px] bg-white/10 p-4 text-white ring-1 ring-white/15 backdrop-blur">
-                    <span className="text-[22px]">{p.icon}</span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-lime/90 text-brand-deep"><Icon name={p.icon} size={18} /></span>
                     <p className="mt-2 text-[15px] font-bold">{p.t}</p>
                     <p className="mt-1 text-[13px] leading-snug text-white/75">{p.d}</p>
                   </div>
@@ -106,13 +106,15 @@ export default async function Page() {
           </div>
         </section>
 
+        <p className="mx-auto max-w-[1240px] px-4 pt-4 text-[11.5px] text-muted md:px-8">Neighbourhood photos by Wikimedia Commons contributors under Creative Commons licences, credited on each community page.</p>
+
         <section className="mx-auto max-w-[1240px] px-4 pt-16 md:px-8">
           <div className="rounded-[30px] bg-[#ecf8ee] p-6 md:p-10">
             <h2 className="font-display text-[30px] md:text-[42px]">What the Stayshay Pass gives you</h2>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {PASS_PERKS.map((p) => (
                 <div key={p.t} className="rounded-[20px] bg-white p-5">
-                  <span className="text-[24px]">{p.icon}</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#ecf8ee] text-brand-deep"><Icon name={p.icon} size={18} /></span>
                   <p className="mt-2 text-[16px] font-bold">{p.t}</p>
                   <p className="mt-1 text-[14px] text-ink-2">{p.d}</p>
                 </div>

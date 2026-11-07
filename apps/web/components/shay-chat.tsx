@@ -128,21 +128,21 @@ function areaChips(type: Kind | undefined, all: Listing[]): { label: string; val
   const chips = top.length && type !== "apartment"
     ? top.map(([s, v]) => ({ label: `${AREAS.find((a) => a.slug === s)!.name} · from ${v.min.toLocaleString("en-US")}`, value: s }))
     : FALLBACK_AREAS.filter((s) => AREAS.some((a) => a.slug === s)).map((s) => ({ label: AREAS.find((a) => a.slug === s)!.name, value: s }));
-  return [{ label: "📍 Near me", value: "near-me" }, ...chips, { label: "Not sure, suggest", value: "any" }];
+  return [{ label: "Near me", value: "near-me" }, ...chips, { label: "Not sure, suggest", value: "any" }];
 }
 
 function guideAsk(g: Guide, all: Listing[]): Msg {
   if (g.step === "type")
     return {
       role: "assistant",
-      text: "Hi, I’m Shay 👋 What are you looking for today?",
+      text: "Hi, I’m Shay. What are you looking for today?",
       chips: [
-        { label: "🛏️ Bed space", value: "bed_space" },
-        { label: "🚪 Partition", value: "partition" },
-        { label: "🔑 Private room", value: "room" },
-        { label: "🏠 Studio", value: "studio" },
-        { label: "👨‍👩‍👧 Family apartment", value: "apartment" },
-        { label: "🤝 Sharing / roommate", value: "roommate" },
+        { label: "Bed space", value: "bed_space" },
+        { label: "Partition", value: "partition" },
+        { label: "Private room", value: "room" },
+        { label: "Studio", value: "studio" },
+        { label: "Family apartment", value: "apartment" },
+        { label: "Sharing / roommate", value: "roommate" },
       ],
     };
   if (g.step === "area") return { role: "assistant", text: `Great, ${KIND_LABEL[g.type ?? ""] ?? "a place"}. Where would you like to live? These areas have the most right now:`, chips: areaChips(g.type, all) };
@@ -151,8 +151,8 @@ function guideAsk(g: Guide, all: Listing[]): Msg {
       role: "assistant",
       text: g.station ? `The nearest metro to ${g.place} is ${g.station}. How close do you want to be?` : `How important is the metro for you${g.place ? ` around ${g.place}` : ""}?`,
       chips: [
-        { label: g.station ? `🚇 Walk to ${g.station}` : "🚇 Walking distance", value: "walk" },
-        { label: "🚌 A short ride is fine", value: "ride" },
+        { label: g.station ? `Walk to ${g.station}` : "Walking distance", value: "walk" },
+        { label: "A short ride is fine", value: "ride" },
         { label: "Doesn’t matter", value: "any" },
       ],
     };

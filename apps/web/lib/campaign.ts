@@ -14,7 +14,7 @@ export const CAMPAIGN = {
       who: "Anyone: friends, HR teams, building watchmen, community admins",
       reward: 500,
       target: "5 people you refer move in through Stayshay",
-      icon: "👥",
+      icon: "users",
     },
     {
       key: "agents",
@@ -22,7 +22,7 @@ export const CAMPAIGN = {
       who: "RERA agents, brokers and bed-space managers",
       reward: 1000,
       target: "10 of your listings are approved and 3 of them get a tenant through Stayshay",
-      icon: "🤝",
+      icon: "key",
     },
     {
       key: "listings",
@@ -30,7 +30,7 @@ export const CAMPAIGN = {
       who: "Owners and landlords with rooms, beds, studios or flats",
       reward: 500,
       target: "you list 5+ spaces and 3 of them get filled through Stayshay",
-      icon: "🏠",
+      icon: "grid",
     },
     {
       key: "leads",
@@ -38,7 +38,7 @@ export const CAMPAIGN = {
       who: "Relocation helpers, company admins, community groups",
       reward: 750,
       target: "a family you introduce signs a 1BHK–3BHK lease through Stayshay (paid per family)",
-      icon: "🔑",
+      icon: "heart",
     },
   ],
 } as const;

@@ -12,7 +12,7 @@ export function availability(iso: string, today = new Date().toISOString().slice
   return iso <= today ? "Available now" : `From ${shortDate(iso)}`;
 }
 
-type IconName =
+export type IconName =
   | "lock"
   | "chat"
   | "search"

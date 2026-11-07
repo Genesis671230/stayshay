@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Icon } from "@/components/ui";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
 import { MarketplaceProvider } from "@/components/marketplace";
@@ -52,7 +53,7 @@ export default function Page() {
             <div className="absolute inset-0 bg-[linear-gradient(100deg,rgb(10_31_22/0.96)_0%,rgb(10_31_22/0.8)_55%,rgb(10_31_22/0.4)_100%)]" aria-hidden />
             <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto]">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-lime px-3.5 py-1.5 text-[12.5px] font-bold text-brand-deep">🏆 {CAMPAIGN.name}{daysLeft ? ` · ${daysLeft} days left` : ""}</span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-lime px-3.5 py-1.5 text-[12.5px] font-bold text-brand-deep"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" /></svg> {CAMPAIGN.name}{daysLeft ? ` · ${daysLeft} days left` : ""}</span>
                 <h1 className="font-display mt-6 text-[42px] leading-[0.98] md:text-[76px]">
                   Win <span className="text-lime">AED 500</span> to <span className="text-lime">AED {CAMPAIGN.grandPrize.toLocaleString("en-US")}</span>
                 </h1>
@@ -79,7 +80,7 @@ export default function Page() {
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {CAMPAIGN.tracks.map((t, i) => (
               <div key={t.key} className={`flex flex-col rounded-[26px] p-6 ${i % 2 ? "bg-[#ecf8ee]" : "bg-lime/70"}`}>
-                <span className="text-[32px]" aria-hidden>{t.icon}</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-white text-brand-deep" aria-hidden><Icon name={t.icon} size={20} /></span>
                 <p className="font-display mt-4 text-[24px] leading-tight text-ink">{t.title}</p>
                 <p className="mt-1 text-[13.5px] text-ink-2">{t.who}</p>
                 <p className="font-figure mt-6 text-[36px] font-bold leading-none text-brand-deep">{aed(t.reward)}</p>

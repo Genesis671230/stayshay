@@ -8,11 +8,14 @@ import { track as ga } from "./analytics";
 import { pingWa } from "./wa-button";
 import { Icon } from "./ui";
 
-const field = "w-full rounded-[12px] border border-line bg-white px-3.5 py-3 text-[15px] focus:border-brand focus:outline-none";
+const field = "h-12 w-full rounded-[14px] border border-line bg-white px-4 text-[15.5px] focus:border-brand focus:outline-none";
 
+/** Three things only: which challenge, your name, your WhatsApp. */
 export function CampaignApply({ initial = "referrals" }: { initial?: CampaignTrack }) {
   const [track, setTrack] = useState<CampaignTrack>(initial);
-  const [f, setF] = useState({ name: "", phone: "", role: "", reach: "", note: "", website: "" });
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -21,7 +24,7 @@ export function CampaignApply({ initial = "referrals" }: { initial?: CampaignTra
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const res = await fetch("/api/campaign", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...f, track }) }).catch(() => null);
+    const res = await fetch("/api/campaign", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, phone, track, website }) }).catch(() => null);
     const j = res ? await res.json().catch(() => ({})) : {};
     setBusy(false);
     if (res?.ok) {
@@ -33,10 +36,13 @@ export function CampaignApply({ initial = "referrals" }: { initial?: CampaignTra
   if (done)
     return (
       <div className="rounded-[24px] bg-lime p-6 md:p-8">
-        <p className="font-display text-[26px] text-brand-deep">You’re in, {f.name.split(" ")[0]}.</p>
-        <p className="mt-2 text-[15px] text-brand-deep/80">We’ll WhatsApp you to confirm. Next: get your personal link so every person you bring is tracked to you.</p>
-        <Link href="/login?next=/account/referrals" className="mt-5 inline-flex h-12 items-center rounded-[12px] bg-brand-deep px-6 text-[15px] font-semibold text-white">
-          Get my tracking link
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-deep text-white">
+          <Icon name="check" size={22} />
+        </span>
+        <p className="font-display mt-4 text-[26px] text-brand-deep">You’re in, {name.split(" ")[0]}.</p>
+        <p className="mt-2 text-[15px] text-brand-deep/80">We’ll confirm on WhatsApp. Get your personal link so everyone you bring is counted for you.</p>
+        <Link href="/login?next=/account/referrals" className="mt-5 inline-flex h-12 items-center rounded-[14px] bg-brand-deep px-6 text-[15px] font-semibold text-white">
+          Get my link
         </Link>
       </div>
     );
@@ -44,57 +50,46 @@ export function CampaignApply({ initial = "referrals" }: { initial?: CampaignTra
   const err = (k: string) => errors[k] && <p className="mt-1 text-[13px] text-[#b42318]">{errors[k]}</p>;
   return (
     <form onSubmit={submit} className="rounded-[24px] border border-line bg-white p-5 shadow-[0_8px_30px_rgb(0_0_0/0.05)] md:p-7">
-      <p className="font-display text-[26px] leading-tight">Join the challenge</p>
-      <p className="mt-1 text-[14px] text-ink-2">Free to join. Your number stays private.</p>
+      <p className="font-display text-[26px] leading-tight">Join in 20 seconds</p>
+      <p className="mt-1 text-[14px] text-ink-2">Free. Your number stays private.</p>
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
+      <p className="mt-5 text-[13px] font-semibold text-ink-2">1. Pick a challenge</p>
+      <div className="mt-2 flex flex-wrap gap-2">
         {CAMPAIGN.tracks.map((x) => (
-          <button type="button" key={x.key} onClick={() => setTrack(x.key)} className={`rounded-[14px] border p-3 text-left transition ${track === x.key ? "border-brand bg-mint" : "border-line hover:border-brand"}`}>
-            <span className="block text-[14px] font-semibold">
-              {x.icon} {x.title}
-            </span>
-            <span className="font-figure text-[13px] text-brand">AED {x.reward.toLocaleString("en-US")}</span>
+          <button type="button" key={x.key} onClick={() => setTrack(x.key)} className={`flex h-10 items-center gap-2 rounded-full border px-4 text-[13.5px] font-semibold transition ${track === x.key ? "border-brand-deep bg-brand-deep text-white" : "border-line text-ink-2 hover:border-brand-deep"}`}>
+            <Icon name={x.icon} size={15} /> {x.title}
           </button>
         ))}
       </div>
-      {err("track")}
-      <p className="mt-3 rounded-[12px] bg-surface px-3.5 py-2.5 text-[13.5px] text-ink-2">
+      <p className="mt-3 text-[13.5px] text-ink-2">
         <b className="text-ink">AED {t.reward.toLocaleString("en-US")}</b> when {t.target.charAt(0).toLowerCase() + t.target.slice(1)}.
       </p>
+      {err("track")}
 
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-[13px] font-semibold text-ink-2">Your name</span>
-          <input className={`${field} mt-1.5`} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoComplete="name" />
+      <p className="mt-5 text-[13px] font-semibold text-ink-2">2. Your details</p>
+      <div className="mt-2 space-y-2.5">
+        <div>
+          <input className={field} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Your name" aria-label="Your name" />
           {err("name")}
-        </label>
-        <label className="block">
-          <span className="text-[13px] font-semibold text-ink-2">WhatsApp number</span>
-          <input className={`${field} mt-1.5`} value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} inputMode="tel" autoComplete="tel" placeholder="050 123 4567" />
+        </div>
+        <div>
+          <input className={field} value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="WhatsApp number, e.g. 050 123 4567" aria-label="WhatsApp number" />
           {err("phone")}
-        </label>
-        <label className="block">
-          <span className="text-[13px] font-semibold text-ink-2">You are (optional)</span>
-          <input className={`${field} mt-1.5`} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })} placeholder="Agent, owner, HR, student…" maxLength={60} />
-        </label>
-        <label className="block">
-          <span className="text-[13px] font-semibold text-ink-2">How many could you bring? (optional)</span>
-          <input className={`${field} mt-1.5`} value={f.reach} onChange={(e) => setF({ ...f, reach: e.target.value })} placeholder="e.g. 10 people, 20 beds" maxLength={60} />
-        </label>
+        </div>
       </div>
-      <input tabIndex={-1} autoComplete="off" aria-hidden className="hidden" value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} />
+      <input tabIndex={-1} autoComplete="off" aria-hidden className="hidden" value={website} onChange={(e) => setWebsite(e.target.value)} />
       {err("form")}
-      <button disabled={busy} className="mt-6 flex h-12 w-full items-center justify-center rounded-[12px] bg-brand-deep text-[15.5px] font-semibold text-white disabled:opacity-60">
-        {busy ? "Sending…" : "Apply now"}
+      <button disabled={busy} className="mt-5 flex h-12 w-full items-center justify-center rounded-[14px] bg-brand-deep text-[15.5px] font-semibold text-white transition hover:bg-brand disabled:opacity-60">
+        {busy ? "Sending…" : "Join the challenge"}
       </button>
       <a
         href={stayshayWhatsapp(`Hi Stayshay, I want to join the challenge: ${t.title}.`)}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => pingWa("campaign", t.title)}
-        className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[12px] border border-line text-[14.5px] font-semibold text-ink hover:border-[#25d366]"
+        className="mt-3 flex items-center justify-center gap-2 text-[14px] font-semibold text-ink-2 hover:text-[#1da851]"
       >
-        <Icon name="whatsapp" size={17} /> Or apply on WhatsApp
+        <Icon name="whatsapp" size={16} /> Or join on WhatsApp
       </a>
     </form>
   );
