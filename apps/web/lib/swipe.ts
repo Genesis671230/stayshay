@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { roommateMatch, stripPhones, type RoommateLead } from "@stayshay/core";
 import { readJson, updateJson } from "./store";
 import { readRoommates, type PublicRoommate, type RoommatePrefs, type RoommateProfile } from "./roommates";
@@ -62,6 +62,10 @@ export interface Filters {
   mode: "all" | "looking" | "has_place";
   max?: number;
   area?: string;
+  gender?: "female" | "male";
+  ageMin?: number;
+  ageMax?: number;
+  tag?: string;
 }
 
 export type DeckResult =
@@ -69,15 +73,33 @@ export type DeckResult =
   | { state: "locked"; used: number; free: number; remaining: number; liked: number }
   | { state: "empty"; used: number; free: number; unlimited: boolean; liked: number };
 
-/** The approved profiles this user can be shown, best fit first. Same-gender only (shared flats here are single-gender). */
-async function candidates(me: RoommateProfile, f: Filters) {
+const openToAll = (p: RoommateProfile) => p.prefs?.visibility === "everyone";
+
+/**
+ * The approved profiles this user can be shown. Across genders only when BOTH people chose to be visible that way.
+ * Pass members get filters and best fit first; everyone else gets a shuffled order, stable per person so a refresh doesn't reshuffle.
+ */
+async function candidates(me: RoommateProfile, f: Filters, unlimited: boolean) {
   const all = (await readRoommates()).filter((r) => r.status === "approved" && r.id !== me.id && (!me.userId || r.userId !== me.userId));
   const mine = asLead(me);
   return all
-    .filter((r) => r.gender === me.gender && (f.mode === "all" || r.mode === f.mode) && (!f.max || r.budget <= f.max) && (!f.area || !r.areaSlugs.length || r.areaSlugs.includes(f.area)))
+    .filter((r) => r.gender === me.gender || (openToAll(me) && openToAll(r)))
+    .filter((r) => !unlimited || matchesFilters(r, f))
     .map((r) => ({ r, m: roommateMatch(mine, asLead(r)) }))
-    .map((c) => ({ ...c, rank: c.m.score + prefFit(me, c.r) }))
+    .map((c) => ({ ...c, rank: unlimited ? c.m.score + prefFit(me, c.r) : shuffleKey(me.id, c.r.id) }))
     .sort((a, b) => b.rank - a.rank || b.r.createdAt.localeCompare(a.r.createdAt));
+}
+
+const shuffleKey = (a: string, b: string) => createHash("sha1").update(`${a}:${b}`).digest().readUInt32BE(0);
+
+function matchesFilters(r: RoommateProfile, f: Filters): boolean {
+  if (f.mode !== "all" && r.mode !== f.mode) return false;
+  if (f.max && r.budget > f.max) return false;
+  if (f.area && r.areaSlugs.length && !r.areaSlugs.includes(f.area)) return false;
+  if (f.gender && r.gender !== f.gender) return false;
+  if ((f.ageMin || f.ageMax) && (r.age == null || (f.ageMin && r.age < f.ageMin) || (f.ageMax && r.age > f.ageMax))) return false;
+  if (f.tag && !r.lifestyle.some((t) => t.toLowerCase() === f.tag!.toLowerCase())) return false;
+  return true;
 }
 
 /** Nudges the order by what this person said they're looking for. Never hides anyone; filters do that. */
@@ -89,6 +111,9 @@ function prefFit(me: RoommateProfile, r: RoommateProfile): number {
   if (r.age != null && (p.ageMin || p.ageMax)) n += (!p.ageMin || r.age >= p.ageMin) && (!p.ageMax || r.age <= p.ageMax) ? 8 : -15;
   const theirs = new Set(r.lifestyle.map((x) => x.toLowerCase()));
   for (const m of p.mustHave) n += theirs.has(m.toLowerCase()) ? 5 : -3;
+  if (p.commute && p.commute === r.prefs?.commute) n += 3;
+  if (p.vibe && p.vibe === r.prefs?.vibe) n += 4;
+  n += (p.nearby ?? []).filter((x) => r.prefs?.nearby?.includes(x)).length;
   return n;
 }
 
@@ -136,7 +161,7 @@ const cardOf = (c: { r: RoommateProfile; m: { score: number; reasons: string[] }
  * Otherwise the next best profile is revealed and counted, unless the free views are used up.
  */
 export async function nextCard(user: User, me: RoommateProfile, unlimited: boolean, f: Filters = { mode: "all" }): Promise<DeckResult> {
-  const [pool, req] = await Promise.all([candidates(me, f), requesterIds(me.id)]);
+  const [pool, req] = await Promise.all([candidates(me, f, unlimited), requesterIds(me.id)]);
   let picked: (typeof pool)[number] | null = null;
   let result: DeckResult | null = null;
   await updateJson<SwipeStore>(SWIPES, {}, (store) => {
@@ -170,7 +195,7 @@ export async function nextCard(user: User, me: RoommateProfile, unlimited: boole
 
 /** Explore grid: opened profiles in full, the rest as teasers for non-members. */
 export async function explore(user: User, me: RoommateProfile, unlimited: boolean, f: Filters) {
-  const [pool, req, store] = await Promise.all([candidates(me, f), requesterIds(me.id), readJson<SwipeStore>(SWIPES, {})]);
+  const [pool, req, store] = await Promise.all([candidates(me, f, unlimited), requesterIds(me.id), readJson<SwipeStore>(SWIPES, {})]);
   const s = store[user.id] ?? empty();
   const items = pool.map((c): (SwipeCard & { liked: boolean }) | Teaser =>
     unlimited || s.viewed.includes(c.r.id) || req.has(c.r.id) || s.liked.includes(c.r.id)
@@ -182,7 +207,7 @@ export async function explore(user: User, me: RoommateProfile, unlimited: boolea
 
 /** Opens one profile from the grid, counting it as a view if it's new. */
 export async function reveal(user: User, me: RoommateProfile, unlimited: boolean, profileId: string): Promise<{ state: "card"; card: SwipeCard; used: number } | { state: "locked"; used: number } | { state: "missing" }> {
-  const [pool, req] = await Promise.all([candidates(me, { mode: "all" }), requesterIds(me.id)]);
+  const [pool, req] = await Promise.all([candidates(me, { mode: "all" }, unlimited), requesterIds(me.id)]);
   const c = pool.find((x) => x.r.id === profileId);
   if (!c) return { state: "missing" };
   let allowed = false;
@@ -248,11 +273,13 @@ export interface DirectMessage {
   text: string;
   createdAt: string;
   readAt: string | null;
+  /** Written by Stayshay (a gift notice). Doesn't use up a free message. */
+  system?: boolean;
 }
 const DMS = "direct-messages.json";
 export const readDms = () => readJson<DirectMessage[]>(DMS, []);
 
-export async function sendDm(from: { user: User; profile: RoommateProfile }, to: RoommateProfile, text: string): Promise<DirectMessage> {
+export async function sendDm(from: { user: User; profile: RoommateProfile }, to: RoommateProfile, text: string, system = false): Promise<DirectMessage> {
   const msg: DirectMessage = {
     id: randomUUID().slice(0, 12),
     fromUser: from.user.id,
@@ -262,6 +289,7 @@ export async function sendDm(from: { user: User; profile: RoommateProfile }, to:
     text: text.trim().slice(0, 1000),
     createdAt: new Date().toISOString(),
     readAt: null,
+    ...(system && { system }),
   };
   await updateJson<DirectMessage[]>(DMS, [], (all) => [...all, msg].slice(-50000));
   return msg;
@@ -308,6 +336,40 @@ export async function inbox(userId: string, myProfileId: string | null) {
 
 export async function unreadCount(userId: string, myProfileId: string | null) {
   return (await readDms()).filter((m) => m.fromUser !== userId && !m.readAt && (m.toUser === userId || (!!myProfileId && m.toProfile === myProfileId))).length;
+}
+
+export const FREE_MESSAGES = Math.max(0, Number(process.env.STAYSHAY_FREE_MESSAGES) || 10);
+
+export interface MessageQuota {
+  used: number;
+  free: number;
+  left: number;
+  unlimited: boolean;
+}
+
+/** Free sends are counted on the server, for the life of the account. */
+export async function messageQuota(userId: string, unlimited: boolean): Promise<MessageQuota> {
+  const used = (await readDms()).filter((m) => m.fromUser === userId && !m.system).length;
+  return { used, free: FREE_MESSAGES, left: unlimited ? 9999 : Math.max(0, FREE_MESSAGES - used), unlimited };
+}
+
+/** Both people liked each other. Rent credits can only be gifted to a match. */
+export async function isMatch(userId: string, myProfileId: string, profileId: string): Promise<boolean> {
+  const s = (await readJson<SwipeStore>(SWIPES, {}))[userId];
+  return !!s?.liked.includes(profileId) && (await requesterIds(myProfileId)).has(profileId);
+}
+
+const STRIKES = "contact-strikes.json";
+
+/** Records a blocked attempt to share contact details and returns the running total. The blocked text is not kept. */
+export async function addStrike(userId: string, reason: string): Promise<number> {
+  let n = 0;
+  await updateJson<Record<string, { count: number; last: string; reason: string }>>(STRIKES, {}, (all) => {
+    n = (all[userId]?.count ?? 0) + 1;
+    all[userId] = { count: n, last: new Date().toISOString(), reason };
+    return all;
+  });
+  return n;
 }
 
 /** Someone may open a conversation only with a profile they've been shown on the swipe, or one that wrote to them. */

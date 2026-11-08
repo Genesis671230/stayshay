@@ -17,6 +17,7 @@ export * from "./manager.ts";
 export * from "./insights.ts";
 export { PHOTOS, similarListings, coverFor, median, type PhotoSet } from "./util.ts";
 export { stripPhones } from "./text.ts";
+export { checkContact, type ContactCheck, type ContactReason } from "./contact-guard.ts";
 
 const homebook = homebookJson as unknown as HomebookFile;
 const imported = homebook.listings.filter((l) => l.priceAed > 0 && l.photos.length > 0).map(fromHomebook);

@@ -17,6 +17,7 @@ export * from "./manager.ts";
 export * from "./insights.ts";
 export { PHOTOS, similarListings, coverFor, median, type PhotoSet } from "./util.ts";
 export { stripPhones } from "./text.ts";
+export { checkContact, type ContactCheck, type ContactReason } from "./contact-guard.ts";
 
 export const AREAS: Area[] = areasJson as Area[];
 export const AREA_BY_SLUG: ReadonlyMap<string, Area> = new Map(AREAS.map((a) => [a.slug, a]));

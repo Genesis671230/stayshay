@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { AREA_BY_SLUG } from "@stayshay/core";
 import { currentUser } from "@/lib/auth";
 import { accessFor } from "@/lib/community";
-import { connections, decide, explore, incomingCount, myProfile, nextCard, reveal, toCard, unreadCount, type Filters } from "@/lib/swipe";
+import { connections, decide, explore, incomingCount, myProfile, messageQuota, nextCard, reveal, toCard, unreadCount, type Filters } from "@/lib/swipe";
 
 export const dynamic = "force-dynamic";
 const noStore = { headers: { "cache-control": "no-store" } };
@@ -11,7 +11,19 @@ const MODES = ["all", "looking", "has_place"] as const;
 function filtersFrom(sp: URLSearchParams): Filters {
   const max = Number(sp.get("max"));
   const area = sp.get("area");
-  return { mode: MODES.find((m) => m === sp.get("mode")) ?? "all", ...(max > 0 && { max }), ...(area && AREA_BY_SLUG.has(area) && { area }) };
+  const gender = sp.get("gender");
+  const ageMin = Number(sp.get("ageMin"));
+  const ageMax = Number(sp.get("ageMax"));
+  const tag = (sp.get("tag") ?? "").slice(0, 30);
+  return {
+    mode: MODES.find((m) => m === sp.get("mode")) ?? "all",
+    ...(max > 0 && { max }),
+    ...(area && AREA_BY_SLUG.has(area) && { area }),
+    ...((gender === "female" || gender === "male") && { gender }),
+    ...(ageMin > 0 && { ageMin }),
+    ...(ageMax > 0 && { ageMax }),
+    ...(tag && { tag }),
+  };
 }
 
 /**
@@ -28,9 +40,10 @@ export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
   const view = sp.get("view") ?? "deck";
   const access = await accessFor(user);
-  const f = filtersFrom(sp);
-  const [unread, incoming] = await Promise.all([unreadCount(user.id, me.id), incomingCount(user.id, me.id)]);
-  const base = { ok: true, pass: access.anyPass, unread, incoming, me: { ...toCard(me), status: me.status, prefs: me.prefs ?? null } };
+  // Filters are a Pass feature, enforced here: without it the deck is random whatever the URL says.
+  const f: Filters = access.anyPass ? filtersFrom(sp) : { mode: "all" };
+  const [unread, incoming, quota] = await Promise.all([unreadCount(user.id, me.id), incomingCount(user.id, me.id), messageQuota(user.id, access.anyPass)]);
+  const base = { ok: true, pass: access.anyPass, unread, incoming, quota, me: { ...toCard(me), status: me.status, prefs: me.prefs ?? null } };
   if (view === "explore") return NextResponse.json({ ...base, explore: await explore(user, me, access.anyPass, f) }, noStore);
   if (view === "connections") return NextResponse.json({ ...base, connections: await connections(user, me) }, noStore);
   return NextResponse.json({ ...base, deck: await nextCard(user, me, access.anyPass, f) }, noStore);

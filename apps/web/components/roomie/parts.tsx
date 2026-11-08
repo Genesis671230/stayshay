@@ -61,7 +61,7 @@ export function Upgrade({ area, returnTo = "/roommates", title, line }: { area: 
       <p className="mt-4 text-[22px] font-bold leading-tight">{title}</p>
       <p className="mt-1.5 text-[14.5px] leading-relaxed text-white/70">{line}</p>
       <ul className="mt-5 space-y-2.5 text-[14px]">
-        {["See every profile, no limit", "Message your matches", "Your area's group chat and Q&A", "Cancel any time"].map((t) => (
+        {["Unlimited messages", "See every profile, best fits first", "Filter by gender, age, budget, area and habits", "Your area's group chat and Q&A", "Cancel any time"].map((t) => (
           <li key={t} className="flex items-center gap-2.5">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime/15 text-lime">
               <Icon name="check" size={12} />

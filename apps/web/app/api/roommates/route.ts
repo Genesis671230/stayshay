@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { validateLead, type RoommateLead } from "@stayshay/core";
+import { checkContact, validateLead, type RoommateLead } from "@stayshay/core";
 import { addLead } from "@/lib/store";
 import { addRoommate, cleanPrefs, publicRoommates, updateRoommate } from "@/lib/roommates";
 import { myProfile } from "@/lib/swipe";
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
   const check = validateLead({ ...body, kind: "roommate" });
   if (!check.ok || !check.value) return NextResponse.json({ ok: false, errors: check.errors }, { status: 422 });
   const lead = check.value as RoommateLead;
+  if (checkContact(lead.about).blocked || checkContact(lead.profession).blocked) return NextResponse.json({ ok: false, errors: { about: "Please take out any phone numbers, links, handles or other apps. People can message you on Stayshay." } }, { status: 422 });
   const user = await currentUser();
   const photo = form.get("photo");
   const photoFile = photo instanceof File && photo.size ? photo : null;

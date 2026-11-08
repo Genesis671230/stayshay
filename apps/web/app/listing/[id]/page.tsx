@@ -9,6 +9,8 @@ import { Footer } from "@/components/sections";
 import { Badge, Icon, aed } from "@/components/ui";
 import { LocationMap, MobileBookingBar, PhotoGrid, ShareSave, ViewingFunnel } from "@/components/listing-page";
 import { ListingCard } from "@/components/listing-card";
+import { WalletApply } from "@/components/wallet-page";
+import { walletEnabled } from "@/lib/wallet";
 import { MarketplaceProvider } from "@/components/marketplace";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbLd, listingLd, rentPath } from "@/lib/seo";
@@ -194,6 +196,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
                 <li className="flex gap-3"><Icon name="wallet" size={18} className="mt-0.5 shrink-0 text-brass" /> Get a receipt for the deposit and agree the notice period in writing.</li>
               </ul>
             </section>
+            {walletEnabled() && <WalletApply listingId={l.id} rent={l.priceAed} />}
           </div>
 
           <aside className="hidden lg:block">

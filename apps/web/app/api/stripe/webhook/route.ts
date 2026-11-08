@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readUsers } from "@/lib/auth";
 import { grantFromSession, syncSubscription } from "@/lib/community";
+import { creditTopup } from "@/lib/wallet";
 import { getCheckoutSession, verifyWebhook, type CheckoutSession, type StripeSubscription } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,9 @@ export async function POST(req: Request) {
         const s = await getCheckoutSession(obj.id);
         const user = (await readUsers()).find((u) => u.id === s.client_reference_id);
         if (user) await grantFromSession(s, user);
+      } else if (obj.metadata?.product === "stayshay_wallet") {
+        const s = await getCheckoutSession(obj.id);
+        if (s.client_reference_id) await creditTopup(s, s.client_reference_id);
       }
     } else if (ev.type.startsWith("customer.subscription.")) {
       await syncSubscription(ev.data.object as unknown as StripeSubscription);

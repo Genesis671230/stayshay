@@ -34,6 +34,10 @@ interface Draft {
   seeking: RoommatePrefs["seeking"];
   ages: string[];
   mustHave: string[];
+  visibility: "" | "same" | "everyone";
+  commute: string;
+  vibe: string;
+  nearby: string[];
 }
 
 interface Hints {
@@ -67,7 +71,17 @@ const agesToRange = (bands: string[]) => {
 };
 const rangeToAges = (min: number | null, max: number | null) => (min || max ? AGE_BANDS.filter(([, a, b]) => b >= (min ?? 18) && a <= (max ?? 99)).map(([l]) => l) : []);
 
-const STEPS = ["intent", "you", "photo", "budget", "areas", "lifestyle", "prefs", "about", "contact", "preview"] as const;
+const AREA_TILES = ["dubai-marina", "jlt", "business-bay", "downtown-dubai", "al-barsha-1", "bur-dubai", "deira", "international-city"].filter((s) => AREA_BY_SLUG.has(s));
+const COMMUTES = ["Metro", "Bus", "Car", "Walk", "Work from home"];
+const VIBES: [string, string, string][] = [
+  ["Quiet and residential", "Calm streets, early nights", "/photos/living.jpg"],
+  ["Lively, always something on", "Cafes, people, late evenings", "/photos/areas/dubai-marina.jpg"],
+  ["Close to work, simple", "Short commute, no fuss", "/photos/metro.jpg"],
+  ["Best value for money", "Lower rent, more left over", "/photos/areas/international-city.jpg"],
+];
+const NEARBY = ["Metro in walking distance", "Supermarket", "Gym", "Mosque", "Church or temple", "Park", "Beach", "Restaurants", "Parking", "Clinic"];
+
+const STEPS = ["intent", "you", "photo", "budget", "areas", "neighbourhood", "lifestyle", "prefs", "about", "contact", "preview"] as const;
 type Step = (typeof STEPS)[number];
 
 type Existing = PublicRoommate & { status?: string; prefs?: RoommatePrefs | null };
@@ -91,8 +105,12 @@ function blank(me: { name: string; phone: string | null } | null, existing: Exis
       seeking: existing.prefs?.seeking ?? "any",
       ages: rangeToAges(existing.prefs?.ageMin ?? null, existing.prefs?.ageMax ?? null),
       mustHave: existing.prefs?.mustHave ?? [],
+      visibility: existing.prefs?.visibility ?? "same",
+      commute: existing.prefs?.commute ?? "",
+      vibe: existing.prefs?.vibe ?? "",
+      nearby: existing.prefs?.nearby ?? [],
     };
-  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "", seeking: "any", ages: [], mustHave: [] };
+  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "", seeking: "any", ages: [], mustHave: [], visibility: "", commute: "", vibe: "", nearby: [] };
 }
 
 export function RoomieOnboarding({
@@ -189,6 +207,7 @@ export function RoomieOnboarding({
       if (!d.moveIn || d.moveIn < addDays(-1)) e.moveIn = "Pick a date from today on";
     }
     if (s === "areas" && !d.anywhere && !d.areas.length) e.areas = "Add at least one area, or choose Anywhere in Dubai";
+    if (s === "prefs" && !d.visibility) e.visibility = "Choose who can find you";
     if (s === "contact") {
       const digits = d.phone.replace(/\D/g, "");
       if (digits.length < 9 || digits.length > 15) e.phone = "Add a WhatsApp number we can reach you on";
@@ -250,7 +269,7 @@ export function RoomieOnboarding({
     }
     setBusy(true);
     const body = new FormData();
-    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto, prefs: { seeking: d.mode === "has_place" ? "looking" : d.seeking, ...agesToRange(d.ages), mustHave: d.mustHave } }));
+    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto, prefs: { seeking: d.mode === "has_place" ? "looking" : d.seeking, ...agesToRange(d.ages), mustHave: d.mustHave, visibility: d.visibility || "same", commute: d.commute, vibe: d.vibe, nearby: d.nearby } }));
     if (photo) body.set("photo", photo);
     const res = await fetch("/api/roommates", { method: "POST", body }).catch(() => null);
     const j = await res?.json().catch(() => null);
@@ -319,8 +338,8 @@ export function RoomieOnboarding({
             <div className="mt-7 grid gap-3">
               {(
                 [
-                  ["looking", "I’m looking for a place", "Find someone with a room, or a flatmate to rent with", "search"],
-                  ["has_place", "I have a place", "Fill a room or a bed in your flat", "key"],
+                  ["looking", "I’m looking for a place", "Find someone with a room, or a flatmate to rent with", "/photos/roommates.jpg"],
+                  ["has_place", "I have a place", "Fill a room or a bed in your flat", "/photos/room.jpg"],
                 ] as const
               ).map(([m, t, sub, icon]) => (
                 <button
@@ -331,9 +350,8 @@ export function RoomieOnboarding({
                   }}
                   className={`flex items-center gap-4 rounded-[24px] border p-5 text-left transition active:scale-[0.98] ${d.mode === m ? "border-lime bg-lime/10" : "border-white/12 bg-white/[0.04] hover:border-white/30"}`}
                 >
-                  <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] ${d.mode === m ? "bg-lime text-brand-deep" : "bg-white/10 text-white"}`}>
-                    <Icon name={icon} size={22} />
-                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={icon} alt="" className="h-20 w-20 shrink-0 rounded-[18px] object-cover" />
                   <span>
                     <span className="block text-[18px] font-bold">{t}</span>
                     <span className="mt-0.5 block text-[14px] text-white/60">{sub}</span>
@@ -435,6 +453,7 @@ export function RoomieOnboarding({
 
         {step === "budget" && (
           <>
+            <Art src="/photos/studio.jpg" />
             <H>{d.mode === "has_place" ? "What’s the rent for the space?" : "What’s your monthly budget?"}</H>
             <P>Per person, per month. We use it to show you people who fit.</P>
             <div className="mt-8 text-center">
@@ -502,6 +521,29 @@ export function RoomieOnboarding({
                 }}
               />
             </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {AREA_TILES.map((s) => {
+                const on = d.areas.includes(s);
+                return (
+                  <button
+                    key={s}
+                    aria-pressed={on}
+                    onClick={() => {
+                      set("anywhere", false);
+                      set("areas", on ? d.areas.filter((x) => x !== s) : [...d.areas, s].slice(0, 5));
+                    }}
+                    className={`relative h-24 overflow-hidden rounded-[18px] text-left transition active:scale-[0.97] ${on ? "ring-2 ring-lime" : ""}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/photos/areas/${s}.jpg`} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                    <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0)_30%,rgb(0_0_0/0.75)_100%)]" />
+                    <span className="absolute bottom-2 left-3 right-8 text-[14px] font-bold leading-tight">{AREA_BY_SLUG.get(s)?.name}</span>
+                    {on && <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-lime text-brand-deep"><Icon name="check" size={14} /></span>}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-[11.5px] text-white/35">Area photos from Wikimedia Commons, credited on each community page.</p>
             {!!hints?.popularAreas.filter((a) => !d.areas.includes(a)).length && d.areas.length < 5 && (
               <div className="mt-4">
                 <p className="mb-2 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-white/45">Popular with roommates</p>
@@ -549,8 +591,55 @@ export function RoomieOnboarding({
           </>
         )}
 
+        {step === "neighbourhood" && (
+          <>
+            <H>What makes a neighbourhood work for you?</H>
+            <P>Tap what fits, or skip. Only you see this.</P>
+            <div className="mt-6">
+              <L>The feel you want</L>
+              <div className="grid grid-cols-2 gap-2">
+                {VIBES.map(([v, sub, src]) => (
+                  <button key={v} aria-pressed={d.vibe === v} onClick={() => set("vibe", d.vibe === v ? "" : v)} className={`relative h-32 overflow-hidden rounded-[18px] text-left transition active:scale-[0.97] ${d.vibe === v ? "ring-2 ring-lime" : ""}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                    <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0.1)_10%,rgb(0_0_0/0.85)_100%)]" />
+                    <span className="absolute inset-x-3 bottom-2.5">
+                      <span className="block text-[14px] font-bold leading-tight">{v}</span>
+                      <span className="block text-[12px] text-white/70">{sub}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-6">
+              <L>How you get around</L>
+              <div className="flex flex-wrap gap-2">
+                {COMMUTES.map((c) => (
+                  <button key={c} onClick={() => set("commute", d.commute === c ? "" : c)} className={chip(d.commute === c)} aria-pressed={d.commute === c}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-6">
+              <L>Must be nearby</L>
+              <div className="flex flex-wrap gap-2">
+                {NEARBY.map((t) => {
+                  const on = d.nearby.includes(t);
+                  return (
+                    <button key={t} onClick={() => set("nearby", on ? d.nearby.filter((x) => x !== t) : [...d.nearby, t].slice(0, 6))} className={chip(on)} aria-pressed={on}>
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+
         {step === "lifestyle" && (
           <>
+            <Art src="/photos/living.jpg" />
             <H>How do you live?</H>
             <P>
               Pick what’s true for you, up to {MAX_LIFESTYLE}. This is how we find people you’ll actually get on with.
@@ -582,8 +671,29 @@ export function RoomieOnboarding({
 
         {step === "prefs" && (
           <>
+            <Art src="/photos/roommates.jpg" />
             <H>Who would you like to live with?</H>
-            <P>We show you these people first. Only you see this.</P>
+            <P>Only you see this. With the Stayshay Pass, these people come first.</P>
+            <div className="mt-6">
+              <L>Who can find you on Swipe?</L>
+              <div className="grid gap-2">
+                {(
+                  [
+                    ["same", d.gender === "male" ? "Men only" : d.gender === "female" ? "Women only" : "Same gender only", "You’ll only see and be seen by the same gender"],
+                    ["everyone", "Everyone", "Men and women who also chose this can see you, and you them"],
+                  ] as const
+                ).map(([v, t, sub]) => (
+                  <button key={v} onClick={() => set("visibility", v)} aria-pressed={d.visibility === v} className={`flex items-center justify-between rounded-[18px] border px-4 py-3.5 text-left transition ${d.visibility === v ? "border-lime bg-lime/10" : "border-white/12 bg-white/[0.04]"}`}>
+                    <span>
+                      <span className="block text-[15.5px] font-semibold">{t}</span>
+                      <span className="text-[13px] text-white/55">{sub}</span>
+                    </span>
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${d.visibility === v ? "bg-lime text-brand-deep" : "border border-white/30"}`}>{d.visibility === v && <Icon name="check" size={14} />}</span>
+                  </button>
+                ))}
+              </div>
+              {err("visibility")}
+            </div>
             {d.mode !== "has_place" && (
               <div className="mt-6">
                 <L>Looking for</L>
@@ -729,7 +839,7 @@ export function RoomieOnboarding({
           </>
         )}
 
-        {hints && hints.total > 0 && (step === "budget" || step === "areas" || step === "prefs") && (
+        {hints && hints.total > 0 && (step === "budget" || step === "areas" || step === "neighbourhood" || step === "prefs") && (
           <p className="roomie-in mt-7 flex items-center gap-2 rounded-full bg-white/[0.06] px-4 py-2.5 text-[13.5px] text-white/75">
             <span className="h-2 w-2 shrink-0 rounded-full bg-[#5ee08c]" />
             {hints.fit > 0 ? (
@@ -754,7 +864,7 @@ export function RoomieOnboarding({
             </button>
           ) : (
             <button onClick={() => go(1)} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-white text-[16px] font-bold text-brand-deep transition active:scale-[0.98]">
-              {step === "photo" && !photoSrc ? "Skip for now" : "Continue"} <Icon name="arrow-right" size={17} />
+              {(step === "photo" && !photoSrc) || (step === "neighbourhood" && !d.vibe && !d.commute && !d.nearby.length) ? "Skip for now" : i >= STEPS.length - 3 ? "Almost done" : "Continue"} <Icon name="arrow-right" size={17} />
             </button>
           )}
         </div>
@@ -763,6 +873,8 @@ export function RoomieOnboarding({
   );
 }
 
+/* eslint-disable-next-line @next/next/no-img-element */
+const Art = ({ src }: { src: string }) => <img src={src} alt="" className="mb-5 h-28 w-full rounded-[22px] object-cover" />;
 const H = ({ children }: { children: React.ReactNode }) => <h2 className="text-[30px] font-bold leading-[1.08] tracking-[-0.03em]">{children}</h2>;
 const P = ({ children }: { children: React.ReactNode }) => <p className="mt-2 text-[15px] leading-relaxed text-white/60">{children}</p>;
 const L = ({ children, optional = false }: { children: React.ReactNode; optional?: boolean }) => (

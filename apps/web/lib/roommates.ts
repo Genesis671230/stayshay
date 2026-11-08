@@ -37,6 +37,12 @@ export interface RoommatePrefs {
   ageMin: number | null;
   ageMax: number | null;
   mustHave: string[];
+  /** Who can find them on the swipe. Missing means "same": older profiles never agreed to be shown more widely. */
+  visibility?: "same" | "everyone";
+  /** Neighbourhood answers. Private: they only nudge the order of the deck. */
+  commute?: string;
+  vibe?: string;
+  nearby?: string[];
 }
 
 /** Cleans whatever the form sent into valid preferences (or undefined). */
@@ -52,6 +58,10 @@ export function cleanPrefs(v: unknown): RoommatePrefs | undefined {
     ageMin,
     ageMax,
     mustHave: (Array.isArray(o.mustHave) ? o.mustHave : []).map((x) => String(x).slice(0, 30)).slice(0, 6),
+    visibility: o.visibility === "everyone" ? "everyone" : "same",
+    commute: String(o.commute ?? "").slice(0, 30),
+    vibe: String(o.vibe ?? "").slice(0, 30),
+    nearby: (Array.isArray(o.nearby) ? o.nearby : []).map((x) => String(x).slice(0, 30)).slice(0, 6),
   };
 }
 

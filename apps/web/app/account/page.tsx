@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { walletEnabled } from "@/lib/wallet";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
@@ -23,6 +24,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
           <Link href="/swipe" className="card block p-4 text-[15px] font-bold">Roommate Swipe</Link>
           <Link href="/messages" className="card block p-4 text-[15px] font-bold">Messages</Link>
         </div>
+        {walletEnabled() && <Link href="/wallet" className="card block p-4 text-[15px] font-bold">Stayshay wallet</Link>}
         <Link href="/account/referrals" className="glow-panel block rounded-[22px] p-5 text-white">
           <span className="block text-[12px] font-bold uppercase tracking-[0.14em] text-[#8fe3bd]">Refer & earn</span>
           <span className="mt-1 block text-[18px] font-bold">Your link, the people you brought in, and your rewards</span>

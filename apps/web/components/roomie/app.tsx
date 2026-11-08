@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AREA_BY_SLUG, type Area } from "@stayshay/core/src/client.ts";
-import type { PublicRoommate } from "@/lib/roommates";
+import type { PublicRoommate, RoommatePrefs } from "@/lib/roommates";
 import type { DeckResult, SwipeCard, Teaser } from "@/lib/swipe";
 import { Icon, aed } from "../ui";
 import { track } from "../analytics";
@@ -19,10 +19,23 @@ interface Filters {
   mode: Mode;
   max: number;
   area: string | null;
+  gender: "all" | "female" | "male";
+  age: string;
+  tag: string;
 }
-type Me = PublicRoommate & { status: string };
+const AGE_FILTERS: [string, number, number][] = [
+  ["18–24", 18, 24],
+  ["25–34", 25, 34],
+  ["35–44", 35, 44],
+  ["45+", 45, 99],
+];
+const HABIT_FILTERS = ["Non-smoker", "Quiet", "Very tidy", "Early riser", "Works from home", "Cooks daily"];
+const NO_FILTERS: Filters = { mode: "all", max: 0, area: null, gender: "all", age: "", tag: "" };
+const FILTER_PITCH = "Free profiles come up at random. The Stayshay Pass lets you choose who you see by gender, age, budget, area and habits, with your best fits first.";
+type Me = PublicRoommate & { status: string; prefs?: RoommatePrefs | null };
 interface Base {
   pass: boolean;
+  quota: { left: number; free: number };
   unread: number;
   incoming: number;
   me: Me;
@@ -38,6 +51,13 @@ const qs = (f: Filters) => {
   const q = new URLSearchParams({ mode: f.mode });
   if (f.max) q.set("max", String(f.max));
   if (f.area) q.set("area", f.area);
+  if (f.gender !== "all") q.set("gender", f.gender);
+  if (f.tag) q.set("tag", f.tag);
+  const age = AGE_FILTERS.find(([l]) => l === f.age);
+  if (age) {
+    q.set("ageMin", String(age[1]));
+    q.set("ageMax", String(age[2]));
+  }
   return q.toString();
 };
 const post = (body: object) => fetch("/api/swipe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()).catch(() => null);
@@ -45,14 +65,14 @@ const post = (body: object) => fetch("/api/swipe", { method: "POST", headers: { 
 /**
  * The roommate app: For You (one card at a time), Explore (a grid) and Requests (people who want to
  * connect, your connections, requests you sent). Sign in and a profile come first. Non-members can open
- * FREE_SWIPES profiles in total; requesting to connect is free, messaging needs the Stayshay Pass.
+ * FREE_SWIPES profiles in total, shown at random, and send a limited number of messages. Filters and unlimited messages need the Stayshay Pass.
  */
 export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: "/roommates" | "/swipe"; people?: number }) {
   const { me: account, google, ready } = useMe();
   const [need, setNeed] = useState<"signin" | "profile" | null>(null);
   const [base, setBase] = useState<Base | null>(null);
   const [tab, setTab] = useState<Tab>("foryou");
-  const [filters, setFilters] = useState<Filters>({ mode: "all", max: 0, area: null });
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [deck, setDeck] = useState<DeckResult | null>(null);
   const [grid, setGrid] = useState<{ items: ExploreItem[]; used: number; free: number; unlimited: boolean } | null>(null);
   const [conn, setConn] = useState<Connections | null>(null);
@@ -79,7 +99,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
       if (r.status === 409) return setNeed("profile");
       const j = await r.json();
       setNeed(null);
-      setBase({ pass: j.pass, unread: j.unread, incoming: j.incoming, me: j.me });
+      setBase({ pass: j.pass, quota: j.quota, unread: j.unread, incoming: j.incoming, me: j.me });
       if (j.deck) setDeck(j.deck);
       if (j.explore) setGrid(j.explore);
       if (j.connections) setConn(j.connections);
@@ -101,6 +121,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
 
   const pass = base?.pass ?? false;
   const area = base?.me.areaSlugs[0] ?? null;
+  const canMessage = pass || (base?.quota.left ?? 0) > 0;
   const openUpgrade = (title: string, line: string) => {
     track("roomie_paywall", { title });
     setUpgrade({ title, line });
@@ -120,7 +141,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
     track("roomie_pass", { profile_id: c.id });
   };
   const message = (c: SwipeCard) => {
-    if (!pass) return openUpgrade(`Message ${c.firstName}`, "Messaging is for Stayshay Pass members, so everyone you talk to is serious about finding a flatmate.");
+    if (!canMessage) return openUpgrade(`${c.firstName} could be the one. Don’t stop now.`, `You’ve used your ${base?.quota.free ?? 10} free messages. The Stayshay Pass gives you unlimited messages, so you can agree the budget, the area and a viewing before someone else does.`);
     setCompose(c);
   };
   const reveal = async (t: Teaser) => {
@@ -159,6 +180,9 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
     filters.mode !== "all" && { k: "mode", t: filters.mode === "has_place" ? "Has a place" : "Looking to share", clear: () => setFilters({ ...filters, mode: "all" }) },
     filters.max > 0 && { k: "max", t: `Under ${filters.max.toLocaleString("en-US")}`, clear: () => setFilters({ ...filters, max: 0 }) },
     filters.area && { k: "area", t: areaName(filters.area), clear: () => setFilters({ ...filters, area: null }) },
+    filters.gender !== "all" && { k: "gender", t: filters.gender === "female" ? "Women" : "Men", clear: () => setFilters({ ...filters, gender: "all" }) },
+    filters.age && { k: "age", t: filters.age, clear: () => setFilters({ ...filters, age: "" }) },
+    filters.tag && { k: "tag", t: filters.tag, clear: () => setFilters({ ...filters, tag: "" }) },
   ].filter(Boolean) as { k: string; t: string; clear: () => void }[];
 
   return (
@@ -198,7 +222,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
       {/* filters + allowance */}
       {tab !== "requests" && (
         <div className="mt-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 roomie-scroll">
-          <button onClick={() => setFilterSheet(true)} aria-label="Filters" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.07]">
+          <button onClick={() => (pass ? setFilterSheet(true) : openUpgrade("Choose who you see", FILTER_PITCH))} aria-label="Filters" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.07]">
             <Icon name="sliders" size={17} />
           </button>
           {activeChips.map((c) => (
@@ -206,7 +230,13 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
               <Icon name="close" size={13} /> {c.t}
             </button>
           ))}
-          {!activeChips.length &&
+          {!pass &&
+            ["Gender", "Age", "Budget", "Area"].map((t) => (
+              <button key={t} onClick={() => openUpgrade("Choose who you see", FILTER_PITCH)} className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3.5 text-[13.5px] text-white/70">
+                <Icon name="lock" size={12} /> {t}
+              </button>
+            ))}
+          {pass && !activeChips.length &&
             (
               [
                 ["Has a place", () => setFilters({ ...filters, mode: "has_place" })],
@@ -227,7 +257,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
           ) : (
             <>
               <span>
-                <b className="text-white">{left}</b> of {free} free profiles left
+                Shown at random · <b className="text-white">{left}</b> of {free} free left
               </span>
               <button onClick={() => openUpgrade("See everyone", "The Stayshay Pass opens every profile and lets you message your matches.")} className="font-semibold text-lime">
                 Upgrade
@@ -243,7 +273,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
         {tab === "requests" && (
           <Requests
             conn={conn}
-            pass={pass}
+            pass={canMessage}
             onOpen={setDetails}
             onAccept={async (c) => { await connect(c, "request"); load("requests"); }}
             onDecline={async (c) => { await pass_(c); say(`Passed on ${c.firstName}`); load("requests"); }}
@@ -271,7 +301,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
                 <HeartFill size={18} /> {details.likedYou ? "Like back" : "Like"}
               </button>
               <button onClick={() => { const c = details; setDetails(null); message(c); }} aria-label="Message" className="flex h-13 w-13 items-center justify-center rounded-full bg-white/10 px-4 text-lime">
-                {!pass && <Icon name="lock" size={13} />} <Icon name="chat" size={19} />
+                {!canMessage && <Icon name="lock" size={13} />} <Icon name="chat" size={19} />
               </button>
             </div>
           }
@@ -282,8 +312,18 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
           <Upgrade area={area} returnTo={returnTo} title={upgrade.title} line={upgrade.line} />
         </Sheet>
       )}
-      {compose && <Composer c={compose} onClose={() => setCompose(null)} />}
-      {filterSheet && <FilterSheet f={filters} onClose={() => setFilterSheet(false)} onApply={(f) => { setFilters(f); setFilterSheet(false); }} />}
+      {compose && (
+        <Composer
+          c={compose}
+          onClose={() => setCompose(null)}
+          onSent={() => load()}
+          onUpgrade={(n) => {
+            setCompose(null);
+            openUpgrade(n.title, n.line);
+          }}
+        />
+      )}
+      {filterSheet && <FilterSheet sameOnly={base.me.prefs?.visibility !== "everyone"} f={filters} onClose={() => setFilterSheet(false)} onApply={(f) => { setFilters(f); setFilterSheet(false); }} />}
       {match && (
         <div className="fixed inset-0 z-[95] flex items-center justify-center bg-[radial-gradient(circle_at_50%_40%,#3a1428,#0b0f0d_70%)] p-6 text-center text-white" onClick={() => setMatch(null)}>
           <div className="roomie-rise" onClick={(e) => e.stopPropagation()}>
@@ -295,7 +335,7 @@ export function RoomieApp({ returnTo = "/roommates", people = 0 }: { returnTo?: 
             <p className="mt-3 text-[16px] text-white/70">You and {match.firstName} like each other.</p>
             <div className="mt-7 flex flex-col gap-3">
               <button onClick={() => { const c = match; setMatch(null); message(c); }} className="roomie-pulse h-14 rounded-full bg-[linear-gradient(135deg,#ff6fa5,#e94b8a)] px-8 text-[16px] font-bold">
-                {pass ? `Message ${match.firstName}` : `Message · AED ${PASS_PRICE}/month`}
+                {canMessage ? `Message ${match.firstName}` : `Message · AED ${PASS_PRICE}/month`}
               </button>
               <button onClick={() => setMatch(null)} className="h-12 rounded-full text-[15px] font-semibold text-white/70">
                 Keep looking
@@ -666,7 +706,7 @@ function Requests({
 
 /* ---------------- message + filters ---------------- */
 
-function Composer({ c, onClose }: { c: SwipeCard; onClose: () => void }) {
+function Composer({ c, onClose, onSent, onUpgrade }: { c: SwipeCard; onClose: () => void; onSent: () => void; onUpgrade: (n: { title: string; line: string }) => void }) {
   const [text, setText] = useState(`Hi ${c.firstName}, I saw your profile on Stayshay. `);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -680,7 +720,10 @@ function Composer({ c, onClose }: { c: SwipeCard; onClose: () => void }) {
     if (j?.ok) {
       track("roommate_message", { profile_id: c.id });
       setSent(true);
-    } else setError(j?.error === "slow_down" ? "You’re sending a lot. Please wait a few minutes." : "Couldn’t send. Please try again.");
+      onSent();
+    } else if (j?.error === "contact_upgrade" || j?.error === "limit") onUpgrade(j.notice);
+    else if (j?.notice) setError(`${j.notice.title}. ${j.notice.line}`);
+    else setError(j?.error === "slow_down" ? "You’re sending a lot. Please wait a few minutes." : "Couldn’t send. Please try again.");
   };
   return (
     <Sheet onClose={onClose}>
@@ -712,14 +755,29 @@ function Composer({ c, onClose }: { c: SwipeCard; onClose: () => void }) {
   );
 }
 
-function FilterSheet({ f, onClose, onApply }: { f: Filters; onClose: () => void; onApply: (f: Filters) => void }) {
+function FilterSheet({ f, sameOnly, onClose, onApply }: { f: Filters; sameOnly: boolean; onClose: () => void; onApply: (f: Filters) => void }) {
   const [v, setV] = useState(f);
   const chip = (on: boolean) => `h-11 rounded-full border px-4 text-[14.5px] font-medium ${on ? "border-lime bg-lime text-brand-deep" : "border-white/14 bg-white/[0.05] text-white/85"}`;
   return (
     <Sheet onClose={onClose}>
       <div className="p-6">
         <p className="text-[24px] font-bold">Filters</p>
-        <p className="mb-2 mt-5 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Show me</p>
+        <p className="mb-2 mt-5 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Gender</p>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["all", "Everyone"],
+              ["female", "Women"],
+              ["male", "Men"],
+            ] as const
+          ).map(([g, t]) => (
+            <button key={g} onClick={() => setV({ ...v, gender: g })} className={chip(v.gender === g)}>
+              {t}
+            </button>
+          ))}
+        </div>
+        {sameOnly && <p className="mt-2 text-[12.5px] text-white/50">Your profile is set to same-gender only, so that’s who you’ll see. You can change it in your profile.</p>}
+        <p className="mb-2 mt-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Show me</p>
         <div className="flex flex-wrap gap-2">
           {(
             [
@@ -741,6 +799,24 @@ function FilterSheet({ f, onClose, onApply }: { f: Filters; onClose: () => void;
             </button>
           ))}
         </div>
+        <p className="mb-2 mt-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Age</p>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setV({ ...v, age: "" })} className={chip(!v.age)}>Any</button>
+          {AGE_FILTERS.map(([l]) => (
+            <button key={l} onClick={() => setV({ ...v, age: l })} className={chip(v.age === l)}>
+              {l}
+            </button>
+          ))}
+        </div>
+        <p className="mb-2 mt-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Habits</p>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setV({ ...v, tag: "" })} className={chip(!v.tag)}>Any</button>
+          {HABIT_FILTERS.map((t) => (
+            <button key={t} onClick={() => setV({ ...v, tag: t })} className={chip(v.tag === t)}>
+              {t}
+            </button>
+          ))}
+        </div>
         <p className="mb-2 mt-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-white/50">Area</p>
         {v.area ? (
           <button onClick={() => setV({ ...v, area: null })} className="flex h-11 items-center gap-2 rounded-full bg-lime px-4 text-[14.5px] font-semibold text-brand-deep">
@@ -752,7 +828,7 @@ function FilterSheet({ f, onClose, onApply }: { f: Filters; onClose: () => void;
           </div>
         )}
         <div className="mt-8 grid grid-cols-[auto_1fr] gap-2">
-          <button onClick={() => setV({ mode: "all", max: 0, area: null })} className="h-13 rounded-full px-5 text-[15px] font-semibold text-white/70">
+          <button onClick={() => setV(NO_FILTERS)} className="h-13 rounded-full px-5 text-[15px] font-semibold text-white/70">
             Clear
           </button>
           <button onClick={() => onApply(v)} className="h-13 rounded-full bg-white py-3.5 text-[16px] font-bold text-brand-deep">

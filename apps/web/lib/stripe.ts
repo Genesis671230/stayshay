@@ -92,6 +92,19 @@ export function createPassCheckout(o: { userId: string; email: string; area: str
   });
 }
 
+/** One-off card payment for rent credits. 1 credit = AED 1. */
+export function createWalletCheckout(o: { userId: string; email: string; amount: number; origin: string }) {
+  return call<CheckoutSession>("POST", "checkout/sessions", {
+    mode: "payment",
+    line_items: [{ quantity: 1, price_data: { currency: "aed", unit_amount: o.amount * 100, product_data: { name: `Stayshay rent credits · AED ${o.amount}`, description: "Usable only for rent booked through Stayshay. Cannot be withdrawn as cash." } } }],
+    customer_email: o.email,
+    client_reference_id: o.userId,
+    metadata: { userId: o.userId, product: "stayshay_wallet", creditAed: String(o.amount) },
+    success_url: `${o.origin}/api/wallet/confirm?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${o.origin}/wallet?canceled=1`,
+  });
+}
+
 export const getCheckoutSession = (id: string) => call<CheckoutSession>("GET", `checkout/sessions/${encodeURIComponent(id)}`, { expand: ["subscription"] });
 export const getSubscription = (id: string) => call<StripeSubscription>("GET", `subscriptions/${encodeURIComponent(id)}`);
 export const createPortal = (customer: string, returnUrl: string) => call<{ url: string }>("POST", "billing_portal/sessions", { customer, return_url: returnUrl });
