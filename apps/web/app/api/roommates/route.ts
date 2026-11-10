@@ -8,14 +8,14 @@ import { currentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-/** Approved public profiles (no phone numbers). */
+/** Listed public profiles (no phone numbers). */
 export async function GET() {
   return NextResponse.json({ profiles: await publicRoommates() }, { headers: { "cache-control": "public, max-age=60", "access-control-allow-origin": "*" } });
 }
 
 /**
  * New roommate profile from the website or app. multipart/form-data: `profile` (JSON, a roommate lead plus
- * `public: true|false`) and optional `photo`. Always lands in the admin inbox; the public card waits for approval.
+ * `public: true|false`) and optional `photo`. Always lands in the admin inbox; the card is live at once (admins can hide it).
  */
 export async function POST(req: Request) {
   const form = await req.formData().catch(() => null);
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   const existing = user && body.public === true ? await myProfile(user.id) : null;
   if (existing) {
     const p = await updateRoommate(existing.id, lead, photoFile, body.removePhoto === true, cleanPrefs(body.prefs));
-    notify(`✏️ <b>Roommate profile edited</b> · needs approval\n${esc(lead.name)} (${esc(user!.email)}) · profile ${existing.id}\nApprove in /admin`);
+    notify(`✏️ <b>Roommate profile edited</b> · live\n${esc(lead.name)} (${esc(user!.email)}) · profile ${existing.id}\nHide it in /admin if needed`);
     return NextResponse.json({ ok: true, leadId: existing.leadId, profileId: p?.id ?? existing.id, updated: true });
   }
   const rec = await addLead("roommate", lead as unknown as Record<string, unknown> & { name: string; phone: string }, {

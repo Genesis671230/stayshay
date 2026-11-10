@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, Logo } from "./ui";
 import { Shay } from "./shay";
@@ -28,9 +28,9 @@ function GoogleButton({ next }: { next: string }) {
   );
 }
 
-export function LoginForm({ next, error }: { google: boolean; next: string; error?: string }) {
-  const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+/** Sign in / create account, usable on the login page or inside a popup. `onDone` runs after a successful email sign-in. */
+export function AuthPanel({ next, error, onDone, initialMode = "signin", compact = false }: { next: string; error?: string; onDone: () => void; initialMode?: "signin" | "signup"; compact?: boolean }) {
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [f, setF] = useState({ name: "", email: "", phone: "", password: "" });
   const [errors, setErrors] = useState<Errors>(error ? { form: ERROR_TEXT[error] ?? "Sign-in failed" } : {});
   const [busy, setBusy] = useState(false);
@@ -48,14 +48,109 @@ export function LoginForm({ next, error }: { google: boolean; next: string; erro
     }).catch(() => null);
     const j = await res?.json().catch(() => ({}));
     setBusy(false);
-    if (res?.ok) {
-      router.push(next);
-      router.refresh();
-    } else setErrors(j?.errors ?? { form: "Something went wrong. Try again." });
+    if (res?.ok) onDone();
+    else setErrors(j?.errors ?? { form: "Something went wrong. Try again." });
   };
 
   const err = (k: keyof Errors) => (errors[k] ? <span className="mt-1 block text-[12.5px] font-medium text-warn">{errors[k]}</span> : null);
+  const fieldCls = compact ? field.replace("py-3.5", "py-3") : field;
 
+  return (
+    <div>
+      <h1 className={`font-display leading-tight ${compact ? "text-[28px]" : "text-[34px]"}`}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+      <p className="mt-2 text-[15px] text-muted">{mode === "signin" ? "Sign in to save places, track your requests and meet roommates." : "Free. We use your number only to send you matches and arrange viewings."}</p>
+
+      {/* Always offered on sign-in and sign-up; if Google isn't configured on this server the route explains it. */}
+      <div className={compact ? "mt-5" : "mt-7"}>
+        <GoogleButton next={next} />
+        <div className={`flex items-center gap-3 text-[12.5px] text-muted ${compact ? "my-4" : "my-5"}`}>
+          <span className="h-px flex-1 bg-line" /> or with email <span className="h-px flex-1 bg-line" />
+        </div>
+      </div>
+
+      <form onSubmit={submit} noValidate className={compact ? "space-y-3" : "space-y-3.5"}>
+        {mode === "signup" && (
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-semibold">Full name</span>
+            <input className={fieldCls} value={f.name} onChange={set("name")} autoComplete="name" />
+            {err("name")}
+          </label>
+        )}
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-semibold">Email</span>
+          <input className={fieldCls} type="email" value={f.email} onChange={set("email")} autoComplete="email" />
+          {err("email")}
+        </label>
+        {mode === "signup" && (
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-semibold">Phone / WhatsApp</span>
+            <input className={fieldCls} type="tel" inputMode="tel" value={f.phone} onChange={set("phone")} placeholder="050 123 4567" autoComplete="tel" />
+            {err("phone")}
+          </label>
+        )}
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] font-semibold">Password</span>
+          <input className={fieldCls} type="password" value={f.password} onChange={set("password")} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+          {err("password")}
+        </label>
+        {mode === "signup" && <RefField value={ref} onChange={setRef} />}
+        {errors.form && <p className="rounded-[12px] bg-warn-bg px-3.5 py-2.5 text-[13.5px] font-medium text-warn">{errors.form}</p>}
+        <button disabled={busy} className="h-12 w-full rounded-[12px] bg-brand text-[15.5px] font-semibold text-white disabled:opacity-50">
+          {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+        </button>
+      </form>
+
+      <p className={`text-center text-[14px] text-muted ${compact ? "mt-4" : "mt-6"}`}>
+        {mode === "signin" ? "New to Stayshay? " : "Already have an account? "}
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "signin" ? "signup" : "signin");
+            setErrors({});
+          }}
+          className="font-semibold text-brand underline underline-offset-2"
+        >
+          {mode === "signin" ? "Create an account" : "Sign in"}
+        </button>
+      </p>
+      <p className={`text-center text-[12px] leading-relaxed text-muted ${compact ? "mt-3" : "mt-6"}`}>
+        By continuing you agree to our <a href="/terms" className="underline">Terms</a> and <a href="/privacy" className="underline">Privacy policy</a>.
+      </p>
+    </div>
+  );
+}
+
+/** The sign-in / sign-up popup. Bottom sheet on phones, centred card on desktop. Locks page scroll while open. */
+export function AuthModal({ open, next, onClose, onDone, initialMode = "signup", title }: { open: boolean; next: string; onClose: () => void; onDone: () => void; initialMode?: "signin" | "signup"; title?: string }) {
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", esc);
+    };
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center" role="dialog" aria-modal="true" aria-label="Sign in or create an account">
+      <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-[rgb(6_12_10/0.62)] backdrop-blur-sm" style={{ animation: "fadeIn .18s ease-out both" }} />
+      <div className="relative max-h-[92dvh] w-full overflow-y-auto overscroll-contain rounded-t-[28px] bg-white px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-3 text-ink shadow-[0_-20px_60px_rgb(0_0_0/0.3)] md:max-w-[440px] md:rounded-[28px] md:p-8" style={{ animation: "fadeIn .2s ease-out both" }}>
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line md:hidden" />
+        <button onClick={onClose} aria-label="Close" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-surface text-ink-2 hover:text-ink">
+          <Icon name="close" size={16} />
+        </button>
+        {title && <p className="mb-3 pr-10 text-[12px] font-bold uppercase tracking-[0.12em] text-fresh">{title}</p>}
+        <AuthPanel next={next} onDone={onDone} initialMode={initialMode} compact />
+      </div>
+    </div>
+  );
+}
+
+export function LoginForm({ next, error }: { google: boolean; next: string; error?: string }) {
+  const router = useRouter();
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col px-5 py-6 md:px-12">
@@ -63,64 +158,14 @@ export function LoginForm({ next, error }: { google: boolean; next: string; erro
           <Logo />
         </a>
         <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-10">
-          <h1 className="font-display text-[34px] leading-tight">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
-          <p className="mt-2 text-[15px] text-muted">{mode === "signin" ? "Sign in to save places, track your requests and hear from listers." : "Free. We use your number only to send you matches and arrange viewings."}</p>
-
-          {/* Always offered on sign-in and sign-up; if Google isn't configured on this server the route explains it. */}
-          <div className="mt-7">
-            <GoogleButton next={next} />
-            <div className="my-5 flex items-center gap-3 text-[12.5px] text-muted">
-              <span className="h-px flex-1 bg-line" /> or with email <span className="h-px flex-1 bg-line" />
-            </div>
-          </div>
-
-          <form onSubmit={submit} noValidate className="space-y-3.5">
-            {mode === "signup" && (
-              <label className="block">
-                <span className="mb-1.5 block text-[13px] font-semibold">Full name</span>
-                <input className={field} value={f.name} onChange={set("name")} autoComplete="name" />
-                {err("name")}
-              </label>
-            )}
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-semibold">Email</span>
-              <input className={field} type="email" value={f.email} onChange={set("email")} autoComplete="email" />
-              {err("email")}
-            </label>
-            {mode === "signup" && (
-              <label className="block">
-                <span className="mb-1.5 block text-[13px] font-semibold">Phone / WhatsApp</span>
-                <input className={field} type="tel" inputMode="tel" value={f.phone} onChange={set("phone")} placeholder="050 123 4567" autoComplete="tel" />
-                {err("phone")}
-              </label>
-            )}
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-semibold">Password</span>
-              <input className={field} type="password" value={f.password} onChange={set("password")} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
-              {err("password")}
-            </label>
-            {mode === "signup" && <RefField value={ref} onChange={setRef} />}
-            {errors.form && <p className="rounded-[12px] bg-warn-bg px-3.5 py-2.5 text-[13.5px] font-medium text-warn">{errors.form}</p>}
-            <button disabled={busy} className="h-12 w-full rounded-[12px] bg-brand text-[15.5px] font-semibold text-white disabled:opacity-50">
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-[14px] text-muted">
-            {mode === "signin" ? "New to Stayshay? " : "Already have an account? "}
-            <button
-              onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
-                setErrors({});
-              }}
-              className="font-semibold text-brand underline underline-offset-2"
-            >
-              {mode === "signin" ? "Create an account" : "Sign in"}
-            </button>
-          </p>
-          <p className="mt-6 text-center text-[12px] leading-relaxed text-muted">
-            By continuing you agree to our <a href="/terms" className="underline">Terms</a> and <a href="/privacy" className="underline">Privacy policy</a>.
-          </p>
+          <AuthPanel
+            next={next}
+            error={error}
+            onDone={() => {
+              router.push(next);
+              router.refresh();
+            }}
+          />
         </div>
       </div>
       <div className="relative hidden items-center justify-center overflow-hidden bg-brand lg:flex">

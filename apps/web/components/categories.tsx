@@ -26,7 +26,7 @@ export function Categories() {
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="eyebrow">Browse by type</p>
-          <h2 className="font-display mt-2 text-[32px] leading-[1.08] md:text-[44px]">Choose how you want to live</h2>
+          <h2 className="font-display mt-2 text-[32px] leading-[1.08] md:text-[44px]">Find your place</h2>
         </div>
         <p className="max-w-[380px] text-[15px] text-muted">From a shared bed near the metro to a studio of your own. Every price shown is the real monthly rent.</p>
       </div>
@@ -70,7 +70,7 @@ function Rail({ title, sub, href, items }: { title: string; sub: string; href: s
           See all <Icon name="arrow-right" size={14} />
         </Link>
       </div>
-      <div className="snap-x-strip -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
+      <div className="roomie-scroll -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
         {items.slice(0, 4).map((l) => (
           <div key={l.id} className="w-[78vw] shrink-0 sm:w-[44vw] md:w-auto">
             <ListingCard listing={l} />
@@ -83,19 +83,77 @@ function Rail({ title, sub, href, items }: { title: string; sub: string; href: s
 
 const newest = (a: Listing, b: Listing) => (b.postedAt ?? "").localeCompare(a.postedAt ?? "");
 
+const SPOTLIGHT: Record<"partition" | "room", { eyebrow: string; title: string; line: string }> = {
+  partition: { eyebrow: "Partitions", title: "Your own space, at a shared price.", line: "Private, furnished partitions in well-kept flats near the metro." },
+  room: { eyebrow: "Private rooms", title: "Your own door. Your own pace.", line: "Furnished private rooms in shared apartments, kitchen and living room included." },
+};
+
+/** Homepage section for one type: headline, typical price, up to 8 real listings with photos. */
+export function TypeSpotlight({ type, tone = "light" }: { type: "partition" | "room"; tone?: "light" | "tint" }) {
+  const { all: LISTINGS } = useMarketplace();
+  const of = LISTINGS.filter((l) => l.type === type);
+  const items = of.filter((l) => l.photos.length >= 3).sort(newest).slice(0, 8);
+  if (items.length < 2) return null;
+  const c = SPOTLIGHT[type];
+  const typical = median(of.map((l) => l.priceAed));
+  const from = of.length ? Math.min(...of.map((l) => l.priceAed)) : null;
+  return (
+    <section className={tone === "tint" ? "bg-[#f3f7f4]" : ""}>
+      <div className="mx-auto max-w-[1240px] px-4 py-14 md:px-8 md:py-20">
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="eyebrow">{c.eyebrow}</p>
+            <h2 className="font-display mt-2 max-w-[620px] text-[32px] leading-[1.04] md:text-[48px]">{c.title}</h2>
+            <p className="mt-3 max-w-[520px] text-[15.5px] text-ink-2">{c.line}</p>
+          </div>
+          <div className="flex items-center gap-6">
+            <dl className="flex gap-6">
+              {from != null && (
+                <div>
+                  <dt className="text-[12px] text-muted">From</dt>
+                  <dd className="font-figure text-[22px] font-bold">{aed(from)}</dd>
+                </div>
+              )}
+              {typical != null && (
+                <div>
+                  <dt className="text-[12px] text-muted">Typical</dt>
+                  <dd className="font-figure text-[22px] font-bold">{aed(typical)}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-[12px] text-muted">Available</dt>
+                <dd className="font-figure text-[22px] font-bold">{of.length}</dd>
+              </div>
+            </dl>
+            <Link href={`/search?type=${type}`} className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-5 text-[14.5px] font-semibold text-white hover:bg-brand-deep md:inline-flex">
+              See all <Icon name="arrow-right" size={14} />
+            </Link>
+          </div>
+        </div>
+        <div className="roomie-scroll -mx-4 mt-8 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
+          {items.map((l) => (
+            <div key={l.id} className="w-[78vw] shrink-0 sm:w-[44vw] md:w-auto">
+              <ListingCard listing={l} />
+            </div>
+          ))}
+        </div>
+        <Link href={`/search?type=${type}`} className="mt-6 flex h-12 items-center justify-center gap-2 rounded-full bg-ink text-[15px] font-semibold text-white md:hidden">
+          See all {c.eyebrow.toLowerCase()} <Icon name="arrow-right" size={14} />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function Rails() {
   const { all: LISTINGS } = useMarketplace();
   const rich = LISTINGS.filter((l) => l.photos.length >= 3);
   const bed = rich.filter((l) => l.type === "bed_space").sort(newest);
-  const partitions = rich.filter((l) => l.type === "partition" && l.nearMetroMinutes != null && l.nearMetroMinutes <= 10).sort(newest);
-  const rooms = rich.filter((l) => l.type === "room" && l.priceAed <= 2500).sort(newest);
   const allIn = rich.filter((l) => l.billsIncluded && !l.deposit).sort(newest);
 
   return (
     <section className="mx-auto max-w-[1240px] px-4 py-16 md:px-8 md:py-24">
       <Rail title="Fresh bed spaces" sub={`Typically ${aed(median(LISTINGS.filter((l) => l.type === "bed_space").map((l) => l.priceAed)) ?? 0)} a month`} href="/search?type=bed_space&sort=newest" items={bed} />
-      <Rail title="Partitions near the metro" sub="10 minutes’ walk or less" href="/search?type=partition&metro=1" items={partitions} />
-      <Rail title="Private rooms under AED 2,500" sub="Your own door, shared kitchen" href="/search?type=room&max=2500" items={rooms} />
       <Rail title="Bills included, no deposit" sub="Move in with just the first month" href="/search?bills=1&nodeposit=1" items={allIn} />
     </section>
   );
@@ -115,7 +173,7 @@ export function Areas() {
   return (
     <section className="mx-auto max-w-[1240px] px-4 py-16 md:px-8 md:py-24">
       <p className="eyebrow">Neighbourhoods</p>
-      <h2 className="font-display mt-2 text-[34px] leading-[1.08] md:text-[44px]">Live close to work, not just close to cheap</h2>
+      <h2 className="font-display mt-2 text-[34px] leading-[1.08] md:text-[44px]">Neighbourhoods</h2>
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         {top.map((slug) => {
           const a = AREA_BY_SLUG.get(slug)!;

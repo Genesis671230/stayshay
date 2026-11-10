@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 const FAQ = [
   ["Is it free?", "Making a profile, swiping your first 6 profiles and liking people are free. The Stayshay Pass (AED 25 a month, cancel any time) unlocks every profile and messaging."],
-  ["Who can see my profile?", "Signed-in people on Stayshay looking for a roommate, after our team approves it. Only your first name is shown, never your surname, number or email."],
+  ["Who can see my profile?", "Signed-in people on Stayshay looking for a roommate, as soon as you publish. You can hide your profile any time. Only your first name is shown, never your surname, number or email."],
   ["How does matching work?", "Shared flats here are ladies-only or men-only, so you see people of the same gender. They're ranked by budget, areas, move-in date and lifestyle, best fit first."],
   ["How do matches work?", "Swipe right (or tap the heart) on people you like. If they swipe right on you too, it's a match and you can message each other with the Stayshay Pass."],
   ["How do I stay safe?", "Meet in a public place first, view the room in person, and never pay a deposit before you've seen it and signed. Report anyone who asks for money up front."],
@@ -30,7 +30,7 @@ export default async function Page() {
       <JsonLd data={[{ "@context": "https://schema.org", "@type": "FAQPage", url: `${SITE}/roommates`, mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }]} />
       <Header />
       <main>
-        <RoomieStage people={profiles.length} returnTo="/roommates" title="Find a roommate you’d actually live with." intro="Make your profile, swipe right on people who fit your budget, area and routine, and match. Everyone is checked by our team." />
+        <RoomieStage people={profiles.length} returnTo="/roommates" title="Find a roommate you’d actually live with." intro="Make your profile, swipe right on people who fit your budget, area and routine, and match. Your profile is live the moment you publish." />
         <section className="mx-auto max-w-[860px] px-4 py-14">
           <h2 className="font-display text-[30px] leading-tight md:text-[38px]">Roommates in Dubai, the simple way</h2>
           <div className="mt-6 divide-y divide-line">

@@ -38,7 +38,7 @@ export function Gallery({ listing, sizes, rounded = true }: { listing: Listing; 
     <div className={`group relative aspect-[4/3] overflow-hidden bg-surface ${rounded ? "rounded-[18px]" : ""}`}>
       <div
         ref={strip}
-        className="snap-x-strip flex h-full overflow-x-auto"
+        className="snap-x-strip snap-photos flex h-full overflow-x-auto"
         onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
       >
         {photos.map((src, i) => (

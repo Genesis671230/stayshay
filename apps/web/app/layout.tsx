@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter_Tight, Plus_Jakarta_Sans } from "next/font/google";
 import { BRAND } from "@stayshay/core";
 import "./globals.css";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -13,6 +13,7 @@ import { LiveBeacon } from "@/components/live-beacon";
 import { activeAnnouncement } from "@/lib/store";
 import { GA_ID, SITE, organizationLd, websiteLd } from "@/lib/seo";
 
+const display = Inter_Tight({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display-face", display: "swap" });
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-jakarta", display: "swap" });
 
 const title = `${BRAND.name} — Rooms, Bed Spaces & Studios for Monthly Rent in UAE`;
@@ -56,7 +57,7 @@ export const viewport: Viewport = { themeColor: "#123D2E", width: "device-width"
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const a = await activeAnnouncement();
   return (
-    <html lang="en" className={jakarta.variable}>
+    <html lang="en" className={`${jakarta.variable} ${display.variable}`}>
       <body>
         <JsonLd data={[organizationLd(), websiteLd()]} />
         <Analytics id={GA_ID} />

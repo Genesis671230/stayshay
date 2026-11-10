@@ -7,23 +7,22 @@ import { stayshayWhatsapp } from "@/lib/contact";
 const H2 = "font-display mt-2 text-[34px] leading-[1.08] md:text-[44px]";
 
 const TENANT_STEPS = [
-  ["Search or ask", "Filter by area, metro, budget and move-in date, or answer five questions and we’ll match you."],
-  ["Check the details", "Rent, deposit, upfront cost, bills, bathroom and who can live there, on every listing."],
-  ["Book a viewing", "One tap sends your request to the Stayshay team on WhatsApp. We confirm with the owner and set the time."],
-  ["View, then pay", "Never transfer money before you’ve seen the place and met the lister."],
+  ["Search or ask", "By area, metro or budget."],
+  ["Check the details", "Rent, deposit and bills, upfront."],
+  ["Book a viewing", "One tap on WhatsApp."],
+  ["View, then pay", "Never pay before you’ve seen it."],
 ];
 const OWNER_STEPS = [
-  ["Tell us about it", "Type, area, rent and who it suits. About two minutes."],
-  ["Send photos", "Add 4 to 8 photos. We write and check the listing."],
-  ["Get verified", "Phone and ID checked; consent and permit details earn the compliance badge."],
-  ["Take inquiries", "Renters reach you pre-qualified. Mark it rented in one tap."],
+  ["Tell us about it", "Type, area and rent."],
+  ["Send photos", "We write the listing."],
+  ["Get verified", "Phone, ID and permit."],
+  ["Take inquiries", "Mark it rented in one tap."],
 ];
 
 export function HowItWorks() {
   return (
     <section className="mx-auto max-w-[1240px] px-4 py-12 md:px-8 md:py-24">
-      <p className="eyebrow">How it works</p>
-      <h2 className={H2}>Simple on both sides</h2>
+      <h2 className={H2}>How it works</h2>
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {[
           ["For renters", TENANT_STEPS, "/find", "Find me a room"],
@@ -59,21 +58,18 @@ export function Trust() {
     {
       icon: "shield",
       title: "Verified compliant",
-      body: "The lister uploaded the landlord’s written consent and, for partitions, declared a shared-housing permit. We check the documents are complete and match the listing.",
+      body: "Landlord consent and permits, checked by us.",
     },
-    { icon: "key", title: "Verified lister", body: "Phone verified, with identity checked against Emirates ID. UAE PASS sign-in is on the way." },
-    { icon: "flag", title: "Report in two taps", body: "Already rented, wrong price, unsafe or looks like a scam? We review reports within 24 hours and pause the listing while we check." },
-    { icon: "wallet", title: "Never pay before viewing", body: "Don’t send a deposit or rent before you’ve seen the place. Stayshay will never ask you to pay over WhatsApp." },
+    { icon: "key", title: "Verified lister", body: "Phone and Emirates ID checked." },
+    { icon: "flag", title: "Report in two taps", body: "We review every report within 24 hours." },
+    { icon: "wallet", title: "Never pay before viewing", body: "See it first. We never ask for money on WhatsApp." },
   ];
   return (
     <section className="bg-brand text-white">
       <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 px-4 py-12 md:px-8 md:py-24 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div>
           <p className="eyebrow">Trust &amp; safety</p>
-          <h2 className={`${H2} text-white`}>Safety you can see on every listing</h2>
-          <p className="m-short mt-4 max-w-[440px] text-[15.5px] leading-relaxed text-white/75">
-            Dubai’s shared-housing rules now require permits for partitions and landlord consent for sharing. We show you what’s been declared and checked before you pick up the phone.
-          </p>
+          <h2 className={`${H2} text-white`}>Safe by design</h2>
           <p className="mt-6 max-w-[440px] border-l-2 border-brass pl-4 text-[13px] leading-relaxed text-white/60">
             Badges show what we’ve checked. They aren’t a government approval or a legal guarantee. Read the listing and your contract before you sign.
           </p>
@@ -95,9 +91,9 @@ export function Trust() {
 export function ListerCta() {
   const benefits = [
     ["Free to list", "No commission, no card."],
-    ["Pre-qualified inquiries", "Each one arrives with move-in date and budget."],
-    ["Compliance badge", "Upload consent and permit details to get Verified compliant. Renters filter for it."],
-    ["Mark rented in one tap", "The calls stop once your room is let."],
+    ["Ready-to-move renters", "With budget and move-in date."],
+    ["Verified badge", "Upload consent and permit."],
+    ["Rented in one tap", "The calls stop."],
   ];
   return (
     <section id="list" className="mx-auto max-w-[1240px] px-4 py-12 md:px-8 md:py-24">
@@ -107,8 +103,8 @@ export function ListerCta() {
         </div>
         <div className="p-6 md:p-10">
           <p className="eyebrow">For owners and landlords</p>
-          <h2 className={H2}>Fill your room without the back-and-forth</h2>
-          <p className="m-short mt-4 text-[15.5px] leading-relaxed text-ink-2">List for free in under five minutes. Get WhatsApp inquiries that already include name, move-in date and budget.</p>
+          <h2 className={H2}>List your room, free</h2>
+          <p className="m-short mt-4 text-[15.5px] leading-relaxed text-ink-2">Five minutes. No commission.</p>
           <ul className="mt-6 space-y-3.5">
             {benefits.map(([t, d]) => (
               <li key={t} className="flex gap-3">
@@ -181,7 +177,7 @@ export function Faq() {
   return (
     <section id="faq" className="mx-auto max-w-[880px] px-4 py-12 md:px-8 md:py-24">
       <p className="eyebrow text-center">Questions</p>
-      <h2 className={`${H2} text-center`}>Good to know before you move</h2>
+      <h2 className={`${H2} text-center`}>Questions</h2>
       <div className="mt-10 divide-y divide-line border-y border-line">
         {FAQ.map(([q, a],i) => (
           <details key={i} className="group py-5">
@@ -333,10 +329,10 @@ export function ToolsStrip() {
   return (
     <section className="mx-auto max-w-[1240px] px-4 py-10 md:px-8 md:py-16">
       <p className="eyebrow">Play</p>
-      <h2 className="font-display mt-2 text-[30px] leading-[1.08] md:text-[40px]">Find your place the fun way</h2>
-      <div className="mt-6 flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
+      <h2 className="font-display mt-2 text-[30px] leading-[1.08] md:text-[40px]">Free tools</h2>
+      <div className="roomie-scroll mt-6 flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
         {tiles.map(([href, t, d, img]) => (
-          <Link key={href} href={href} className="group relative h-[260px] w-[78%] shrink-0 snap-start overflow-hidden rounded-[24px] bg-brand-deep text-white md:w-auto">
+          <Link key={href} href={href} className="group relative h-[260px] w-[78%] shrink-0 overflow-hidden rounded-[24px] bg-brand-deep text-white md:w-auto">
             <Image src={img} alt="" fill sizes="(min-width:768px) 25vw, 80vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
             <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0)_30%,rgb(9_29_21/0.9)_100%)]" />
             <span className="absolute inset-x-0 bottom-0 p-5">

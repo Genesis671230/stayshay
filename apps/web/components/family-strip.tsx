@@ -1,37 +1,40 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const CARDS: [string, string, string][] = [
-  ["2BHK for families", "Two bedrooms near schools and the metro", "/family/2bhk-apartment-dubai"],
-  ["3BHK & villas", "Space for bigger families", "/family/3bhk-apartment-dubai"],
-  ["1BHK for couples", "A door between bedroom and living room", "/family/1bhk-apartment-dubai"],
-  ["Family sharing", "A private family room, shared kitchen", "/family/family-sharing-apartment-dubai"],
-  ["Near the metro", "Family flats a short walk from a station", "/family/family-apartment-near-metro-dubai"],
-  ["Moving to Dubai", "From the UK, Europe, US, India, Abu Dhabi…", "/move"],
+  ["2BHK for families", "/family/2bhk-apartment-dubai", "/photos/living.jpg"],
+  ["3BHK & villas", "/family/3bhk-apartment-dubai", "/work/villa-velora/facade.jpg"],
+  ["1BHK for couples", "/family/1bhk-apartment-dubai", "/photos/couples.jpg"],
+  ["Family sharing", "/family/family-sharing-apartment-dubai", "/photos/room.jpg"],
+  ["Near the metro", "/family/family-apartment-near-metro-dubai", "/photos/metro.jpg"],
+  ["Moving to Dubai", "/move", "/photos/areas/downtown-dubai.jpg"],
 ];
 
-/** Homepage band for families and people relocating: routes them to the concierge pages instead of shared-housing search. */
+/** Families and people relocating: big photos, one line each, straight to the concierge pages. */
 export function FamilyStrip() {
   return (
-    <section className="mx-auto max-w-[1240px] px-4 py-10 md:px-8">
-      <div className="rounded-[26px] bg-mint p-6 md:p-9">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-fresh">Families & relocation</p>
-            <h2 className="font-display mt-2 text-[28px] leading-tight text-ink md:text-[36px]">Need a 1BHK, 2BHK or 3BHK? We find it for you.</h2>
-            <p className="mt-2 max-w-[640px] text-[15px] text-ink-2">Send your family&apos;s brief once. Our team WhatsApps you real options with prices and viewing times. Free for families.</p>
-          </div>
-          <Link href="/family#request" className="inline-flex h-12 items-center rounded-[12px] bg-brand px-6 text-[15px] font-semibold text-white hover:bg-brand-deep">
-            Send my brief
+    <section className="mx-auto max-w-[1240px] px-4 py-14 md:px-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Families & relocation</p>
+          <h2 className="font-display mt-2 text-[32px] text-ink md:text-[44px]">Homes for families</h2>
+        </div>
+        <Link href="/family#request" className="inline-flex h-12 items-center rounded-full bg-brand px-6 text-[15px] font-semibold text-white hover:bg-brand-deep">
+          We find it for you
+        </Link>
+      </div>
+      <div className="roomie-scroll -mx-4 mt-7 flex gap-3 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0">
+        {CARDS.map(([t, href, photo]) => (
+          <Link
+            key={href}
+            href={href}
+            className={`group relative w-[72%] shrink-0 overflow-hidden rounded-[26px] bg-surface sm:w-[45%] md:w-auto aspect-[4/5] md:aspect-[4/3]`}
+          >
+            <Image src={photo} alt="" fill sizes="(min-width: 768px) 33vw, 72vw" className="object-cover transition duration-500 group-hover:scale-[1.04]" />
+            <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0)_50%,rgb(0_0_0/0.65)_100%)]" />
+            <span className="absolute inset-x-5 bottom-5 text-[20px] font-semibold leading-tight text-white md:text-[22px]">{t}</span>
           </Link>
-        </div>
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {CARDS.map(([t, d, href]) => (
-            <Link key={href} href={href} className="rounded-[16px] bg-white p-4 transition hover:shadow-[0_6px_24px_rgb(0_0_0/0.07)]">
-              <span className="block text-[16px] font-semibold text-ink">{t}</span>
-              <span className="mt-1 block text-[13.5px] text-ink-2">{d}</span>
-            </Link>
-          ))}
-        </div>
+        ))}
       </div>
     </section>
   );

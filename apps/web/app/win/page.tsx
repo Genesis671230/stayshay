@@ -1,6 +1,5 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { Icon } from "@/components/ui";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/sections";
 import { MarketplaceProvider } from "@/components/marketplace";
@@ -30,6 +29,8 @@ const FAQ: [string, string][] = [
   ["Do renters pay anything?", "No. Renters never pay Stayshay, and rewards never come out of anyone's rent or deposit."],
   ["Are agents allowed to join?", "Yes. If you broker rentals in Dubai, keep your RERA registration up to date. This is a referral reward paid by Stayshay, not a brokerage commission."],
 ];
+
+const TRACK_PHOTO: Record<string, string> = { referrals: "/photos/roommates.jpg", agents: "/photos/partners.jpg", listings: "/photos/room.jpg", leads: "/photos/couples.jpg" };
 
 const RULES = [
   "Only real, confirmed results count. Fake leads, self-referrals and duplicate people are removed.",
@@ -79,15 +80,19 @@ export default function Page() {
           <h2 className="font-display mt-2 text-[34px] leading-[1.05] md:text-[52px]">Pick your challenge</h2>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {CAMPAIGN.tracks.map((t, i) => (
-              <div key={t.key} className={`flex flex-col rounded-[26px] p-6 ${i % 2 ? "bg-[#ecf8ee]" : "bg-lime/70"}`}>
-                <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-white text-brand-deep" aria-hidden><Icon name={t.icon} size={20} /></span>
-                <p className="font-display mt-4 text-[24px] leading-tight text-ink">{t.title}</p>
-                <p className="mt-1 text-[13.5px] text-ink-2">{t.who}</p>
-                <p className="font-figure mt-6 text-[36px] font-bold leading-none text-brand-deep">{aed(t.reward)}</p>
-                <p className="mt-2 flex-1 text-[14px] leading-snug text-ink-2">when {t.target.charAt(0).toLowerCase() + t.target.slice(1)}</p>
-                <a href="#apply" className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-ink px-4 text-[14px] font-semibold hover:bg-ink hover:text-white">
-                  Join <span aria-hidden>→</span>
-                </a>
+              <div key={t.key} className="flex flex-col overflow-hidden rounded-[26px] bg-[#f3f7f4] ring-1 ring-line">
+                <div className="relative aspect-[4/3]">
+                  <Image src={TRACK_PHOTO[t.key]} alt="" fill sizes="(min-width:1024px) 300px, (min-width:640px) 50vw, 100vw" className="object-cover" />
+                  <span className="font-figure absolute bottom-3 left-3 rounded-full bg-white px-3 py-1 text-[15px] font-bold text-brand-deep">{aed(t.reward)}</span>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="font-display text-[24px] leading-tight text-ink">{t.title}</p>
+                  <p className="mt-1 text-[13.5px] text-ink-2">{t.who}</p>
+                  <p className="mt-4 flex-1 text-[14px] leading-snug text-ink-2">{aed(t.reward)} when {t.target.charAt(0).toLowerCase() + t.target.slice(1)}</p>
+                  <a href="#apply" className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-ink px-4 text-[14px] font-semibold hover:bg-ink hover:text-white">
+                    Join <span aria-hidden>→</span>
+                  </a>
+                </div>
               </div>
             ))}
           </div>

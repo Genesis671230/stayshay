@@ -1,19 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type Me = { name: string; email: string; phone: string | null; picture: string | null };
 
 /** The signed-in visitor (null when signed out) and whether Google sign-in is on. */
 export function useMe() {
   const [state, setState] = useState<{ me: Me | null; google: boolean; ready: boolean }>({ me: null, google: false, ready: false });
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => setState({ me: j.user ?? null, google: !!j.google, ready: true }))
       .catch(() => setState((s) => ({ ...s, ready: true })));
-  }, []);
-  return state;
+  }, [tick]);
+  /** Re-reads the session, e.g. after signing in from a popup. */
+  const reload = useCallback(() => setTick((t) => t + 1), []);
+  return { ...state, reload };
 }
 
 /** One-tap sign-in offered at the moment someone commits (booking, request, profile), never before. */

@@ -23,18 +23,11 @@ export function Hero() {
   const [mode, setMode] = useState<"rent" | "list">("rent");
   const [ownerType, setOwnerType] = useState<ListingType>("bed_space");
   const from = LISTINGS.length ? Math.min(...LISTINGS.map((l) => l.priceAed)) : 0;
-  const billsIn = LISTINGS.filter((l) => l.billsIncluded).length;
   const popular = [...new Set(LISTINGS.map((l) => l.areaSlug))]
     .map((s) => ({ s, n: LISTINGS.filter((l) => l.areaSlug === s).length }))
     .sort((a, b) => b.n - a.n)
     .slice(0, 5)
     .map((x) => x.s);
-
-  const pillars: { icon: string; title: string; text: string }[] = [
-    { icon: "key", title: "Luxury, furnished", text: "Hand-picked rooms and studios with real photos, ready to move in." },
-    { icon: "wallet", title: "Affordable, honest", text: `From ${aed(from)} a month. Rent, deposit and bills shown up front${billsIn ? `, ${billsIn} with bills included` : ""}.` },
-    { icon: "shield", title: "Smart, AI-matched", text: "Shay finds places and roommates for you, in any language, in seconds." },
-  ];
 
   return (
     <section className="px-2 pt-2 md:px-4 md:pt-3">
@@ -48,15 +41,15 @@ export function Hero() {
           <div className="grid grid-cols-1 items-end gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12.5px] font-semibold text-white backdrop-blur">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#6ee7b7] shadow-[0_0_10px_#6ee7b7]" /> Luxury spaces · Affordable rent · Smart living
+                Furnished monthly living · Dubai &amp; the UAE
               </span>
               <h1 className="font-display mt-6 text-[40px] leading-[0.98] text-white sm:text-[62px] lg:text-[80px]">
-                Live like it’s luxury.
+                Dubai’s best addresses.
                 <br />
-                <span className="bg-[linear-gradient(90deg,#8fe3bd,#d9fbe9)] bg-clip-text text-transparent">Pay like it’s shared.</span>
+                <span className="text-[#bfeed6]">For a share of the rent.</span>
               </h1>
               <p className="mt-4 max-w-[560px] text-[15.5px] leading-relaxed text-white/85 md:mt-5 md:text-[18px]">
-                Furnished rooms, partitions and studios from <span className="font-semibold text-white">{aed(from)}</span> a month<span className="hidden sm:inline">, often with bills, Wi-Fi and cleaning included</span>. No commission, no surprises.
+                Furnished partitions, rooms and studios from <span className="font-semibold text-white">{aed(from)}</span> a month. Bills often included. Zero commission.
               </p>
             </div>
 
@@ -144,21 +137,10 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="mt-6 max-w-[1060px]">
-            <QuickAsk title="In a hurry? Tap what you need and WhatsApp us" />
+          <div className="mt-8 max-w-[1060px] pb-2">
+            <QuickAsk title="Or tell us what you need" />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-2 md:mt-12 md:grid-cols-3 md:gap-3">
-            {pillars.map((p) => (
-              <div key={p.title} className="flex items-start gap-3 rounded-[18px] border border-white/12 bg-white/8 px-4 py-3 text-white backdrop-blur-md md:rounded-[22px] md:p-4">
-                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#6ee7b7] shadow-[0_0_14px_#6ee7b7]" />
-                <span>
-                  <span className="block text-[14.5px] font-bold md:text-[15.5px]">{p.title}</span>
-                  <span className="mt-0.5 hidden text-[13.5px] leading-snug text-white/75 sm:block">{p.text}</span>
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>

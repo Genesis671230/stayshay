@@ -17,8 +17,8 @@ export default function OgImage() {
           <div style={{ fontSize: 44, fontWeight: 600, letterSpacing: -1, color: "#F6F3EC" }}>stayshay</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>Live like it’s luxury.</div>
-          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, color: "#8fe3bd" }}>Pay like it’s shared.</div>
+          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2 }}>Dubai’s best addresses.</div>
+          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2, color: "#8fe3bd" }}>For a share of the rent.</div>
           <div style={{ fontSize: 30, marginTop: 28, color: "rgba(255,255,255,0.85)" }}>Bed spaces · Partitions · Rooms · Studios · Roommates — Dubai & UAE</div>
         </div>
       </div>

@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export type WorkCard = { slug: string; name: string; category: string; location: string; year: string; tagline: string; cover: string; photos: number };
-export type WorkVideo = { id: string; title: string; place: string; start: number; end: number; poster: string };
+export type WorkVideo = { id: string; title: string; place: string; src: string; seconds: number; poster: string };
 
 /** Card sizes repeat in a 6-step rhythm so the grid never looks like a spreadsheet. */
 const RHYTHM = ["md:col-span-4 md:row-span-2", "md:col-span-2", "md:col-span-2", "md:col-span-3", "md:col-span-3", "md:col-span-2 md:row-span-2", "md:col-span-4", "md:col-span-2", "md:col-span-2", "md:col-span-2"];
@@ -48,24 +48,36 @@ export function WorkBrowser({ cards, filters }: { cards: WorkCard[]; filters: { 
   );
 }
 
-/** YouTube only loads when someone presses play; the poster is our own photo. Each clip plays just its trimmed section. */
+/** Our own player: trimmed MP4s hosted on stayshay.com, nothing loads until someone presses play. */
 export function WorkVideos({ videos }: { videos: WorkVideo[] }) {
   const [playing, setPlaying] = useState<string | null>(null);
+  const refs = useRef<Record<string, HTMLVideoElement | null>>({});
+  const play = (id: string) => {
+    for (const [k, el] of Object.entries(refs.current)) if (k !== id) el?.pause();
+    setPlaying(id);
+    requestAnimationFrame(() => refs.current[id]?.play().catch(() => {}));
+  };
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       {videos.map((v, i) => (
         <div key={v.id} className={`relative overflow-hidden rounded-[26px] bg-ink ${i === 0 ? "aspect-video lg:row-span-2 lg:aspect-auto" : "aspect-video"}`}>
-          {playing === v.id ? (
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&start=${v.start}&end=${v.end}&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
-              title={v.title}
-              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full"
-            />
-          ) : (
-            <button onClick={() => setPlaying(v.id)} className="group absolute inset-0 text-left" aria-label={`Play: ${v.title}`}>
-              <Image src={v.poster} alt="" fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover opacity-80 transition duration-700 group-hover:scale-[1.03] group-hover:opacity-95" />
+          <video
+            ref={(el) => {
+              refs.current[v.id] = el;
+            }}
+            src={playing === v.id ? v.src : undefined}
+            poster={v.poster}
+            controls={playing === v.id}
+            playsInline
+            preload="none"
+            controlsList="nodownload noremoteplayback"
+            disablePictureInPicture={false}
+            onEnded={() => setPlaying(null)}
+            className="absolute inset-0 h-full w-full bg-black object-cover"
+          />
+          {playing !== v.id && (
+            <button onClick={() => play(v.id)} className="group absolute inset-0 text-left" aria-label={`Play: ${v.title}`}>
+              <Image src={v.poster} alt="" fill sizes="(max-width: 1024px) 100vw, 60vw" className="object-cover opacity-85 transition duration-700 group-hover:scale-[1.03] group-hover:opacity-95" />
               <span className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_0_0/0.1),rgb(0_0_0/0.7))]" />
               <span className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-2xl transition group-hover:scale-110 group-hover:bg-lime">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="#0b2a1f" aria-hidden>
@@ -74,7 +86,7 @@ export function WorkVideos({ videos }: { videos: WorkVideo[] }) {
               </span>
               <span className="absolute inset-x-0 bottom-0 p-5 text-white">
                 <span className="block text-[12px] font-semibold uppercase tracking-[0.12em] text-lime">
-                  Video tour · {Math.floor((v.end - v.start) / 60)}:{String((v.end - v.start) % 60).padStart(2, "0")}
+                  Video tour · {Math.floor(v.seconds / 60)}:{String(v.seconds % 60).padStart(2, "0")}
                 </span>
                 <span className="font-display mt-1 block text-[24px] leading-tight md:text-[30px]">{v.title}</span>
                 <span className="block text-[13.5px] text-white/75">{v.place}</span>

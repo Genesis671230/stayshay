@@ -12,7 +12,7 @@ export function ServicesShowcase() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Maintenance & interiors</p>
-          <h2 className="font-display mt-2 max-w-[640px] text-[34px] leading-[1.05] md:text-[52px]">Everything your home needs, one WhatsApp away</h2>
+          <h2 className="font-display mt-2 max-w-[640px] text-[34px] leading-[1.05] md:text-[52px]">Home services</h2>
           <p className="mt-3 max-w-[560px] text-[15.5px] text-ink-2">AC, plumbing, deep cleaning, painting, movers, interior design and fit-out. Tap a job, send a photo, get a quote.</p>
         </div>
         <Link href="/services" className="inline-flex h-11 items-center gap-2 rounded-full border border-ink px-5 text-[14.5px] font-semibold hover:bg-ink hover:text-white">

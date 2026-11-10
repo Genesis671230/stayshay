@@ -43,12 +43,11 @@
   --color-warn-bg: var(--warn-bg);
   --color-whatsapp: var(--whatsapp);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-figure: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 76px;
 }
 
@@ -67,8 +66,10 @@ body {
 
 .font-display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  text-wrap: balance;
 }
 
 .font-figure {
@@ -87,13 +88,16 @@ body {
 }
 
 .snap-x-strip {
-  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 .snap-x-strip::-webkit-scrollbar {
   display: none;
 }
-.snap-x-strip > * {
+/* Photo carousels only: one photo per swipe. Page sections scroll freely. */
+.snap-photos {
+  scroll-snap-type: x mandatory;
+}
+.snap-photos > * {
   scroll-snap-align: start;
 }
 

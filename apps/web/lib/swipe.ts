@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { roommateMatch, stripPhones, type RoommateLead } from "@stayshay/core";
 import { readJson, updateJson } from "./store";
-import { readRoommates, type PublicRoommate, type RoommatePrefs, type RoommateProfile } from "./roommates";
+import { isListed, isLive, readRoommates, type PublicRoommate, type RoommatePrefs, type RoommateProfile } from "./roommates";
 import type { User } from "./auth";
 
 /**
@@ -23,7 +23,7 @@ type SwipeStore = Record<string, SwipeState>;
 const SWIPES = "swipes.json";
 const empty = (): SwipeState => ({ viewed: [], liked: [], skipped: [] });
 
-/** The user's own profile (the newest one that isn't hidden). Pending profiles can swipe; they show to others once approved. */
+/** The user's own profile (the newest one that isn't hidden). Profiles are live as soon as they're made. */
 export async function myProfile(userId: string): Promise<RoommateProfile | null> {
   return (await readRoommates()).find((r) => r.userId === userId && r.status !== "hidden") ?? null;
 }
@@ -76,11 +76,11 @@ export type DeckResult =
 const openToAll = (p: RoommateProfile) => p.prefs?.visibility === "everyone";
 
 /**
- * The approved profiles this user can be shown. Across genders only when BOTH people chose to be visible that way.
+ * The listed profiles this user can be shown. Across genders only when BOTH people chose to be visible that way.
  * Pass members get filters and best fit first; everyone else gets a shuffled order, stable per person so a refresh doesn't reshuffle.
  */
 async function candidates(me: RoommateProfile, f: Filters, unlimited: boolean) {
-  const all = (await readRoommates()).filter((r) => r.status === "approved" && r.id !== me.id && (!me.userId || r.userId !== me.userId));
+  const all = (await readRoommates()).filter((r) => isListed(r) && r.id !== me.id && (!me.userId || r.userId !== me.userId));
   const mine = asLead(me);
   return all
     .filter((r) => r.gender === me.gender || (openToAll(me) && openToAll(r)))
@@ -122,7 +122,7 @@ function prefFit(me: RoommateProfile, r: RoommateProfile): number {
  * popular areas among people like them. Counts only, never anyone's details.
  */
 export async function suggest(q: { gender: "male" | "female"; budget: number; areas: string[]; seeking: RoommatePrefs["seeking"]; ageMin: number | null; ageMax: number | null }, excludeUserId: string) {
-  const pool = (await readRoommates()).filter((r) => r.status === "approved" && r.gender === q.gender && r.userId !== excludeUserId);
+  const pool = (await readRoommates()).filter((r) => isListed(r) && r.gender === q.gender && r.userId !== excludeUserId);
   const inAreas = (r: RoommateProfile) => !q.areas.length || !r.areaSlugs.length || r.areaSlugs.some((a) => q.areas.includes(a));
   const fits = pool.filter(
     (r) =>
@@ -150,7 +150,7 @@ export async function suggest(q: { gender: "male" | "female"; budget: number; ar
 async function requesterIds(myProfileId: string): Promise<Set<string>> {
   const [store, all] = await Promise.all([readJson<SwipeStore>(SWIPES, {}), readRoommates()]);
   const out = new Set<string>();
-  for (const r of all) if (r.status === "approved" && r.userId && store[r.userId]?.liked.includes(myProfileId)) out.add(r.id);
+  for (const r of all) if (isLive(r) && r.userId && store[r.userId]?.liked.includes(myProfileId)) out.add(r.id);
   return out;
 }
 
@@ -246,7 +246,7 @@ export async function connections(user: User, me: RoommateProfile) {
   const [store, all, req] = await Promise.all([readJson<SwipeStore>(SWIPES, {}), readRoommates(), requesterIds(me.id)]);
   const s = store[user.id] ?? empty();
   const mine = asLead(me);
-  const byId = new Map(all.filter((r) => r.status === "approved").map((r) => [r.id, r]));
+  const byId = new Map(all.filter(isLive).map((r) => [r.id, r]));
   const card = (r: RoommateProfile) => cardOf({ r, m: roommateMatch(mine, asLead(r)) }, req.has(r.id));
   const pick = (ids: Iterable<string>) => [...ids].map((id) => byId.get(id)).filter((r): r is RoommateProfile => !!r).map(card);
   return {

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Runs a Claude Code session in this repo that you drive from Telegram (@stayshay_manager_bot).
-# It lives in a tmux session called "stayshay-tg" and keeps the Mac awake while it runs.
+# It lives in a screen session called "stayshay-tg" (screen ships with macOS) and keeps the Mac awake while it runs.
 #
 #   ./scripts/claude-telegram.sh          start (or say it's already running)
-#   ./scripts/claude-telegram.sh attach   watch / type into it from this Mac (detach: Ctrl-b then d)
+#   ./scripts/claude-telegram.sh attach   watch / type into it from this Mac (detach: Ctrl-a then d)
 #   ./scripts/claude-telegram.sh stop     end it
 #
 # One-time setup (already done on the founder's Mac): `claude plugin install telegram@claude-plugins-official`,
@@ -13,11 +13,11 @@ cd "$(dirname "$0")/.."
 NAME=stayshay-tg
 
 case "${1:-start}" in
-  attach) exec tmux attach -t "$NAME" ;;
-  stop) tmux kill-session -t "$NAME" 2>/dev/null && echo "stopped" || echo "not running"; exit 0 ;;
+  attach) exec screen -r "$NAME" ;;
+  stop) screen -S "$NAME" -X quit 2>/dev/null && echo "stopped" || echo "not running"; exit 0 ;;
 esac
 
-if tmux has-session -t "$NAME" 2>/dev/null; then
+if screen -ls | grep -q "\.$NAME[[:space:]]"; then
   echo "already running: ./scripts/claude-telegram.sh attach"
   exit 0
 fi
@@ -32,6 +32,6 @@ You are the Stayshay operator, driven by the founder from Telegram (@stayshay_ma
 - Keep Telegram replies short: plain sentences, no tables.
 TXT
 
-tmux new-session -d -s "$NAME" -c "$PWD" \
+screen -dmS "$NAME" \
   caffeinate -dis claude --channels plugin:telegram@claude-plugins-official --permission-mode acceptEdits --append-system-prompt "$BRIEF"
 echo "started. Message @stayshay_manager_bot on Telegram. Watch here: ./scripts/claude-telegram.sh attach"

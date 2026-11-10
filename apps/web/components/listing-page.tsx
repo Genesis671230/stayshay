@@ -101,7 +101,7 @@ function Lightbox({ photos, start, title, onClose }: { photos: string[]; start: 
           </button>
         )}
       </div>
-      <div className="snap-x-strip flex gap-2 overflow-x-auto px-4 py-3">
+      <div className="snap-x-strip snap-photos flex gap-2 overflow-x-auto px-4 py-3">
         {photos.map((p, j) => (
           <button key={p} onClick={() => setI(j)} className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-[6px] ${j === i ? "ring-2 ring-white" : "opacity-60"}`}>
             <Image src={p} alt="" fill sizes="80px" className="object-cover" />

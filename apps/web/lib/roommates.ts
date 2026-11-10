@@ -7,8 +7,9 @@ import type { RoommateLead } from "@stayshay/core";
 import { DATA_DIR, UPLOAD_DIR } from "./store";
 
 /**
- * Public roommate board. A profile is created from the /roommates form (web or app) and shows publicly
- * only after the person agreed AND an admin approved it. Phone numbers are never part of the public card.
+ * Public roommate board. A profile is created from the /roommates onboarding (web or app) and is live in
+ * Roommates straight away, unless the person chose to hide it (`prefs.hidden`) or an admin hid it
+ * (`status: "hidden"`). Phone numbers are never part of the public card.
  */
 export interface RoommateProfile {
   id: string;
@@ -43,6 +44,8 @@ export interface RoommatePrefs {
   commute?: string;
   vibe?: string;
   nearby?: string[];
+  /** The person chose to hide their profile from Roommates. Existing connections and chats keep working. */
+  hidden?: boolean;
 }
 
 /** Cleans whatever the form sent into valid preferences (or undefined). */
@@ -62,6 +65,7 @@ export function cleanPrefs(v: unknown): RoommatePrefs | undefined {
     commute: String(o.commute ?? "").slice(0, 30),
     vibe: String(o.vibe ?? "").slice(0, 30),
     nearby: (Array.isArray(o.nearby) ? o.nearby : []).map((x) => String(x).slice(0, 30)).slice(0, 6),
+    hidden: o.hidden === true,
   };
 }
 
@@ -90,9 +94,14 @@ function update<T>(fn: (all: RoommateProfile[]) => { all: RoommateProfile[]; res
   return run;
 }
 
+/** Not hidden by the team. Older "pending" profiles count as live too. */
+export const isLive = (r: RoommateProfile) => r.status !== "hidden";
+/** Live and not hidden by the person themselves: can be shown to others. */
+export const isListed = (r: RoommateProfile) => isLive(r) && !r.prefs?.hidden;
+
 export async function publicRoommates(): Promise<PublicRoommate[]> {
   return (await readRoommates())
-    .filter((r) => r.status === "approved")
+    .filter(isListed)
     // Contact goes through Stayshay: numbers typed into the text are removed from the public card.
     .map(({ leadId: _l, userId: _u, status: _s, prefs: _p, ...pub }) => ({ ...pub, about: stripPhones(pub.about), profession: stripPhones(pub.profession) }));
 }
@@ -119,7 +128,7 @@ export async function addRoommate(lead: RoommateLead, leadId: string, userId: st
     id,
     leadId,
     userId,
-    status: "pending",
+    status: "approved",
     createdAt: new Date().toISOString(),
     mode: lead.mode,
     firstName: lead.name.trim().split(/\s+/)[0] ?? lead.name,
@@ -138,7 +147,7 @@ export async function addRoommate(lead: RoommateLead, leadId: string, userId: st
   return update((all) => ({ all: [profile, ...all], result: profile }));
 }
 
-/** Edits a profile in place (likes and messages keep pointing at it). Edits go back to the team for approval. */
+/** Edits a profile in place (likes and messages keep pointing at it). Edits show straight away. */
 export async function updateRoommate(id: string, lead: RoommateLead, photo: File | null, removePhoto = false, prefs?: RoommatePrefs): Promise<RoommateProfile | undefined> {
   const photoUrl = photo ? await savePhoto(id, photo).catch(() => null) : null;
   return update((all) => {
@@ -147,7 +156,7 @@ export async function updateRoommate(id: string, lead: RoommateLead, photo: File
     const cur = all[i];
     all[i] = {
       ...cur,
-      status: cur.status === "hidden" ? "hidden" : "pending",
+      status: cur.status === "hidden" ? "hidden" : "approved",
       mode: lead.mode,
       firstName: lead.name.trim().split(/\s+/)[0] ?? lead.name,
       age: lead.age,

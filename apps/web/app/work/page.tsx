@@ -27,10 +27,10 @@ const STEPS = [
   ["Handover", "Styled, snag-free and ready to live or work in, with aftercare."],
 ];
 
-/** Video tours, each trimmed to the walkthrough itself. */
+/** Video tours, trimmed to the walkthrough and hosted on stayshay.com (no YouTube). */
 const VIDEOS = [
-  { id: "A9Pd4GnezuY", title: "A fully renovated villa", place: "Jumeirah Islands", start: 28, end: 118, poster: PROJECT_BY_SLUG.get("villa-velora")!.cover },
-  { id: "TAQG-OuKboE", title: "Four-bedroom villa renovation", place: "Jumeirah Islands", start: 11, end: 94, poster: PROJECT_BY_SLUG.get("villa-pinea")!.cover },
+  { id: "villa-velora", title: "A fully renovated villa", place: "Jumeirah Islands", src: "/work/videos/villa-velora.mp4", seconds: 90, poster: PROJECT_BY_SLUG.get("villa-velora")!.cover },
+  { id: "villa-pinea", title: "Four-bedroom villa renovation", place: "Jumeirah Islands", src: "/work/videos/villa-pinea.mp4", seconds: 83, poster: PROJECT_BY_SLUG.get("villa-pinea")!.cover },
 ];
 
 export default function Page() {

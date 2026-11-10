@@ -38,6 +38,8 @@ interface Draft {
   commute: string;
   vibe: string;
   nearby: string[];
+  /** Hide my profile from Roommates (off by default: everyone onboarded is listed). */
+  hidden: boolean;
 }
 
 interface Hints {
@@ -109,8 +111,9 @@ function blank(me: { name: string; phone: string | null } | null, existing: Exis
       commute: existing.prefs?.commute ?? "",
       vibe: existing.prefs?.vibe ?? "",
       nearby: existing.prefs?.nearby ?? [],
+      hidden: existing.prefs?.hidden ?? false,
     };
-  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "", seeking: "any", ages: [], mustHave: [], visibility: "", commute: "", vibe: "", nearby: [] };
+  return { mode: "", name: me?.name.split(/\s+/)[0] ?? "", gender: "", age: "", nationality: "", profession: "", budget: 1500, moveIn: addDays(14), areas: [], anywhere: false, lifestyle: [], about: "", phone: me?.phone ? `+${me.phone}` : "", seeking: "any", ages: [], mustHave: [], visibility: "", commute: "", vibe: "", nearby: [], hidden: false };
 }
 
 export function RoomieOnboarding({
@@ -269,7 +272,7 @@ export function RoomieOnboarding({
     }
     setBusy(true);
     const body = new FormData();
-    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto, prefs: { seeking: d.mode === "has_place" ? "looking" : d.seeking, ...agesToRange(d.ages), mustHave: d.mustHave, visibility: d.visibility || "same", commute: d.commute, vibe: d.vibe, nearby: d.nearby } }));
+    body.set("profile", JSON.stringify({ ...payload, public: true, removePhoto, prefs: { seeking: d.mode === "has_place" ? "looking" : d.seeking, ...agesToRange(d.ages), mustHave: d.mustHave, visibility: d.visibility || "same", commute: d.commute, vibe: d.vibe, nearby: d.nearby, hidden: d.hidden } }));
     if (photo) body.set("photo", photo);
     const res = await fetch("/api/roommates", { method: "POST", body }).catch(() => null);
     const j = await res?.json().catch(() => null);
@@ -791,7 +794,7 @@ export function RoomieOnboarding({
         {step === "preview" && (
           <>
             <H>{editing ? "Looking good" : "This is you"}</H>
-            <P>This is the card people swipe on. Our team checks it before it goes live, usually within a few hours{editing ? "; changes show once approved" : ""}.</P>
+            <P>This is the card people see in Roommates. It goes live the moment you {editing ? "save" : "publish"}. Only your first name shows, never your number or email.</P>
             <div className="mx-auto mt-6 max-w-[330px]">
               <div className="relative aspect-[3/4.1] overflow-hidden rounded-[30px] bg-white/5 shadow-[0_30px_70px_rgb(0_0_0/0.5)]">
                 <Portrait p={card} />
@@ -822,6 +825,21 @@ export function RoomieOnboarding({
                   No photo yet. <b className="text-lime">Add one</b> so people know who they’re talking to.
                 </button>
               )}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={!d.hidden}
+                onClick={() => set("hidden", !d.hidden)}
+                className="mt-4 flex w-full items-center justify-between gap-4 rounded-[18px] border border-white/12 bg-white/[0.04] px-4 py-3.5 text-left"
+              >
+                <span>
+                  <span className="block text-[14.5px] font-semibold">{d.hidden ? "Hidden from Roommates" : "Visible in Roommates"}</span>
+                  <span className="mt-0.5 block text-[12.5px] text-white/55">{d.hidden ? "Nobody new can find you. Your chats keep working." : "People who fit can find and like you."}</span>
+                </span>
+                <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${d.hidden ? "bg-white/20" : "bg-lime"}`}>
+                  <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left] ${d.hidden ? "left-1" : "left-6"}`} />
+                </span>
+              </button>
               <div className="mt-4 grid grid-cols-3 gap-2 text-[12.5px]">
                 {(
                   [

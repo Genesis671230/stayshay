@@ -3,7 +3,7 @@ import { RoomieApp } from "./app";
 /** The roommate app on a dark stage. On phones the app is the page; on desktop it sits beside the pitch. */
 export function RoomieStage({ people, returnTo, title, intro }: { people: number; returnTo: "/roommates" | "/swipe"; title: string; intro: string }) {
   const steps = [
-    ["Make your profile", "Photo, budget, areas and how you live. Two minutes, and our team checks every profile."],
+    ["Make your profile", "Photo, budget, areas and how you live. Two minutes, and you’re live. Hide it any time."],
     ["Swipe right or left", "People who fit your budget, area and routine come first. Right to like, left to pass."],
     ["Match, then message", "When you both swipe right, it’s a match. Message with the Stayshay Pass and meet before you agree anything."],
   ];
@@ -25,7 +25,7 @@ export function RoomieStage({ people, returnTo, title, intro }: { people: number
               </li>
             ))}
           </ol>
-          <p className="mt-10 max-w-[440px] text-[13px] text-white/45">Your number is never shown. Every profile is checked by the Stayshay team before others see it. Meet in a public place first and never pay before you’ve seen the room.</p>
+          <p className="mt-10 max-w-[440px] text-[13px] text-white/45">Your number is never shown. You choose whether your profile is shown, and our team removes anyone who breaks the rules. Meet in a public place first and never pay before you’ve seen the room.</p>
         </div>
         <div className="min-w-0 pb-24 md:pb-0">
           <h1 className="sr-only md:hidden">{title}</h1>
